@@ -2,6 +2,7 @@
   "version": 2,
   "cleanUrls": true,
   "routes": [
-    { "src": "/", "dest": "/huons-crossword.html" }
+    { "src": "/", "dest": "/huons-crossword.html" },
+    { "src": "/lunch", "dest": "/random-lunch.html" }
   ]
 }

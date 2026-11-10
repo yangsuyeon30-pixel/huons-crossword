@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>랜덤런치 팀 매칭</title>
+<style>
+:root{--bg:#f2f6f5;--card:#fff;--ink:#1c2733;--muted:#6b7a8d;--line:#e2e8f0;
+--huons:#0e9b8b;--huons-dark:#0b7a6e;--bad:#dc2626;--warn:#b45309}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Pretendard','Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:var(--bg);color:var(--ink)}
+.wrap{max-width:880px;margin:0 auto;padding:16px 16px 80px}
+.top{display:flex;align-items:center;gap:10px;margin:6px 0 14px}
+.logo{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--huons),#34d399);display:grid;place-items:center;font-size:22px}
+.top h1{font-size:19px;margin:0;line-height:1.3}
+.top h1 small{display:block;font-size:12px;color:var(--muted);font-weight:500}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 6px 20px rgba(16,40,36,.06);margin-bottom:12px}
+.card h2{font-size:15px;margin:0 0 10px}
+label.f{display:block;font-size:13px;font-weight:800;margin:12px 0 6px}
+textarea,input[type=number],input[type=text],select{width:100%;padding:11px 12px;border:1.5px solid var(--line);border-radius:12px;font-size:15px;font-family:inherit;outline:none;background:#fff;color:var(--ink)}
+textarea{min-height:200px;resize:vertical;line-height:1.6}
+textarea:focus,input:focus,select:focus{border-color:var(--huons)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.muted{color:var(--muted);font-size:12.5px;line-height:1.7}
+.chk{display:flex;align-items:center;gap:8px;font-size:14px;margin:8px 0;cursor:pointer}
+.chk input{width:18px;height:18px;accent-color:var(--huons)}
+.btn{border:0;border-radius:12px;padding:13px 16px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit}
+.btn-primary{background:var(--huons);color:#fff;width:100%;margin-top:14px}
+.btn-primary:active{background:var(--huons-dark)}
+.btn-ghost{background:#fff;border:1.5px solid var(--line);color:var(--ink);padding:9px 12px;font-size:13px}
+.tools{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.count{font-size:13px;font-weight:700;color:var(--huons-dark);margin-top:6px}
+.err{color:var(--bad);font-size:13px;font-weight:700;margin-top:8px;white-space:pre-line}
+.teams{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.team{border:1.5px solid var(--line);border-radius:14px;padding:12px;background:#fff;animation:pop .35s both}
+.team h3{margin:0 0 8px;font-size:15px;display:flex;justify-content:space-between;align-items:center}
+.team h3 span{font-size:12px;color:var(--muted);font-weight:600}
+.team ul{list-style:none;margin:0;padding:0}
+.team li{padding:6px 8px;border-radius:8px;font-size:14px;display:flex;justify-content:space-between;gap:6px}
+.team li:nth-child(odd){background:#f8fafc}
+.team li .d{color:var(--muted);font-size:12px}
+.team li.leader{background:#e6faf6;font-weight:800}
+.team .warn{font-size:12px;color:var(--warn);margin-top:6px}
+.summary{font-size:13px;color:var(--muted);margin-bottom:10px}
+.hidden{display:none!important}
+@keyframes pop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+@media (max-width:640px){.row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="logo">🍱</div>
+    <h1>랜덤런치 팀 매칭<small>참가자를 입력하면 무작위로 점심 팀을 짜드려요</small></h1>
+  </div>
+
+  <div class="card">
+    <h2>1. 참가자 입력</h2>
+    <textarea id="people" placeholder="한 줄에 한 명씩 입력하세요.&#10;부서를 함께 쓰려면 쉼표로 구분: 이름, 부서&#10;&#10;예)&#10;김철수, 영업팀&#10;이영희, 연구소&#10;박민수, 영업팀&#10;최지은"></textarea>
+    <div class="count" id="count">0명</div>
+    <div class="muted">엑셀에서 이름/부서 두 열을 복사해 붙여넣어도 됩니다 (탭 구분 자동 인식). 중복 이름은 자동으로 제외돼요.</div>
+
+    <h2 style="margin-top:18px">2. 매칭 설정</h2>
+    <div class="row">
+      <div>
+        <label class="f" for="mode">팀 구성 기준</label>
+        <select id="mode">
+          <option value="size">팀당 인원수로 나누기</option>
+          <option value="count">팀 개수로 나누기</option>
+        </select>
+      </div>
+      <div>
+        <label class="f" for="num" id="numLabel">팀당 인원</label>
+        <input type="number" id="num" min="1" value="4">
+      </div>
+    </div>
+    <div id="remainderBox">
+      <label class="f" for="remainder">인원이 딱 나누어떨어지지 않을 때</label>
+      <select id="remainder">
+        <option value="up">남는 인원을 기존 팀에 추가 (예: 4명 → 일부 5명)</option>
+        <option value="down">팀을 하나 더 만들어 분산 (예: 4명 → 일부 3명)</option>
+      </select>
+    </div>
+
+    <label class="chk"><input type="checkbox" id="mixDept" checked> 같은 부서끼리는 최대한 다른 팀으로</label>
+    <label class="chk"><input type="checkbox" id="pickLeader" checked> 팀마다 랜덤 팀장(예약 담당) 뽑기</label>
+
+    <label class="f" for="avoid">같은 팀이 되면 안 되는 조합 (선택)</label>
+    <textarea id="avoid" style="min-height:80px" placeholder="한 줄에 한 조합, 쉼표로 구분&#10;예) 김철수, 박민수"></textarea>
+    <div class="muted">지난번에 같은 팀이었던 사람들을 넣어두면 이번엔 다른 사람과 만나게 돼요.</div>
+
+    <button class="btn btn-primary" id="go">🎲 팀 매칭하기</button>
+    <div class="err" id="err"></div>
+  </div>
+
+  <div class="card hidden" id="resultCard">
+    <h2>3. 매칭 결과</h2>
+    <div class="tools">
+      <button class="btn btn-ghost" id="again">🔄 다시 섞기</button>
+      <button class="btn btn-ghost" id="copy">📋 텍스트 복사</button>
+      <button class="btn btn-ghost" id="csv">⬇️ CSV 저장</button>
+      <button class="btn btn-ghost" id="toAvoid">➕ 이번 결과를 '안 되는 조합'에 추가</button>
+    </div>
+    <div class="summary" id="summary"></div>
+    <div class="teams" id="teams"></div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const store = {
+  get(k){ try { return localStorage.getItem('rl_'+k); } catch(e){ return null; } },
+  set(k,v){ try { localStorage.setItem('rl_'+k, v); } catch(e){} }
+};
+let lastTeams = null;
+
+// ---------- 입력 파싱 ----------
+function parsePeople(){
+  const seen = new Set(), list = [];
+  $('people').value.split('\n').forEach(line => {
+    const parts = line.split(/[,\t]/).map(s => s.trim()).filter(Boolean);
+    if (!parts.length) return;
+    const name = parts[0];
+    if (seen.has(name)) return;
+    seen.add(name);
+    list.push({ name, dept: parts[1] || '' });
+  });
+  return list;
+}
+function parseAvoid(names){
+  const set = new Set(), unknown = new Set();
+  $('avoid').value.split('\n').forEach(line => {
+    const ns = line.split(/[,\t]/).map(s => s.trim()).filter(Boolean);
+    ns.forEach(n => { if (!names.has(n)) unknown.add(n); });
+    for (let i = 0; i < ns.length; i++)
+      for (let j = i + 1; j < ns.length; j++) set.add(pairKey(ns[i], ns[j]));
+  });
+  return { set, unknown: [...unknown] };
+}
+const pairKey = (a, b) => a < b ? a + '\u0001' + b : b + '\u0001' + a;
+
+// ---------- 매칭 알고리즘 ----------
+function rnd(n){ const a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] % n; }
+function shuffle(arr){ for (let i = arr.length - 1; i > 0; i--){ const j = rnd(i + 1); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; }
+
+function teamCapacities(n, mode, num, remainder){
+  let k;
+  if (mode === 'count') k = Math.min(Math.max(1, num), n);
+  else k = remainder === 'up' ? Math.max(1, Math.floor(n / num)) : Math.ceil(n / num);
+  const base = Math.floor(n / k), extra = n % k;
+  return shuffle(Array.from({ length: k }, (_, i) => base + (i < extra ? 1 : 0)));
+}
+
+// 한 사람이 특정 팀에 들어갔을 때의 벌점
+function costOf(p, members, opt){
+  let c = 0;
+  for (const m of members){
+    if (opt.avoid.has(pairKey(p.name, m.name))) c += 100;
+    if (opt.mixDept && p.dept && p.dept === m.dept) c += 1;
+  }
+  return c;
+}
+function totalCost(teams, opt){
+  let c = 0;
+  teams.forEach(t => t.forEach((p, i) => { c += costOf(p, t.slice(i + 1), opt); }));
+  return c;
+}
+
+function buildOnce(people, caps, opt){
+  // 인원 많은 부서부터 배치해야 고르게 흩어짐
+  const deptCount = {};
+  people.forEach(p => deptCount[p.dept] = (deptCount[p.dept] || 0) + 1);
+  const order = shuffle(people.slice());
+  if (opt.mixDept) order.sort((a, b) => (b.dept ? deptCount[b.dept] : 0) - (a.dept ? deptCount[a.dept] : 0));
+
+  const teams = caps.map(() => []);
+  for (const p of order){
+    let best = [], bestScore = Infinity;
+    teams.forEach((t, i) => {
+      if (t.length >= caps[i]) return;
+      const score = costOf(p, t, opt) * 1000 + t.length / caps[i];
+      if (score < bestScore - 1e-9){ bestScore = score; best = [i]; }
+      else if (Math.abs(score - bestScore) < 1e-9) best.push(i);
+    });
+    teams[best[rnd(best.length)]].push(p);
+  }
+  // 두 사람 맞바꾸기로 개선
+  let improved = true, guard = 0;
+  while (improved && guard++ < 50){
+    improved = false;
+    for (let a = 0; a < teams.length; a++) for (let b = a + 1; b < teams.length; b++)
+      for (let i = 0; i < teams[a].length; i++) for (let j = 0; j < teams[b].length; j++){
+        const pa = teams[a][i], pb = teams[b][j];
+        const ra = teams[a].filter((_, x) => x !== i), rb = teams[b].filter((_, x) => x !== j);
+        const before = costOf(pa, ra, opt) + costOf(pb, rb, opt);
+        const after = costOf(pb, ra, opt) + costOf(pa, rb, opt);
+        if (after < before){ teams[a][i] = pb; teams[b][j] = pa; improved = true; }
+      }
+  }
+  return teams;
+}
+
+function match(people, caps, opt){
+  let best = null, bestCost = Infinity;
+  const tries = people.length > 150 ? 20 : 80;
+  for (let t = 0; t < tries; t++){
+    const teams = buildOnce(people, caps, opt);
+    const c = totalCost(teams, opt);
+    if (c < bestCost){ bestCost = c; best = teams; }
+    if (c === 0) break;
+  }
+  return best.map(t => {
+    t = shuffle(t);
+    if (opt.pickLeader) t.leader = rnd(t.length);
+    return t;
+  });
+}
+
+// ---------- 화면 ----------
+function updateCount(){
+  const n = parsePeople().length;
+  $('count').textContent = n + '명';
+}
+function updateMode(){
+  const isCount = $('mode').value === 'count';
+  $('numLabel').textContent = isCount ? '팀 개수' : '팀당 인원';
+  $('remainderBox').classList.toggle('hidden', isCount);
+}
+
+function run(){
+  $('err').textContent = '';
+  const people = parsePeople();
+  const num = parseInt($('num').value, 10);
+  if (people.length < 2){ $('err').textContent = '참가자를 2명 이상 입력해 주세요.'; return; }
+  if (!num || num < 1){ $('err').textContent = '인원/팀 수를 1 이상으로 입력해 주세요.'; return; }
+
+  const names = new Set(people.map(p => p.name));
+  const { set: avoid, unknown } = parseAvoid(names);
+  const opt = { avoid, mixDept: $('mixDept').checked, pickLeader: $('pickLeader').checked };
+  const caps = teamCapacities(people.length, $('mode').value, num, $('remainder').value);
+  const teams = match(people, caps, opt);
+  lastTeams = teams;
+  render(teams, opt, unknown);
+  saveInputs();
+}
+
+function render(teams, opt, unknown){
+  const box = $('teams');
+  box.innerHTML = '';
+  let conflicts = 0, deptDup = 0;
+  teams.forEach((t, i) => {
+    const el = document.createElement('div');
+    el.className = 'team';
+    el.style.animationDelay = (i * 40) + 'ms';
+    const h = document.createElement('h3');
+    h.innerHTML = `${i + 1}팀 <span>${t.length}명</span>`;
+    el.appendChild(h);
+    const ul = document.createElement('ul');
+    t.forEach((p, idx) => {
+      const li = document.createElement('li');
+      if (opt.pickLeader && idx === t.leader) li.className = 'leader';
+      const n = document.createElement('span');
+      n.textContent = (opt.pickLeader && idx === t.leader ? '👑 ' : '') + p.name;
+      const d = document.createElement('span');
+      d.className = 'd'; d.textContent = p.dept;
+      li.append(n, d); ul.appendChild(li);
+    });
+    el.appendChild(ul);
+
+    const warns = [];
+    for (let a = 0; a < t.length; a++) for (let b = a + 1; b < t.length; b++){
+      if (opt.avoid.has(pairKey(t[a].name, t[b].name))){ conflicts++; warns.push(`⚠ ${t[a].name}·${t[b].name} 피하지 못함`); }
+      if (opt.mixDept && t[a].dept && t[a].dept === t[b].dept) deptDup++;
+    }
+    if (warns.length){ const w = document.createElement('div'); w.className = 'warn'; w.textContent = warns.join('\n'); el.appendChild(w); }
+    box.appendChild(el);
+  });
+
+  const total = teams.reduce((s, t) => s + t.length, 0);
+  let s = `총 ${total}명 · ${teams.length}개 팀`;
+  if (opt.mixDept) s += deptDup ? ` · 같은 부서 겹침 ${deptDup}쌍 (인원 구성상 불가피)` : ' · 같은 부서 겹침 없음 ✅';
+  if (opt.avoid.size) s += conflicts ? ` · 피할 조합 ${conflicts}쌍 남음` : ' · 피할 조합 모두 분리 ✅';
+  if (unknown.length) s += ` · 참가자 목록에 없는 이름: ${unknown.join(', ')}`;
+  $('summary').textContent = s;
+  $('resultCard').classList.remove('hidden');
+  $('resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function resultText(){
+  const lead = $('pickLeader').checked;
+  return lastTeams.map((t, i) =>
+    `[${i + 1}팀] ` + t.map((p, idx) => (lead && idx === t.leader ? '👑' : '') + p.name + (p.dept ? `(${p.dept})` : '')).join(', ')
+  ).join('\n');
+}
+function copyText(){
+  const txt = resultText();
+  const done = () => { $('copy').textContent = '✅ 복사됨'; setTimeout(() => $('copy').textContent = '📋 텍스트 복사', 1500); };
+  if (navigator.clipboard) navigator.clipboard.writeText(txt).then(done, () => fallbackCopy(txt, done));
+  else fallbackCopy(txt, done);
+}
+function fallbackCopy(txt, done){
+  const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta);
+  ta.select(); try { document.execCommand('copy'); done(); } catch(e){ alert(txt); } ta.remove();
+}
+function downloadCsv(){
+  const lead = $('pickLeader').checked;
+  const esc = v => `"${String(v).replace(/"/g, '""')}"`;
+  const rows = [['팀', '이름', '부서', '팀장'].map(esc).join(',')];
+  lastTeams.forEach((t, i) => t.forEach((p, idx) =>
+    rows.push([`${i + 1}팀`, p.name, p.dept, lead && idx === t.leader ? 'O' : ''].map(esc).join(','))));
+  const blob = new Blob(['﻿' + rows.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `랜덤런치_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click(); URL.revokeObjectURL(a.href);
+}
+function addResultToAvoid(){
+  const lines = lastTeams.map(t => t.map(p => p.name).join(', '));
+  const cur = $('avoid').value.trim();
+  $('avoid').value = (cur ? cur + '\n' : '') + lines.join('\n');
+  saveInputs();
+  $('toAvoid').textContent = '✅ 추가됨 (다음 매칭에 반영)';
+  setTimeout(() => $('toAvoid').textContent = "➕ 이번 결과를 '안 되는 조합'에 추가", 2000);
+}
+
+// ---------- 입력값 기억 ----------
+const fields = ['people', 'avoid', 'mode', 'num', 'remainder'];
+const checks = ['mixDept', 'pickLeader'];
+function saveInputs(){
+  fields.forEach(f => store.set(f, $(f).value));
+  checks.forEach(f => store.set(f, $(f).checked ? '1' : '0'));
+}
+function loadInputs(){
+  fields.forEach(f => { const v = store.get(f); if (v !== null) $(f).value = v; });
+  checks.forEach(f => { const v = store.get(f); if (v !== null) $(f).checked = v === '1'; });
+}
+
+loadInputs(); updateMode(); updateCount();
+$('people').addEventListener('input', () => { updateCount(); saveInputs(); });
+$('avoid').addEventListener('input', saveInputs);
+$('mode').addEventListener('change', () => { updateMode(); saveInputs(); });
+$('go').addEventListener('click', run);
+$('again').addEventListener('click', run);
+$('copy').addEventListener('click', copyText);
+$('csv').addEventListener('click', downloadCsv);
+$('toAvoid').addEventListener('click', addResultToAvoid);
+</script>
+</body>
+</html>
