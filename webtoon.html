@@ -148,190 +148,285 @@ const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 const MAXLEN=40;
 
 /* ================== 그림 ================== */
-const INK='#2a2a2a';
-const S=`stroke="${INK}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"`;
+const LN='#3a2b27';
+const SW=`stroke="${LN}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"`;
+const SW1=`stroke="${LN}" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"`;
+const DEFS=`<svg width="0" height="0" style="position:absolute;width:0;height:0" aria-hidden="true"><defs>
+${[['gWallWarm','#fff7ea','#f3dfc3'],['gWallCool','#f1f6fb','#d7e3ee'],['gWallMint','#f1fbf7','#d3ebe1'],['gWallLav','#f6f3ff','#ded7f5'],['gWallNight','#323a5e','#1c2138'],['gWallPink','#fff5f9','#ffd9e8'],['gWallSun','#fffbea','#f7e9bf'],['gWallGray','#f7f7f8','#e1e2e6'],
+ ['gFloor','#e6d1b2','#c4a47c'],['gFloorGray','#dfe3e8','#b4bcc7'],['gFloorNight','#2b2f48','#171a2a'],['gFloorPink','#f8d7e2','#eab3c6'],
+ ['gSkyDay','#8ccdfc','#e6f6ff'],['gSkyNight','#0d1533','#2d3d72'],['gWood','#c98f58','#a46f40'],['gWoodTop','#ecc394','#d9a46c'],['gWoodDark','#8a6444','#5e4330'],
+ ['gScreen','#f4fbff','#c9e6fb'],['gMetal','#f2f4f7','#c3c9d2'],['gDark','#4b5563','#2b313b'],['gBoard','#ffffff','#eef2f6'],['gCork','#dcb88a','#c49a68'],
+ ['gBldg','#a9c6dd','#86a8c4'],['gBldgN','#3a4876','#252f55']]
+ .map(([id,a,b])=>`<linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`).join('')}
+<linearGradient id="gRay" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+<radialGradient id="gGlow"><stop offset="0" stop-color="#fff3b0" stop-opacity=".95"/><stop offset="1" stop-color="#fff3b0" stop-opacity="0"/></radialGradient>
+<radialGradient id="gScreenGlow"><stop offset="0" stop-color="#bfe4ff" stop-opacity=".7"/><stop offset="1" stop-color="#bfe4ff" stop-opacity="0"/></radialGradient>
+<radialGradient id="gVig" cx=".5" cy=".5" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".22"/></radialGradient>
+<radialGradient id="gCheek"><stop offset="0" stop-color="#ff7d95" stop-opacity=".6"/><stop offset="1" stop-color="#ff7d95" stop-opacity="0"/></radialGradient>
+<pattern id="pTone" width="5" height="5" patternUnits="userSpaceOnUse"><circle cx="2.5" cy="2.5" r=".9" fill="#000" opacity=".16"/></pattern>
+<pattern id="pTile" width="40" height="40" patternUnits="userSpaceOnUse"><rect width="40" height="40" fill="#eef7fd"/><path d="M0,0 L40,0 M0,0 L0,40" stroke="#d2e6f4" stroke-width="2"/></pattern>
+<filter id="fBlur" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="1.6"/></filter>
+<filter id="fSoft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="4"/></filter>
+</defs></svg>`;
+
 const CAST={
- A:{name:'김사원',role:'열정 신입',skin:'#ffdcbc',hair:'#5b3a29',style:'short',shirt:'#14b8a6',collar:'tee'},
- B:{name:'박대리',role:'일잘러 선배',skin:'#ffe2c8',hair:'#2d2420',style:'long',shirt:'#fb7185',collar:'blouse'},
- C:{name:'최팀장',role:'든든한 리더',skin:'#f3cba4',hair:'#8b929c',style:'neat',shirt:'#1e3a8a',collar:'tie',tie:'#ef4444',glasses:true},
- D:{name:'이과장',role:'분위기 메이커',skin:'#ffd4ad',hair:'#7a4a22',style:'bob',shirt:'#f59e0b',collar:'sweater'}
+ A:{name:'김사원',role:'열정 신입',skin:'#ffe3cf',sk2:'#f4b99c',hair:'#6e4631',hair2:'#4a2c1e',hairHi:'#a7795a',iris:'#7a5232',style:'short',sex:'m',outfit:'sweater',c1:'#22b5a3',c2:'#148a7c'},
+ B:{name:'박대리',role:'일잘러 선배',skin:'#ffe6d6',sk2:'#f5bfa6',hair:'#2e2533',hair2:'#17121b',hairHi:'#6a5878',iris:'#4a2e2e',style:'long',sex:'f',outfit:'blouse',c1:'#ff94ab',c2:'#e56e88'},
+ C:{name:'최팀장',role:'든든한 리더',skin:'#f6d3b6',sk2:'#e3ac8b',hair:'#9ba2ab',hair2:'#6e757f',hairHi:'#d2d6db',iris:'#3a3a3a',style:'neat',sex:'m',outfit:'suit',c1:'#2a3d72',c2:'#18264f',tie:'#d64545',glasses:1},
+ D:{name:'이과장',role:'분위기 메이커',skin:'#ffe0c8',sk2:'#f2b593',hair:'#8d5732',hair2:'#5e381d',hairHi:'#c48b60',iris:'#6a4326',style:'bob',sex:'f',outfit:'cardigan',c1:'#f6ba42',c2:'#d9962a'}
 };
-function face(c,o){
- const e=o.eyes||'normal', m=o.mouth||'smile';
- let back='',f='';
- if(c.style==='long') back=`<path d="M-30,-4 Q-36,-37 0,-37 Q36,-37 30,-4 L34,46 Q0,54 -34,46Z" fill="${c.hair}" ${S}/>`;
- if(c.style==='bob') back=`<path d="M-31,-2 Q-35,-37 0,-37 Q35,-37 31,-2 L33,22 Q31,28 22,26 L-22,26 Q-31,28 -33,22Z" fill="${c.hair}" ${S}/>`;
- f+=`<circle cx="-25" cy="4" r="6" fill="${c.skin}" ${S}/><circle cx="25" cy="4" r="6" fill="${c.skin}" ${S}/>`;
- f+=`<circle r="26" fill="${c.skin}" ${S}/>`;
- const H={
-  short:'M-27,-1 Q-31,-33 0,-34 Q29,-34 27,-3 Q22,-17 10,-19 Q3,-10 -7,-17 Q-17,-21 -27,-1Z',
-  neat:'M-27,-3 Q-29,-32 0,-33 Q29,-32 27,-3 Q26,-19 18,-21 L-13,-23 Q-24,-19 -27,-3Z',
-  long:'M-27,-1 Q-29,-33 0,-34 Q29,-33 27,-1 Q21,-21 3,-23 Q-15,-17 -27,-1Z',
-  bob:'M-28,1 Q-30,-33 0,-34 Q30,-33 28,1 Q26,-14 14,-16 L-14,-16 Q-26,-14 -28,1Z'
- };
- f+=`<path d="${H[c.style]}" fill="${c.hair}" ${S}/>`;
- if(o.blush) f+=`<ellipse cx="-16" cy="11" rx="5" ry="3" fill="#ff8fa3" opacity=".55"/><ellipse cx="16" cy="11" rx="5" ry="3" fill="#ff8fa3" opacity=".55"/>`;
- const ey=3;
- [-10,10].forEach(x=>{
-  if(e==='happy') f+=`<path d="M${x-5},${ey+2} Q${x},${ey-5} ${x+5},${ey+2}" fill="none" ${S}/>`;
-  else if(e==='shock') f+=`<circle cx="${x}" cy="${ey}" r="5.5" fill="#fff" stroke="${INK}" stroke-width="2"/><circle cx="${x}" cy="${ey}" r="1.8" fill="${INK}"/>`;
-  else if(e==='tired') f+=`<path d="M${x-5},${ey} L${x+5},${ey}" fill="none" ${S}/><path d="M${x-4},${ey+4} Q${x},${ey+6} ${x+4},${ey+4}" fill="none" stroke="${INK}" stroke-width="1.4" opacity=".6"/>`;
-  else if(e==='side') f+=`<ellipse cx="${x+3}" cy="${ey}" rx="2.6" ry="4" fill="${INK}"/>`;
-  else f+=`<ellipse cx="${x}" cy="${ey}" rx="3" ry="4" fill="${INK}"/><circle cx="${x+1}" cy="${ey-1.6}" r="1.1" fill="#fff"/>`;
+const FACE='M-23,-8 C-23,-31 23,-31 23,-8 C23,12 14,27 0,30 C-14,27 -23,12 -23,-8Z';
+const mirX=d=>d.replace(/(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/g,(m,a,b)=>(-parseFloat(a))+','+b);
+const HAIR={
+ short:{back:'M-26,-4 C-30,-30 -14,-40 2,-39 C20,-40 31,-28 27,-4 C25,-12 -24,-12 -26,-4Z',
+  front:'M-27,2 C-31,-24 -18,-39 0,-39 C19,-39 31,-26 27,0 C25,-7 22,-13 18,-16 C17,-10 15,-7 12,-5 C11,-12 8,-17 4,-19 C2,-12 -2,-9 -6,-8 C-6,-14 -9,-18 -12,-19 C-14,-12 -18,-8 -22,-6 C-22,-10 -21,-14 -20,-16 C-24,-12 -26,-5 -27,2Z',
+  hi:'M-16,-30 C-8,-35 6,-35 15,-30 M-4,-36 C2,-37 8,-36 12,-34'},
+ long:{back:'M-27,-6 C-33,-36 -12,-43 0,-42 C14,-43 33,-36 27,-6 L33,56 C20,62 -20,62 -33,56Z',
+  front:'M-26,6 C-31,-26 -16,-40 0,-40 C18,-40 31,-26 26,4 C24,-9 18,-18 9,-21 C2,-12 -9,-6 -19,-3 C-23,-1 -25,2 -26,6Z',
+  side:'M-25,0 C-28,16 -28,30 -25,44 L-18,42 C-21,28 -21,12 -19,-2Z',
+  hi:'M-17,-30 C-9,-36 7,-36 16,-31'},
+ neat:{back:'',
+  front:'M-25,0 C-29,-27 -12,-38 2,-38 C19,-38 29,-27 25,0 C24,-11 22,-17 18,-20 C8,-23 -3,-20 -11,-25 C-16,-19 -22,-12 -25,0Z',
+  side:'M-24,-4 L-23,6 L-21,-6Z',
+  hi:'M-14,-31 C-6,-35 6,-35 14,-31'},
+ bob:{back:'M-28,-4 C-33,-35 -14,-43 0,-42 C14,-43 33,-35 28,-4 L31,20 C31,28 25,29 20,27 L-20,27 C-25,29 -31,28 -31,20Z',
+  front:'M-25,0 C-28,-28 -14,-39 0,-39 C14,-39 28,-28 25,0 L23,-6 C21,-10 19,-11 17,-11 C8,-9 -8,-9 -17,-11 C-19,-11 -21,-10 -23,-6Z',
+  side:'M-26,-8 C-29,6 -29,16 -27,25 L-19,25 C-21,14 -21,2 -19,-9Z',
+  hi:'M-16,-31 C-8,-36 8,-36 16,-31'}
+};
+function eyes(c,o){
+ const e=o.eyes||'normal'; let s='';
+ [-9.5,9.5].forEach((x,k)=>{const y=3, side=k?1:-1;
+  if(e==='happy'){s+=`<path d="M${x-6},${y+2} Q${x},${y-6} ${x+6},${y+2}" fill="none" stroke="${LN}" stroke-width="2.6" stroke-linecap="round"/>`;return}
+  if(e==='closed'){s+=`<path d="M${x-6},${y} Q${x},${y+4} ${x+6},${y}" fill="none" stroke="${LN}" stroke-width="2.4" stroke-linecap="round"/>`;return}
+  if(e==='shock'){s+=`<ellipse cx="${x}" cy="${y}" rx="6.2" ry="7" fill="#fff" ${SW1}/><circle cx="${x}" cy="${y}" r="1.7" fill="${LN}"/>`;return}
+  const dx=e==='side'?2.2:e==='sideL'?-2.2:0, dy=e==='down'?1.5:0;
+  s+=`<ellipse cx="${x}" cy="${y}" rx="6" ry="6.8" fill="#fff"/>`;
+  s+=`<ellipse cx="${x+dx}" cy="${y+.6+dy}" rx="4.4" ry="5.6" fill="${c.iris}"/><ellipse cx="${x+dx}" cy="${y-1.6+dy}" rx="4.4" ry="2.6" fill="#000" opacity=".28"/>`;
+  s+=`<ellipse cx="${x+dx}" cy="${y+1+dy}" rx="2.1" ry="2.8" fill="#1a1110"/>`;
+  s+=`<circle cx="${x+dx+1.8}" cy="${y-2+dy}" r="1.7" fill="#fff"/><circle cx="${x+dx-1.7}" cy="${y+3+dy}" r=".9" fill="#fff"/>`;
+  if(e==='tired') s+=`<path d="M${x-7},${y-7} L${x+7},${y-7} L${x+7},${y+.5} Q${x},${y-1.5} ${x-7},${y+.5}Z" fill="${c.skin}"/><path d="M${x-6.5},${y+.5} Q${x},${y-1.5} ${x+6.5},${y+.5}" fill="none" stroke="${LN}" stroke-width="2.4" stroke-linecap="round"/><path d="M${x-5},${y+8} Q${x},${y+10} ${x+5},${y+8}" fill="none" stroke="#9b7bb0" stroke-width="1.4" opacity=".7"/>`;
+  else s+=`<path d="M${x-6.8},${y-1.5} Q${x-1},${y-8.6} ${x+6.8},${y-2.6}" fill="none" stroke="${LN}" stroke-width="2.8" stroke-linecap="round"/>`;
+  if(c.sex==='f'&&e!=='tired') s+=`<path d="M${x+side*6.4},${y-2.4} l${side*2.6},-2.4" stroke="${LN}" stroke-width="2" stroke-linecap="round"/>`;
  });
- if(o.brow==='worried') f+=`<path d="M-16,-6 L-6,-10 M16,-6 L6,-10" ${S} fill="none"/>`;
- if(o.brow==='angry') f+=`<path d="M-16,-10 L-6,-6 M16,-10 L6,-6" ${S} fill="none"/>`;
- if(o.brow==='up') f+=`<path d="M-15,-10 Q-10,-14 -5,-10 M15,-10 Q10,-14 5,-10" ${S} fill="none"/>`;
- if(c.glasses) f+=`<circle cx="-10" cy="3" r="7.5" fill="none" stroke="${INK}" stroke-width="2"/><circle cx="10" cy="3" r="7.5" fill="none" stroke="${INK}" stroke-width="2"/><path d="M-2.5,3 L2.5,3" stroke="${INK}" stroke-width="2"/>`;
- const M={
-  smile:`<path d="M-7,12 Q0,19 7,12" fill="none" ${S}/>`,
-  grin:`<path d="M-9,11 Q0,25 9,11Z" fill="#b8404a" ${S}/>`,
-  flat:`<path d="M-5,15 L5,15" fill="none" ${S}/>`,
-  o:`<ellipse cx="0" cy="15" rx="3.6" ry="4.6" fill="#b8404a" ${S}/>`,
-  frown:`<path d="M-6,17 Q0,11 6,17" fill="none" ${S}/>`,
-  wavy:`<path d="M-8,15 q2,-3 4,0 t4,0 t4,0 t4,0" fill="none" ${S}/>`
- };
- f+=M[m]||M.smile;
- if(o.sweat) f+=`<path d="M31,-16 Q38,-5 31,-1 Q24,-5 31,-16Z" fill="#9fd8ff" stroke="${INK}" stroke-width="1.8"/>`;
+ return s;
+}
+function brows(c,o){
+ const b=o.brow||'normal';
+ const P={normal:'M-15,-9 Q-10,-11.5 -5,-10',worried:'M-15,-8 Q-10,-9 -5,-12.5',angry:'M-15,-12.5 Q-10,-11 -4.5,-8',up:'M-15,-11 Q-10,-15 -5,-12'}[b]||'';
+ return `<path d="${P}" fill="none" stroke="${c.hair2}" stroke-width="2.4" stroke-linecap="round"/><path d="${mirX(P)}" fill="none" stroke="${c.hair2}" stroke-width="2.4" stroke-linecap="round"/>`;
+}
+function mouth(c,o){
+ const m=o.mouth||'smile', y=16;
+ return {
+  smile:`<path d="M-6,${y} Q0,${y+5} 6,${y}" fill="none" stroke="${LN}" stroke-width="1.8" stroke-linecap="round"/>`,
+  grin:`<path d="M-8,${y-1} Q0,${y+12} 8,${y-1}Z" fill="#a8323e" ${SW1}/><path d="M-6.5,${y} Q0,${y+2} 6.5,${y} L6,${y+1.6} Q0,${y+3.4} -6,${y+1.6}Z" fill="#fff"/><path d="M-4,${y+7} Q0,${y+4.5} 4,${y+7}" fill="#ff8a8a"/>`,
+  flat:`<path d="M-4.5,${y+1} L4.5,${y+1}" stroke="${LN}" stroke-width="1.8" stroke-linecap="round"/>`,
+  o:`<ellipse cx="0" cy="${y+2}" rx="3.4" ry="4.4" fill="#a8323e" ${SW1}/>`,
+  frown:`<path d="M-5,${y+3} Q0,${y-1} 5,${y+3}" fill="none" stroke="${LN}" stroke-width="1.8" stroke-linecap="round"/>`,
+  wavy:`<path d="M-7,${y+1} q1.75,-2.5 3.5,0 t3.5,0 t3.5,0 t3.5,0" fill="none" stroke="${LN}" stroke-width="1.7" stroke-linecap="round"/>`,
+  cat:`<path d="M-6,${y} Q-3,${y+4} 0,${y} Q3,${y+4} 6,${y}" fill="none" stroke="${LN}" stroke-width="1.8" stroke-linecap="round"/>`
+ }[m];
+}
+function face(c,o){
+ const H=HAIR[c.style];
+ let back=H.back?`<path d="${H.back}" fill="${c.hair}" ${SW}/>`:'';
+ if(c.style==='long') back+=`<path d="M18,-10 C24,10 26,34 24,54" fill="none" stroke="${c.hair2}" stroke-width="1.6" opacity=".6"/><path d="M-18,-10 C-24,10 -26,34 -24,54" fill="none" stroke="${c.hair2}" stroke-width="1.6" opacity=".6"/>`;
+ let f='';
+ f+=`<ellipse cx="-23" cy="3" rx="4.6" ry="6.6" fill="${c.skin}" ${SW}/><ellipse cx="23" cy="3" rx="4.6" ry="6.6" fill="${c.skin}" ${SW}/>`;
+ f+=`<path d="${FACE}" fill="${c.skin}" ${SW}/>`;
+ f+=`<path d="M12,-2 C21,6 18,20 3,29 C14,25 22,12 21,-2Z" fill="${c.sk2}" opacity=".55"/>`;
+ f+=`<path d="M-20,-9 C-10,-4 10,-4 20,-9 L20,-4 C10,1 -10,1 -20,-4Z" fill="${c.sk2}" opacity=".28"/>`;
+ if(o.fx==='gloom') f+=`<path d="M-18,-22 C-10,-10 10,-10 18,-22 L18,-8 C10,0 -10,0 -18,-8Z" fill="#7aa6ff" opacity=".35"/>`+[-12,-6,0,6,12].map(x=>`<path d="M${x},-18 L${x},-6" stroke="#4a6fd8" stroke-width="1.2" opacity=".7"/>`).join('');
+ f+=eyes(c,o)+brows(c,o);
+ f+=`<path d="M1,9 Q2.6,11.5 0.4,12.6" fill="none" stroke="${c.sk2}" stroke-width="1.6" stroke-linecap="round"/>`;
+ if(o.blush) f+=`<ellipse cx="-14" cy="11" rx="7" ry="4" fill="url(#gCheek)"/><ellipse cx="14" cy="11" rx="7" ry="4" fill="url(#gCheek)"/><path d="M-17,10 l2,-2.4 M-14,10.4 l2,-2.4 M-11,10.8 l2,-2.4 M11,10.8 l2,-2.4 M14,10.4 l2,-2.4 M17,10 l2,-2.4" stroke="#ff6b85" stroke-width="1.1" stroke-linecap="round"/>`;
+ else f+=`<ellipse cx="-14" cy="11" rx="5" ry="3" fill="url(#gCheek)" opacity=".6"/><ellipse cx="14" cy="11" rx="5" ry="3" fill="url(#gCheek)" opacity=".6"/>`;
+ f+=mouth(c,o);
+ f+=`<path d="${H.front}" fill="${c.hair}" ${SW}/>`;
+ if(H.side){f+=`<path d="${H.side}" fill="${c.hair}" ${SW}/>`; if(c.style!=='neat'||1) f+=`<path d="${mirX(H.side)}" fill="${c.hair}" ${SW}/>`;}
+ f+=`<path d="${H.hi}" fill="none" stroke="${c.hairHi}" stroke-width="3" stroke-linecap="round" opacity=".85"/>`;
+ if(c.glasses) f+=`<rect x="-17" y="-3.5" width="14" height="12" rx="4" fill="#fff" fill-opacity=".18" stroke="#2b2b2b" stroke-width="1.8"/><rect x="3" y="-3.5" width="14" height="12" rx="4" fill="#fff" fill-opacity=".18" stroke="#2b2b2b" stroke-width="1.8"/><path d="M-3,1 Q0,-1 3,1 M-17,0 L-22,-1 M17,0 L22,-1" stroke="#2b2b2b" stroke-width="1.6" fill="none"/><path d="M-14,-1 l4,-1.5 M6,-1 l4,-1.5" stroke="#fff" stroke-width="1.4" opacity=".9"/>`;
+ if(o.sweat) f+=`<path d="M27,-18 Q34,-6 27,-2 Q20,-6 27,-18Z" fill="#a8dcff" ${SW1}/><path d="M25,-8 q1,-3 2,-4" stroke="#fff" stroke-width="1.3"/>`;
+ if(o.fx==='anger') f+=`<g transform="translate(-20,-28)" stroke="#e11d48" stroke-width="2.4" fill="none" stroke-linecap="round"><path d="M-6,-2 Q-2,-2 -2,-6 M6,-2 Q2,-2 2,-6 M-6,2 Q-2,2 -2,6 M6,2 Q2,2 2,6"/></g>`;
  return {back,front:f};
 }
-function limb(d,c,hx,hy){
- return `<path d="${d}" fill="none" stroke="${INK}" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>`+
-  `<path d="${d}" fill="none" stroke="${c.shirt}" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>`+
-  `<circle cx="${hx}" cy="${hy}" r="7.5" fill="${c.skin}" ${S}/>`;
-}
-const mir=(d)=>d.replace(/(-?\d+(\.\d+)?),/g,(m,n)=>(-parseFloat(n))+',');
+function hand(c,x,y,r=0){return `<g transform="translate(${x},${y}) rotate(${r})"><ellipse rx="6.6" ry="7.6" fill="${c.skin}" ${SW}/><path d="M-3,-5 Q-6,-1 -4,3" fill="none" stroke="${c.sk2}" stroke-width="1.4"/></g>`}
+function sleeve(c,d){return `<path d="${d}" fill="none" stroke="${LN}" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"/><path d="${d}" fill="none" stroke="${c.c1}" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>`}
+const ARMDOWN='M31,14 C40,38 40,66 37,92';
 function arms(a,c){
- if(!a) return '';
- if(a==='wave') return limb('M30,18 Q54,10 54,-30',c,54,-36);
- if(a==='point') return limb('M30,18 Q58,14 78,-4',c,82,-7);
- if(a==='up') return limb('M28,16 Q52,-10 46,-50',c,46,-56)+limb(mir('M28,16 Q52,-10 46,-50'),c,-46,-56);
- if(a==='cup') return limb('M30,20 Q46,54 18,52',c,14,50).replace(/<circle[^>]*\/>$/,'')+
-  `<path d="M20,40 q8,0 8,7 q0,6 -8,6" fill="none" ${S}/><rect x="2" y="34" width="19" height="22" rx="4" fill="#fff" ${S}/><path d="M7,28 q-3,-4 0,-8 M14,28 q-3,-4 0,-8" fill="none" stroke="#9aa6b2" stroke-width="2" stroke-linecap="round"/>`+
-  `<circle cx="12" cy="48" r="7.5" fill="${c.skin}" ${S}/>`;
- if(a==='marker') return limb('M30,18 Q54,10 54,-30',c,54,-36)+`<rect x="50" y="-62" width="8" height="22" rx="2" fill="#2f5bea" ${S}/>`.replace('<rect','<rect')+'';
- if(a==='chin') return limb('M30,22 Q44,46 14,8',c,12,6);
- if(a==='phone') return `<rect x="-44" y="-42" width="13" height="32" rx="3" fill="#333" ${S}/>`+limb('M-30,20 Q-54,16 -40,-6',c,-38,-12);
- if(a==='box') return limb('M30,20 Q42,44 28,48',c,28,48).replace(/<circle[^>]*\/>$/,'')+limb(mir('M30,20 Q42,44 28,48'),c,-28,48).replace(/<circle[^>]*\/>$/,'')+
-  `<rect x="-44" y="38" width="88" height="18" rx="2" fill="#e8b06d" ${S}/><path d="M-44,44 L44,44" stroke="#c0392b" stroke-width="3"/>`+
-  `<circle cx="-30" cy="46" r="7.5" fill="${c.skin}" ${S}/><circle cx="30" cy="46" r="7.5" fill="${c.skin}" ${S}/>`;
- if(a==='type') return limb('M30,22 Q40,50 18,62',c,16,62)+limb('M-30,22 Q-40,50 -18,62',c,-16,62);
- return '';
+ const R={},L={};
+ if(a==='wave'){R.d='M31,16 C52,8 56,-14 54,-30';R.h=[54,-37,-10]}
+ if(a==='point'){R.d='M31,16 C54,14 66,0 78,-6';R.h=[83,-8,-60]}
+ if(a==='up'){R.d='M30,14 C50,-6 50,-30 46,-50';R.h=[46,-57,0];L.d=mirX(R.d);L.h=[-46,-57,0]}
+ if(a==='cup'){R.d='M31,18 C46,50 34,58 16,54';R.h=[13,50,40];R.x=`<path d="M19,40 q9,0 9,7 q0,7 -9,7" fill="none" ${SW}/><path d="M1,34 L21,34 L19,58 Q11,61 3,58Z" fill="#fff" ${SW}/><path d="M2,40 L20,40" stroke="#22b5a3" stroke-width="3"/><path d="M7,27 q-3,-4 0,-8 M14,27 q-3,-4 0,-8" fill="none" stroke="#b6c0ca" stroke-width="2" stroke-linecap="round"/>`}
+ if(a==='marker'){R.d='M31,16 C52,8 56,-14 54,-30';R.h=[54,-37,-10];R.x0=`<g transform="rotate(14 54 -50)"><rect x="50" y="-66" width="8" height="24" rx="2" fill="#2f5bea" ${SW1}/><rect x="51.5" y="-71" width="5" height="6" fill="#1e3a8a"/></g>`}
+ if(a==='chin'){R.d='M31,20 C46,44 34,30 14,12';R.h=[11,8,30]}
+ if(a==='phone'){L.d='M-31,18 C-54,16 -50,-4 -40,-10';L.h=[-36,-14,20];L.x0=`<rect x="-46" y="-46" width="13" height="32" rx="3" fill="#2b2f36" ${SW}/><rect x="-44" y="-43" width="9" height="24" rx="1.5" fill="#5a6b80"/>`}
+ if(a==='box'){R.d='M31,18 C44,40 40,46 30,48';R.h=[30,47,0];L.d=mirX(R.d);L.h=[-30,47,0];R.x0=`<path d="M-46,36 L46,36 L46,56 L-46,56Z" fill="#e8b06d" ${SW}/><path d="M-46,36 L-38,28 L54,28 L46,36Z" fill="#f3c88e" ${SW}/><path d="M46,36 L54,28 L54,48 L46,56Z" fill="#c98f52" ${SW}/><path d="M-20,46 L20,46" stroke="#c0392b" stroke-width="5"/><text x="0" y="50" font-size="8" font-weight="900" fill="#fff" text-anchor="middle" font-family="sans-serif">PIZZA</text>`}
+ if(a==='type'){R.d='M31,18 C40,46 30,60 18,64';R.h=[16,64,60];L.d=mirX(R.d);L.h=[-16,64,-60]}
+ let s='';
+ if(!L.d) s+=sleeve(c,mirX(ARMDOWN))+hand(c,-36,98);
+ if(!R.d) s+=sleeve(c,ARMDOWN)+hand(c,36,98);
+ if(R.x0) s+=R.x0; if(L.x0) s+=L.x0;
+ if(L.d) s+=sleeve(c,L.d)+hand(c,...L.h);
+ if(R.d) s+=sleeve(c,R.d)+(R.x||'')+hand(c,...R.h);
+ return s;
+}
+function outfit(c){
+ let s=`<path d="M-35,140 L-37,22 C-37,8 -28,2 -16,0 L16,0 C28,2 37,8 37,22 L35,140Z" fill="${c.c1}" ${SW}/>`;
+ s+=`<path d="M37,22 C37,8 28,2 16,0 L21,6 C29,12 30,30 28,140 L35,140Z" fill="${c.c2}" opacity=".7"/>`;
+ if(c.outfit==='sweater') s+=`<path d="M-11,0 L-3,11 L0,5 L3,11 L11,0Z" fill="#fff" ${SW1}/><path d="M-13,0 Q0,11 13,0" fill="none" stroke="${c.c2}" stroke-width="3.5"/><path d="M-9,6 L-4,44 M9,6 L4,44" stroke="#3f6fe0" stroke-width="2.2"/><rect x="-8" y="44" width="16" height="20" rx="2" fill="#fff" ${SW1}/><rect x="-8" y="44" width="16" height="5" fill="#3f6fe0"/><circle cx="0" cy="56" r="3" fill="#cbd5e1"/>`;
+ if(c.outfit==='blouse') s+=`<path d="M-16,0 L-3,15 L0,7 L3,15 L16,0 L9,-1 L0,6 L-9,-1Z" fill="#fff" ${SW1}/><circle cx="0" cy="24" r="1.8" fill="#fff"/><circle cx="0" cy="38" r="1.8" fill="#fff"/><circle cx="0" cy="52" r="1.8" fill="#fff"/><path d="M0,15 L0,140" stroke="${c.c2}" stroke-width="1.4"/>`;
+ if(c.outfit==='suit') s+=`<path d="M-15,0 L0,30 L15,0Z" fill="#fff" ${SW1}/><path d="M-4,6 L4,6 L6,40 L0,48 L-6,40Z" fill="${c.tie}" ${SW1}/><path d="M-4,6 L4,6 L3,11 L-3,11Z" fill="#a83232"/><path d="M-15,0 L-3,32 L-11,48 L-22,10Z" fill="${c.c2}" ${SW1}/><path d="M15,0 L3,32 L11,48 L22,10Z" fill="${c.c2}" ${SW1}/><path d="M18,52 L28,52 L27,56 L19,56Z" fill="#fff"/><circle cx="0" cy="62" r="2" fill="#0d1733"/>`;
+ if(c.outfit==='cardigan') s+=`<path d="M-13,0 Q0,10 13,0 L10,140 L-10,140Z" fill="#fffaf0" ${SW1}/><path d="M-13,0 C-10,30 -10,60 -10,140 M13,0 C10,30 10,60 10,140" fill="none" stroke="${c.c2}" stroke-width="3"/><circle cx="-12" cy="28" r="2.3" fill="#fff" ${SW1}/><circle cx="-11" cy="46" r="2.3" fill="#fff" ${SW1}/><circle cx="-11" cy="64" r="2.3" fill="#fff" ${SW1}/>`;
+ return s;
 }
 function person(k,x,y,o={}){
  const c=CAST[k], s=o.s||1, fl=o.flip?-1:1;
  const fc=face(c,o);
  let g=`<g transform="translate(${x},${y}) scale(${fl*s},${s})">`;
- g+=`<g transform="translate(0,-26)">${fc.back}</g>`;
- g+=`<rect x="-7" y="-8" width="14" height="14" fill="${c.skin}" ${S}/>`;
- g+=`<path d="M-38,110 L-38,18 Q-38,0 -20,0 L20,0 Q38,0 38,18 L38,110Z" fill="${c.shirt}" ${S}/>`;
- if(c.collar==='tie') g+=`<path d="M-13,0 L0,17 L13,0Z" fill="#fff" ${S}/><path d="M-4,6 L4,6 L6,40 L0,48 L-6,40Z" fill="${c.tie}" ${S}/><path d="M-13,0 L-6,40 M13,0 L6,40" stroke="${INK}" stroke-width="1.6" opacity=".5" fill="none"/>`;
- if(c.collar==='blouse') g+=`<path d="M-15,0 L0,14 L15,0 L8,0 L0,7 L-8,0Z" fill="#fff" ${S}/>`;
- if(c.collar==='tee') g+=`<path d="M-11,0 Q0,11 11,0" fill="${c.skin}" ${S}/>`;
- if(c.collar==='sweater') g+=`<path d="M-13,0 Q0,13 13,0" fill="#fff4d6" stroke="${INK}" stroke-width="2.5"/><path d="M-30,60 L30,60" stroke="#fff" stroke-width="3" opacity=".5"/>`;
- g+=`<g transform="translate(0,-26)">${fc.front}</g>`;
+ g+=`<g transform="translate(0,-37)">${fc.back}</g>`;
+ g+=`<path d="M-7,-14 L7,-14 L8,6 L-8,6Z" fill="${c.skin}" ${SW}/><path d="M-7,-10 Q0,-4 7,-10 L7,-4 Q0,2 -7,-4Z" fill="${c.sk2}" opacity=".7"/>`;
+ g+=outfit(c);
+ g+=`<g transform="translate(0,-37)">${fc.front}</g>`;
  g+=arms(o.arm,c);
  return g+'</g>';
 }
 function headOnly(k,o={}){
  const c=CAST[k], fc=face(c,o);
- return `<svg viewBox="-42 -46 84 84"><circle cx="0" cy="-4" r="40" fill="#eef7f5"/><g>${fc.back}${fc.front}</g></svg>`;
+ return `<svg viewBox="-44 -50 88 88"><circle cx="0" cy="-6" r="42" fill="#eef7f5"/>${fc.back}${fc.front}</svg>`;
 }
-/* 배경 소품 */
-const R=(x,y,w,h,f,extra='')=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${f}" ${S} ${extra}/>`;
-function bg(c){return `<rect width="400" height="300" fill="${c}"/>`}
-function floor(y,c){return `<rect x="-5" y="${y}" width="410" height="${305-y}" fill="${c}" stroke="${INK}" stroke-width="2.5"/>`}
-function win(x,y,w,h,t){
- const sky={day:'#bfe6ff',night:'#1d2747',eve:'#ffc48c'}[t];
- const bc={day:'#8fb3cc',night:'#34406a',eve:'#c98a6b'}[t];
- let s=R(x,y,w,h,sky,'rx="4"');
- if(t==='day') s+=`<circle cx="${x+w*.76}" cy="${y+h*.3}" r="${Math.min(w,h)*.12}" fill="#ffd34d"/>`;
- if(t==='night'){s+=`<circle cx="${x+w*.8}" cy="${y+h*.28}" r="${Math.min(w,h)*.11}" fill="#fff6c9"/><circle cx="${x+w*.8+5}" cy="${y+h*.28-3}" r="${Math.min(w,h)*.1}" fill="${sky}"/>`;
-  [[.15,.2],[.35,.12],[.55,.3],[.25,.4],[.65,.15]].forEach(p=>s+=`<circle cx="${x+w*p[0]}" cy="${y+h*p[1]}" r="1.4" fill="#fff"/>`);}
- const n=Math.max(3,Math.round(w/28));const iw=(w-8)/n;
- for(let i=0;i<n;i++){const bh=h*(.28+((i*37)%5)/11);const bx=x+4+i*iw, by=y+h-3-bh;
-  s+=`<rect x="${bx+1}" y="${by}" width="${iw-2}" height="${bh}" fill="${bc}"/>`;
-  for(let r=0;r<Math.floor(bh/14);r++)for(let q=0;q<2;q++){
-   const lit=t==='night'?((i+r+q)%3!==0):false;
-   s+=`<rect x="${bx+4+q*(iw/2-1)}" y="${by+5+r*14}" width="${iw/2-6}" height="6" fill="${lit?'#ffe28a':(t==='night'?'#28335a':'#b8d3e6')}"/>`;}
- }
- s+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="none" ${S} rx="4"/><path d="M${x+w/2},${y} L${x+w/2},${y+h}" ${S}/>`;
+/* ---------- 배경 ---------- */
+const RR=(x,y,w,h,f,extra='')=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${f}" ${SW} ${extra}/>`;
+function room(wall,floorY,floorG='gFloor',vp=200){
+ let s=`<rect width="400" height="300" fill="url(#${wall})"/>`;
+ s+=`<rect x="0" y="${floorY}" width="400" height="${300-floorY}" fill="url(#${floorG})"/>`;
+ const VY=floorY-170;
+ for(let xb=-400;xb<=800;xb+=70){const xt=vp+(xb-vp)*(floorY-VY)/(300-VY);s+=`<path d="M${xt},${floorY} L${xb},300" stroke="#fff" stroke-opacity=".22" stroke-width="1.5"/>`}
+ [12,30,56].forEach(d=>s+=`<path d="M0,${floorY+d} L400,${floorY+d}" stroke="#fff" stroke-opacity=".18" stroke-width="1.5"/>`);
+ s+=`<rect x="0" y="${floorY-6}" width="400" height="7" fill="#fff" fill-opacity=".55"/><path d="M0,${floorY} L400,${floorY}" stroke="${LN}" stroke-width="1.4" opacity=".5"/>`;
  return s;
 }
-function desk(x,y,w,c='#c98d5a'){return R(x+6,y+10,w-12,310-y,shade(c),'')+R(x,y,w,12,c,'rx="3"')}
-function shade(c){const n=parseInt(c.slice(1),16);const r=Math.max(0,(n>>16)-30),g=Math.max(0,((n>>8)&255)-30),b=Math.max(0,(n&255)-30);return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1)}
-function monitor(x,y,w,h,screen='#dff3ff',inner=''){return R(x+w/2-6,y+h,12,14,'#555')+R(x+w/2-20,y+h+12,40,6,'#555','rx="2"')+R(x,y,w,h,'#3b3f46','rx="5"')+`<rect x="${x+5}" y="${y+5}" width="${w-10}" height="${h-10}" fill="${screen}" rx="2"/>`+inner}
-function plant(x,y){return `<path d="M${x},${y-30} Q${x-26},${y-60} ${x-8},${y-78} Q${x-2},${y-50} ${x},${y-30}Z M${x},${y-30} Q${x+24},${y-66} ${x+10},${y-84} Q${x+2},${y-56} ${x},${y-30}Z M${x},${y-30} Q${x-34},${y-40} ${x-30},${y-56} Q${x-12},${y-46} ${x},${y-30}Z" fill="#4caf7a" ${S}/>`+`<path d="M${x-16},${y-32} L${x+16},${y-32} L${x+12},${y} L${x-12},${y}Z" fill="#e07a5f" ${S}/>`}
-function clock(x,y,r,h,m){const ha=(h%12+m/60)*30-90,ma=m*6-90,rad=Math.PI/180;
- return `<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" ${S}/><path d="M${x},${y} L${x+Math.cos(ha*rad)*r*.5},${y+Math.sin(ha*rad)*r*.5} M${x},${y} L${x+Math.cos(ma*rad)*r*.78},${y+Math.sin(ma*rad)*r*.78}" ${S}/><circle cx="${x}" cy="${y}" r="2" fill="${INK}"/>`}
+function ceiling(n=3,y=0,c='#fffef6'){let s='';for(let i=0;i<n;i++){const x=40+i*(320/(n-1||1))-30;s+=`<rect x="${x}" y="${y}" width="60" height="7" rx="2" fill="${c}" stroke="#cfd6de" stroke-width="1.2"/><ellipse cx="${x+30}" cy="${y+14}" rx="46" ry="14" fill="url(#gGlow)" opacity=".5"/>`}return s}
+function win(x,y,w,h,t='day',blinds=true){
+ const N=t==='night';
+ let s=`<rect x="${x-4}" y="${y-4}" width="${w+8}" height="${h+10}" rx="3" fill="#f8fafc" ${SW}/>`;
+ s+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="url(#${N?'gSkyNight':'gSkyDay'})"/>`;
+ if(N){s+=`<circle cx="${x+w*.82}" cy="${y+h*.24}" r="${Math.min(w,h)*.1}" fill="#fff7cf"/><circle cx="${x+w*.82+4}" cy="${y+h*.24-3}" r="${Math.min(w,h)*.09}" fill="#16204a"/>`;
+  for(let i=0;i<14;i++)s+=`<circle cx="${x+((i*61)%w)}" cy="${y+((i*29)%(h*.45))+3}" r="${i%3?0.9:1.4}" fill="#fff" opacity=".9"/>`;}
+ else s+=`<circle cx="${x+w*.78}" cy="${y+h*.26}" r="${Math.min(w,h)*.11}" fill="#fff6c2"/><circle cx="${x+w*.78}" cy="${y+h*.26}" r="${Math.min(w,h)*.2}" fill="#fff6c2" opacity=".35"/><ellipse cx="${x+w*.25}" cy="${y+h*.3}" rx="${w*.12}" ry="${h*.06}" fill="#fff" opacity=".8"/>`;
+ const n=Math.max(4,Math.round(w/22)), iw=w/n;
+ for(let i=0;i<n;i++){const bh=h*(.3+((i*37)%7)/14), bx=x+i*iw, by=y+h-bh;
+  s+=`<rect x="${bx+1}" y="${by}" width="${iw-2}" height="${bh}" fill="url(#${N?'gBldgN':'gBldg'})" opacity="${N?1:.85}"/>`;
+  for(let r=0;r<Math.floor(bh/10);r++)for(let q=0;q<2;q++){const lit=N&&((i*3+r+q)%4!==0);
+   s+=`<rect x="${bx+3+q*(iw/2-1)}" y="${by+4+r*10}" width="${iw/2-5}" height="4" fill="${lit?'#ffe28a':N?'#2b3560':'#d6e7f3'}" opacity="${N?1:.9}"/>`;}
+ }
+ if(blinds&&!N) for(let i=0;i<5;i++) s+=`<rect x="${x}" y="${y+i*6}" width="${w}" height="4" fill="#f1f5f9" opacity=".95"/>`;
+ s+=`<path d="M${x+w/2},${y} L${x+w/2},${y+h}" stroke="#f8fafc" stroke-width="5"/><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="none" ${SW}/>`;
+ s+=`<rect x="${x-8}" y="${y+h+4}" width="${w+16}" height="6" rx="2" fill="#eef2f6" ${SW}/>`;
+ return s;
+}
+function rays(x,y,w,h,toY){return `<path d="M${x},${y+h} L${x+w},${y+h} L${x+w+60},${toY} L${x+30},${toY}Z" fill="url(#gRay)" opacity=".5"/>`}
+function bgDesks(y,n=4,tone='#9fb0c2',x0=0,x1=400){let s=`<g filter="url(#fBlur)" opacity=".55">`;const w=(x1-x0)/n;
+ for(let i=0;i<n;i++){const x=x0+i*w+8;s+=`<rect x="${x+8}" y="${y-30}" width="${w*.42}" height="24" rx="3" fill="${tone}"/><rect x="${x+w*.18}" y="${y-6}" width="6" height="8" fill="${tone}"/><rect x="${x}" y="${y}" width="${w-16}" height="6" fill="${tone}"/><rect x="${x+4}" y="${y+6}" width="${w-24}" height="26" fill="${tone}" opacity=".6"/><circle cx="${x+w*.62}" cy="${y-16}" r="9" fill="${tone}"/><rect x="${x+w*.62-10}" y="${y-8}" width="20" height="16" rx="6" fill="${tone}"/>`}
+ return s+'</g>'}
+function desk(x,y,w,dark){const top=dark?'gWoodDark':'gWoodTop';return `<rect x="${x}" y="${y}" width="${w}" height="320" fill="url(#${dark?'gWoodDark':'gWood'})" ${SW}/><rect x="${x-2}" y="${y-8}" width="${w+4}" height="11" rx="2" fill="url(#${top})" ${SW}/><rect x="${x}" y="${y+3}" width="${w}" height="5" fill="#000" opacity=".15"/>`}
+function monitor(x,y,w,h,inner='',night){
+ return `<path d="M${x+w/2-5},${y+h} L${x+w/2+5},${y+h} L${x+w/2+7},${y+h+12} L${x+w/2-7},${y+h+12}Z" fill="url(#gMetal)" ${SW1}/><rect x="${x+w/2-20}" y="${y+h+11}" width="40" height="5" rx="2" fill="url(#gMetal)" ${SW1}/>`+
+  `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="4" fill="#2b2f36" ${SW}/><rect x="${x+4}" y="${y+4}" width="${w-8}" height="${h-8}" rx="1.5" fill="url(#${night?'gScreen':'gScreen'})"/>`+
+  (inner||`<rect x="${x+8}" y="${y+8}" width="${w-16}" height="5" rx="1" fill="#22b5a3" opacity=".8"/><rect x="${x+8}" y="${y+17}" width="${(w-16)*.6}" height="3" rx="1" fill="#94a3b8"/><rect x="${x+8}" y="${y+23}" width="${(w-16)*.8}" height="3" rx="1" fill="#94a3b8"/><rect x="${x+8}" y="${y+29}" width="${(w-16)*.5}" height="3" rx="1" fill="#94a3b8"/>`)+
+  `<path d="M${x+6},${y+6} L${x+w*.35},${y+6} L${x+6},${y+h*.6}Z" fill="#fff" opacity=".35"/>`;
+}
+function keyboard(x,y,w=60){return `<path d="M${x+6},${y} L${x+w-6},${y} L${x+w},${y+9} L${x},${y+9}Z" fill="url(#gMetal)" ${SW1}/><path d="M${x+8},${y+3} L${x+w-8},${y+3} M${x+6},${y+6} L${x+w-6},${y+6}" stroke="#9aa4b2" stroke-width="1.6" stroke-dasharray="3 2"/>`}
+function mug(x,y,c='#fff',s=''){return `<path d="M${x+12},${y+4} q7,0 7,6 q0,6 -7,6" fill="none" ${SW}/><path d="M${x},${y} L${x+14},${y} L${x+13},${y+18} Q${x+7},${y+20} ${x+1},${y+18}Z" fill="${c}" ${SW}/>${s}`}
+function papers(x,y){return `<rect x="${x+3}" y="${y-5}" width="34" height="8" fill="#fff" ${SW1} transform="rotate(-3 ${x} ${y})"/><rect x="${x}" y="${y-2}" width="36" height="8" fill="#f8fafc" ${SW1}/>`}
+function plant(x,y,s=1){return `<g transform="translate(${x},${y}) scale(${s})"><path d="M0,-32 C-30,-56 -26,-84 -8,-96 C-6,-70 -2,-50 0,-32Z" fill="#3fa36b" ${SW}/><path d="M0,-32 C26,-64 22,-92 10,-104 C2,-80 -2,-56 0,-32Z" fill="#52bd7f" ${SW}/><path d="M0,-32 C-38,-40 -46,-58 -40,-70 C-22,-60 -8,-46 0,-32Z" fill="#5fcf8d" ${SW}/><path d="M0,-32 C30,-38 42,-52 40,-66 C24,-58 8,-46 0,-32Z" fill="#46ad73" ${SW}/><path d="M-8,-96 C-6,-70 -2,-50 0,-32 M10,-104 C2,-80 -2,-56 0,-32" stroke="#2b7a4f" stroke-width="1.4" fill="none"/><path d="M-17,-34 L17,-34 L13,0 L-13,0Z" fill="#e8805f" ${SW}/><path d="M-19,-38 L19,-38 L19,-30 L-19,-30Z" fill="#f09a7b" ${SW}/></g>`}
+function clock(x,y,r,h,m){const ha=(h%12+m/60)*30-90,ma=m*6-90,rd=Math.PI/180;let t='';for(let i=0;i<12;i++){const a=i*30*rd;t+=`<path d="M${x+Math.cos(a)*r*.78},${y+Math.sin(a)*r*.78} L${x+Math.cos(a)*r*.9},${y+Math.sin(a)*r*.9}" stroke="${LN}" stroke-width="1.4"/>`}
+ return `<circle cx="${x}" cy="${y}" r="${r+3}" fill="#e2e8f0" ${SW}/><circle cx="${x}" cy="${y}" r="${r}" fill="#fff"/>${t}<path d="M${x},${y} L${x+Math.cos(ha*rd)*r*.48},${y+Math.sin(ha*rd)*r*.48}" stroke="${LN}" stroke-width="2.6" stroke-linecap="round"/><path d="M${x},${y} L${x+Math.cos(ma*rd)*r*.75},${y+Math.sin(ma*rd)*r*.75}" stroke="#e11d48" stroke-width="1.8" stroke-linecap="round"/><circle cx="${x}" cy="${y}" r="2.2" fill="${LN}"/>`}
+function focus(cx,cy,r0=120,n=70,c='#000',op=.5){let s='';for(let i=0;i<n;i++){const a=i/n*Math.PI*2+(i%3)*.02, rr=r0+((i*53)%60), w=1+((i*7)%3)*.6;const ca=Math.cos(a),sa=Math.sin(a);
+ s+=`<path d="M${cx+ca*rr},${cy+sa*rr} L${cx+ca*500+(-sa)*w*3},${cy+sa*500+ca*w*3} L${cx+ca*500-(-sa)*w*3},${cy+sa*500-ca*w*3}Z" fill="${c}" opacity="${op}"/>`}return s}
 function burst(cx,cy,c,n=24){let s='';for(let i=0;i<n;i++){const a=i/n*Math.PI*2,a2=a+Math.PI/n*.55;s+=`<path d="M${cx},${cy} L${cx+Math.cos(a)*600},${cy+Math.sin(a)*600} L${cx+Math.cos(a2)*600},${cy+Math.sin(a2)*600}Z" fill="${c}"/>`}return s}
-function confetti(n){const cs=['#f43f5e','#f59e0b','#10b981','#3b82f6','#a855f7','#facc15'];let s='';for(let i=0;i<n;i++){const x=(i*97)%400,y=(i*53)%170+8,r=(i*41)%180;s+=`<rect x="${x}" y="${y}" width="8" height="4" fill="${cs[i%6]}" transform="rotate(${r} ${x+4} ${y+2})"/>`}return s}
-function sticky(x,y,c,r){return `<g transform="rotate(${r} ${x+15} ${y+15})">${R(x,y,30,30,c,'stroke-width="2"')}<path d="M${x+6},${y+11} L${x+24},${y+11} M${x+6},${y+18} L${x+20},${y+18}" stroke="${INK}" stroke-width="1.6" opacity=".55"/></g>`}
-function paper(x,y,r){return `<g transform="rotate(${r} ${x} ${y})">${R(x-11,y-14,22,28,'#fff','stroke-width="2"')}<path d="M${x-6},${y-6} L${x+6},${y-6} M${x-6},${y} L${x+6},${y} M${x-6},${y+6} L${x+3},${y+6}" stroke="#9aa6b2" stroke-width="1.5"/></g>`}
-function partition(x,y,w,c='#9fb0c0'){return R(x,y,w,320-y,c)+`<rect x="${x}" y="${y}" width="${w}" height="7" fill="#7d8e9e" ${S}/>`}
-function sfx(x,y,t,size=22,c='#e11d48',r=0){return `<text x="${x}" y="${y}" font-family="Gaegu,cursive" font-weight="700" font-size="${size}" fill="${c}" stroke="#fff" stroke-width="4" paint-order="stroke" transform="rotate(${r} ${x} ${y})" text-anchor="middle">${t}</text>`}
+function confetti(n){const cs=['#f43f5e','#f59e0b','#10b981','#3b82f6','#a855f7','#facc15'];let s='';for(let i=0;i<n;i++){const x=(i*97)%400,y=(i*53)%180+6,r=(i*41)%180;
+ s+=i%3===0?`<path d="M${x},${y} q4,-5 8,0 t8,0" fill="none" stroke="${cs[i%6]}" stroke-width="2.6" stroke-linecap="round" transform="rotate(${r} ${x+8} ${y})"/>`:`<rect x="${x}" y="${y}" width="8" height="4" rx="1" fill="${cs[i%6]}" transform="rotate(${r} ${x+4} ${y+2})"/>`}return s}
+function sparkle(x,y,s=1,c='#fff'){return `<path d="M${x},${y-9*s} Q${x+1.5*s},${y-1.5*s} ${x+9*s},${y} Q${x+1.5*s},${y+1.5*s} ${x},${y+9*s} Q${x-1.5*s},${y+1.5*s} ${x-9*s},${y} Q${x-1.5*s},${y-1.5*s} ${x},${y-9*s}Z" fill="${c}" stroke="#f5b400" stroke-width="1"/>`}
+function sticky(x,y,c,r){return `<g transform="rotate(${r} ${x+15} ${y+15})"><rect x="${x+1}" y="${y+2}" width="30" height="30" fill="#000" opacity=".12"/><rect x="${x}" y="${y}" width="30" height="30" fill="${c}" ${SW1}/><path d="M${x+6},${y+11} L${x+24},${y+11} M${x+6},${y+18} L${x+20},${y+18}" stroke="${LN}" stroke-width="1.4" opacity=".5"/><circle cx="${x+15}" cy="${y+3}" r="2.4" fill="#e11d48"/></g>`}
+function paper(x,y,r){return `<g transform="rotate(${r} ${x} ${y})"><rect x="${x-11}" y="${y-14}" width="22" height="28" fill="#fff" ${SW1}/><path d="M${x-6},${y-6} L${x+6},${y-6} M${x-6},${y} L${x+6},${y} M${x-6},${y+6} L${x+3},${y+6}" stroke="#9aa6b2" stroke-width="1.4"/></g>`}
+function partition(x,y,w,c='#a9b8c8'){return `<rect x="${x}" y="${y}" width="${w}" height="${320-y}" fill="${c}" ${SW}/><rect x="${x}" y="${y}" width="${w}" height="${320-y}" fill="url(#pTone)"/><rect x="${x-2}" y="${y-4}" width="${w+4}" height="8" rx="2" fill="#7b8a9b" ${SW}/>`}
+function sfx(x,y,t,size=22,c='#e11d48',r=0){return `<text x="${x}" y="${y}" font-family="Gaegu,cursive" font-weight="700" font-size="${size}" fill="${c}" stroke="#fff" stroke-width="5" paint-order="stroke" stroke-linejoin="round" transform="rotate(${r} ${x} ${y})" text-anchor="middle">${t}</text>`}
+function shadow(x,y,w){return `<ellipse cx="${x}" cy="${y}" rx="${w}" ry="${w*.18}" fill="#000" opacity=".12" filter="url(#fSoft)"/>`}
+const VIG=`<rect width="400" height="300" fill="url(#gVig)"/>`;
 
 /* ================== 10컷 시나리오 ================== */
 // 말풍선: x,y,w = 컷 대비 % / sx = 말하는 사람 위치(%) / type: speech|thought|narr
 const PANELS=[
- {cap:'출근길 인사',svg:()=>bg('#fff4e0')+win(236,62,150,96,'day')+floor(235,'#ead9bf')+
-   R(18,82,70,153,'#b98a5c','rx="3"')+`<circle cx="76" cy="160" r="4" fill="#ffd34d" ${S}/>`+`<rect x="30" y="96" width="46" height="40" fill="#cfe8f7" ${S}/>`+
-   clock(200,46,16,8,58)+person('B',300,196,{arm:'wave',mouth:'grin'})+desk(236,235,170)+monitor(330,182,56,40)+plant(212,235)+
-   person('A',134,200,{arm:'cup',eyes:'happy',mouth:'grin',blush:1}),
+ {cap:'출근길 인사',svg:()=>room('gWallWarm',232)+ceiling(3)+win(232,58,150,92,'day')+rays(232,58,150,92,300)+
+   `<rect x="16" y="70" width="76" height="162" rx="3" fill="url(#gWood)" ${SW}/><rect x="26" y="82" width="56" height="54" rx="2" fill="url(#gSkyDay)" ${SW}/><rect x="26" y="82" width="56" height="54" fill="url(#pTone)"/><circle cx="80" cy="160" r="4" fill="#fcd34d" ${SW1}/><rect x="96" y="132" width="16" height="20" rx="2" fill="#cbd5e1" ${SW1}/><circle cx="104" cy="140" r="3" fill="#22c55e"/>`+
+   clock(200,44,15,8,58)+
+   person('B',300,194,{arm:'wave',mouth:'grin',eyes:'normal'})+desk(234,234,172)+monitor(330,178,62,44)+keyboard(250,222)+mug(372,214,'#ffd6e0')+plant(212,234,.8)+
+   shadow(134,292,70)+person('A',134,198,{arm:'cup',eyes:'happy',mouth:'grin',blush:1})+sparkle(178,150,.8,'#fff7b0')+sparkle(90,128,.6,'#fff7b0')+VIG,
   b:[{x:3,y:5,w:40,sx:32},{x:56,y:5,w:41,sx:74}]},
- {cap:'메일함 폭탄',svg:()=>bg('#e6eeff')+burst(292,190,'#d2def7')+
-   monitor(26,92,176,118,'#fff',
-    `<rect x="31" y="97" width="166" height="16" fill="#0e9b8b"/>`+[0,1,2,3,4].map(i=>`<rect x="40" y="${121+i*16}" width="12" height="9" fill="#fff" stroke="#e11d48" stroke-width="1.6"/><path d="M40,${121+i*16} l6,5 l6,-5" fill="none" stroke="#e11d48" stroke-width="1.4"/><rect x="58" y="${123+i*16}" width="${100-i*9}" height="5" rx="2" fill="#cbd5e1"/>`).join('')+
-    `<circle cx="196" cy="98" r="18" fill="#e11d48" ${S}/><text x="196" y="104" font-size="15" font-weight="900" fill="#fff" text-anchor="middle" font-family="Noto Sans KR,sans-serif">99+</text>`)+
-   person('A',292,214,{eyes:'shock',mouth:'o',sweat:1,brow:'worried'})+desk(0,248,400)+sfx(355,130,'!!',30,'#e11d48',12),
+ {cap:'메일함 폭탄',svg:()=>`<rect width="400" height="300" fill="#e7eefc"/>`+focus(290,175,105,80,'#26335c',.35)+
+   `<ellipse cx="114" cy="150" rx="110" ry="80" fill="url(#gScreenGlow)"/>`+
+   monitor(24,88,180,122,`<rect x="28" y="92" width="172" height="16" fill="#0e9b8b"/><circle cx="36" cy="100" r="3" fill="#fff"/><rect x="44" y="97" width="40" height="5" rx="2" fill="#fff" opacity=".8"/>`+[0,1,2,3,4].map(i=>`<rect x="32" y="${114+i*17}" width="164" height="14" fill="${i%2?'#fff':'#f1f8ff'}"/><rect x="38" y="${117+i*17}" width="12" height="9" fill="#fff" stroke="#e11d48" stroke-width="1.5"/><path d="M38,${117+i*17} l6,5 l6,-5" fill="none" stroke="#e11d48" stroke-width="1.3"/><rect x="56" y="${119+i*17}" width="${110-i*12}" height="4" rx="2" fill="#94a3b8"/><circle cx="188" cy="${121+i*17}" r="3" fill="#e11d48"/>`).join(''))+
+   `<circle cx="198" cy="96" r="19" fill="#e11d48" ${SW}/><text x="198" y="102" font-size="15" font-weight="900" fill="#fff" text-anchor="middle" font-family="Noto Sans KR,sans-serif">99+</text>`+
+   person('A',292,212,{eyes:'shock',mouth:'o',sweat:1,brow:'worried',fx:'gloom'})+desk(-4,250,408)+keyboard(230,240,80)+papers(40,248)+mug(170,232,'#fff')+sfx(354,128,'헉!!',30,'#e11d48',12)+VIG,
   b:[{x:3,y:4,w:42,type:'narr'},{x:53,y:4,w:44,sx:73,type:'thought'}]},
- {cap:'팀장님의 호출',svg:()=>bg('#eaf5f1')+partition(0,150,120,'#b7c8bf')+win(150,40,90,70,'day')+
-   monitor(338,180,56,42)+person('A',300,212,{flip:1,eyes:'shock',mouth:'wavy',sweat:1})+desk(228,246,180)+
-   person('C',110,192,{s:1.1,arm:'point',mouth:'flat',brow:'up'}),
+ {cap:'팀장님의 호출',svg:()=>room('gWallMint',246,'gFloorGray')+ceiling(3)+win(148,40,96,72,'day')+
+   partition(-4,150,118,'#b4c9bf')+
+   monitor(336,176,58,44)+person('A',300,212,{flip:1,eyes:'shock',mouth:'wavy',sweat:1,brow:'worried'})+desk(226,246,182)+keyboard(250,236)+papers(352,244)+
+   shadow(110,296,80)+person('C',110,190,{s:1.1,arm:'point',mouth:'smile',brow:'up',eyes:'side'})+sfx(262,130,'움찔',20,'#2563eb',-8)+VIG,
   b:[{x:3,y:4,w:44,sx:26},{x:53,y:7,w:44,sx:75}]},
- {cap:'긴급 회의',svg:()=>bg('#f1eeff')+
-   R(250,46,138,110,'#fff','rx="4"')+`<rect x="270" y="118" width="18" height="26" fill="#93c5fd" ${S}/><rect x="298" y="100" width="18" height="44" fill="#86efac" ${S}/><rect x="326" y="80" width="18" height="64" fill="#fca5a5" ${S}/><path d="M266,132 L308,96 L350,70" fill="none" stroke="#e11d48" stroke-width="3" stroke-linecap="round"/><path d="M342,66 L352,69 L349,79" fill="none" stroke="#e11d48" stroke-width="3" stroke-linecap="round"/>`+
-   R(244,156,150,8,'#94a3b8','rx="2"')+
-   person('A',54,216,{s:.85,eyes:'side',mouth:'smile'})+person('D',130,216,{s:.85,eyes:'side',mouth:'o'})+
-   R(-6,246,240,60,'#a8774d')+R(-6,240,244,12,'#c98d5a','rx="3"')+
-   person('C',212,192,{arm:'point',mouth:'grin',brow:'up'}),
+ {cap:'긴급 회의',svg:()=>room('gWallLav',240,'gFloorGray')+ceiling(3)+
+   `<rect x="246" y="42" width="144" height="114" rx="3" fill="url(#gBoard)" ${SW}/><rect x="268" y="116" width="18" height="28" fill="#93c5fd" ${SW1}/><rect x="296" y="98" width="18" height="46" fill="#86efac" ${SW1}/><rect x="324" y="76" width="18" height="68" fill="#fca5a5" ${SW1}/><path d="M262,134 L306,94 L352,64" fill="none" stroke="#e11d48" stroke-width="3" stroke-linecap="round"/><path d="M342,62 L353,64 L350,75" fill="none" stroke="#e11d48" stroke-width="3" stroke-linecap="round"/><path d="M262,146 L372,146" stroke="${LN}" stroke-width="1.5"/><rect x="240" y="156" width="156" height="7" rx="2" fill="#94a3b8" ${SW1}/><rect x="300" y="152" width="18" height="5" rx="1" fill="#e11d48"/>`+
+   person('A',54,214,{s:.85,eyes:'side',mouth:'smile'})+person('D',132,214,{s:.85,eyes:'side',mouth:'o',brow:'up'})+
+   `<rect x="-6" y="244" width="246" height="70" fill="url(#gWood)" ${SW}/><rect x="-8" y="236" width="252" height="12" rx="3" fill="url(#gWoodTop)" ${SW}/>`+papers(20,238)+mug(176,220,'#fff')+
+   person('C',214,190,{arm:'point',mouth:'grin',brow:'up'})+VIG,
   b:[{x:2,y:5,w:28,sx:14},{x:31,y:3,w:34,sx:53}]},
- {cap:'아이디어 회의',svg:()=>bg('#fffbe6')+
-   R(150,30,100,96,'#d9b98c','rx="3"')+sticky(158,38,'#fde68a',-6)+sticky(194,36,'#a7f3d0',4)+sticky(162,78,'#fbcfe8',3)+sticky(200,80,'#bfdbfe',-5)+
-   floor(250,'#e7dcc4')+
-   person('B',104,204,{arm:'marker',mouth:'grin',brow:'up'})+
-   person('D',300,204,{arm:'chin',eyes:'happy',mouth:'smile',blush:1})+
-   `<circle cx="352" cy="112" r="13" fill="#fde047" ${S}/><rect x="346" y="124" width="12" height="9" fill="#cbd5e1" ${S}/><path d="M352,88 L352,80 M332,98 L326,93 M372,98 L378,93 M328,114 L320,114 M376,114 L384,114" ${S}/>`,
+ {cap:'아이디어 회의',svg:()=>room('gWallSun',250)+ceiling(3)+
+   `<rect x="146" y="28" width="108" height="100" rx="3" fill="url(#gCork)" ${SW}/><rect x="146" y="28" width="108" height="100" fill="url(#pTone)"/>`+sticky(156,36,'#fde68a',-6)+sticky(194,34,'#a7f3d0',4)+sticky(160,78,'#fbcfe8',3)+sticky(202,80,'#bfdbfe',-5)+`<path d="M186,52 C196,60 196,82 210,92" stroke="#e11d48" stroke-width="1.6" fill="none" stroke-dasharray="3 2"/>`+
+   bgDesks(222,3,'#d9c9a3',120,300)+
+   shadow(104,296,70)+person('B',104,204,{arm:'marker',mouth:'grin',brow:'up'})+
+   shadow(300,296,70)+person('D',300,204,{arm:'chin',eyes:'happy',mouth:'cat',blush:1})+
+   `<circle cx="354" cy="112" r="26" fill="url(#gGlow)"/><path d="M342,108 C342,92 366,92 366,108 C366,116 360,118 359,126 L349,126 C348,118 342,116 342,108Z" fill="#fde047" ${SW}/><rect x="348" y="126" width="12" height="8" rx="2" fill="#cbd5e1" ${SW1}/><path d="M354,80 L354,72 M334,90 L328,85 M374,90 L380,85 M330,108 L322,108 M378,108 L386,108" stroke="#f59e0b" stroke-width="2.6" stroke-linecap="round"/>`+sparkle(330,140,.7,'#fff7b0')+VIG,
   b:[{x:3,y:4,w:38,sx:26},{x:57,y:4,w:39,sx:75}]},
- {cap:'탕비실 커피타임',svg:()=>bg('#e8f5ff')+
-   [...Array(9)].map((_,i)=>`<path d="M${i*50},0 L${i*50},300" stroke="#d3e8f7" stroke-width="2"/>`).join('')+[...Array(6)].map((_,i)=>`<path d="M0,${i*50} L400,${i*50}" stroke="#d3e8f7" stroke-width="2"/>`).join('')+
-   R(-6,226,412,80,'#d8c2a2')+R(-6,220,412,10,'#bfa27c')+
-   R(22,120,74,100,'#5b6470','rx="6"')+R(32,132,54,22,'#1f2937','rx="3"')+`<circle cx="44" cy="143" r="4" fill="#34d399"/><circle cx="58" cy="143" r="4" fill="#f87171"/>`+R(44,176,30,6,'#9ca3af')+R(50,186,18,22,'#fff','rx="3"')+
-   person('A',196,204,{arm:'cup',eyes:'happy',mouth:'smile'})+person('B',312,204,{arm:'cup',flip:1,eyes:'happy',mouth:'grin',blush:1}),
-  b:[{x:21,y:4,w:37,sx:49},{x:61,y:6,w:36,sx:78}]},
- {cap:'프린터 대참사',svg:()=>bg('#f4f4f5')+burst(110,180,'#e9e9ec',20)+floor(258,'#d6d3d1')+
-   R(250,210,104,50,'#9ca3af')+R(226,152,150,62,'#e5e7eb','rx="8"')+R(240,146,122,10,'#d1d5db','rx="3"')+R(246,184,110,10,'#374151','rx="2"')+`<circle cx="356" cy="170" r="6" fill="#ef4444" ${S}/>`+
-   paper(256,118,-20)+paper(300,100,12)+paper(338,126,28)+paper(214,142,-34)+paper(380,108,40)+
-   sfx(300,80,'삐삐삐!',22,'#e11d48',-6)+
-   person('D',110,204,{arm:'up',eyes:'shock',mouth:'o',sweat:1}),
+ {cap:'탕비실 커피타임',svg:()=>`<rect width="400" height="300" fill="url(#pTile)"/>`+
+   `<rect x="110" y="20" width="180" height="60" rx="3" fill="#f8fafc" ${SW}/><path d="M200,20 L200,80" stroke="${LN}" stroke-width="1.5"/><circle cx="192" cy="54" r="2.4" fill="${LN}"/><circle cx="208" cy="54" r="2.4" fill="${LN}"/>`+
+   `<rect x="-6" y="226" width="412" height="80" fill="url(#gWood)" ${SW}/><rect x="-8" y="218" width="416" height="12" rx="2" fill="url(#gWoodTop)" ${SW}/>`+
+   `<rect x="18" y="112" width="82" height="106" rx="8" fill="url(#gDark)" ${SW}/><rect x="28" y="124" width="62" height="24" rx="4" fill="#111827" ${SW1}/><circle cx="40" cy="136" r="4" fill="#34d399"/><circle cx="54" cy="136" r="4" fill="#f87171"/><rect x="64" y="132" width="20" height="8" rx="2" fill="#38bdf8" opacity=".8"/><rect x="44" y="160" width="30" height="7" rx="2" fill="#9ca3af" ${SW1}/><path d="M59,167 L59,180" stroke="#7c4a1e" stroke-width="3" stroke-dasharray="2 3"/>`+mug(52,190,'#fff')+
+   `<rect x="330" y="186" width="54" height="32" rx="4" fill="#f1f5f9" ${SW1}/><circle cx="344" cy="200" r="5" fill="#fbbf24" ${SW1}/><circle cx="358" cy="204" r="5" fill="#f87171" ${SW1}/><circle cx="371" cy="199" r="5" fill="#a3e635" ${SW1}/>`+
+   person('A',196,204,{arm:'cup',eyes:'happy',mouth:'smile'})+person('B',306,204,{arm:'cup',flip:1,eyes:'happy',mouth:'grin',blush:1})+sfx(250,140,'♪',26,'#f472b6',-10)+VIG,
+  b:[{x:21,y:4,w:37,sx:49},{x:61,y:6,w:36,sx:77}]},
+ {cap:'프린터 대참사',svg:()=>room('gWallGray',258,'gFloorGray')+focus(110,175,96,64,'#475569',.28)+
+   `<rect x="252" y="210" width="102" height="52" fill="url(#gMetal)" ${SW}/><path d="M262,226 L344,226 M262,242 L344,242" stroke="#94a3b8" stroke-width="1.5"/>`+
+   `<rect x="226" y="150" width="152" height="64" rx="8" fill="url(#gMetal)" ${SW}/><rect x="240" y="142" width="124" height="12" rx="3" fill="#e5e7eb" ${SW}/><rect x="246" y="184" width="112" height="10" rx="2" fill="#374151" ${SW1}/><rect x="236" y="160" width="40" height="14" rx="2" fill="#1f2937" ${SW1}/><text x="256" y="171" font-size="9" font-weight="900" fill="#f87171" text-anchor="middle" font-family="sans-serif">ERR</text><circle cx="360" cy="166" r="9" fill="url(#gGlow)"/><circle cx="360" cy="166" r="5" fill="#ef4444" ${SW1}/>`+
+   paper(256,118,-20)+paper(300,100,12)+paper(338,124,28)+paper(214,140,-34)+paper(382,106,40)+paper(282,74,-8)+
+   sfx(318,70,'삐삐삐!',22,'#e11d48',-6)+
+   shadow(110,296,70)+person('D',110,204,{arm:'up',eyes:'shock',mouth:'o',sweat:1,brow:'worried'})+VIG,
   b:[{x:3,y:4,w:40,sx:27},{x:56,y:4,w:41,sx:74}]},
- {cap:'고객사의 전화',svg:()=>bg('#edf1f7')+win(40,30,120,80,'day')+
-   person('C',118,206,{arm:'phone',mouth:'wavy',sweat:1,brow:'worried'})+desk(0,244,250)+R(150,226,44,18,'#374151','rx="4"')+R(30,214,60,30,'#fff','stroke-width="2"')+
-   person('A',322,212,{s:.9,eyes:'side',mouth:'flat',brow:'worried'})+partition(250,206,160,'#9fb0c0'),
+ {cap:'고객사의 전화',svg:()=>room('gWallCool',240,'gFloorGray')+ceiling(3)+win(38,30,124,80,'day')+rays(38,30,124,80,240)+
+   person('C',118,204,{arm:'phone',mouth:'wavy',sweat:1,brow:'worried',eyes:'down'})+desk(-4,242,256)+
+   `<rect x="150" y="222" width="46" height="20" rx="4" fill="url(#gDark)" ${SW}/><path d="M156,222 Q173,210 190,222" fill="none" stroke="#2b2f36" stroke-width="4"/>`+papers(26,240)+`<rect x="70" y="228" width="40" height="14" rx="2" fill="#fde68a" ${SW1}/>`+
+   person('A',322,212,{s:.9,eyes:'side',mouth:'flat',brow:'worried'})+partition(250,204,160,'#a9b8c8')+sfx(236,120,'꿀꺽',18,'#64748b',8)+VIG,
   b:[{x:3,y:4,w:44,sx:30},{x:57,y:7,w:39,sx:80,type:'thought'}]},
- {cap:'야근의 밤',svg:()=>bg('#363b58')+win(24,48,352,100,'night')+
-   person('A',70,214,{eyes:'tired',mouth:'flat'})+person('B',182,214,{eyes:'tired',mouth:'o'})+
-   `<ellipse cx="120" cy="232" rx="110" ry="30" fill="#ffe9a8" opacity=".25"/>`+desk(-6,238,282,'#8a6a4a')+
-   R(102,212,44,28,'#64748b','rx="3"')+sfx(36,150,'Zzz',20,'#c7d2fe',-10)+
-   person('D',330,198,{arm:'box',eyes:'happy',mouth:'grin',blush:1}),
+ {cap:'야근의 밤',svg:()=>room('gWallNight',244,'gFloorNight')+win(24,44,352,104,'night',false)+
+   `<rect width="400" height="300" fill="#0b1026" opacity=".25"/>`+
+   `<ellipse cx="128" cy="200" rx="150" ry="90" fill="url(#gGlow)" opacity=".45"/>`+
+   person('A',70,214,{eyes:'tired',mouth:'flat',fx:'gloom'})+person('B',184,214,{eyes:'tired',mouth:'o'})+
+   desk(-6,240,286,true)+`<rect x="104" y="208" width="46" height="30" rx="3" fill="#475569" ${SW}/><rect x="108" y="212" width="38" height="22" fill="#bfe0ff" opacity=".9"/><path d="M240,240 L240,196 L262,176" stroke="#cbd5e1" stroke-width="4" fill="none"/><path d="M252,170 L278,170 L272,186 L258,186Z" fill="#fde68a" ${SW1}/>`+mug(22,222,'#fff')+mug(210,222,'#ffd6e0')+
+   sfx(40,150,'Zzz',22,'#c7d2fe',-10)+
+   person('D',330,196,{arm:'box',eyes:'happy',mouth:'grin',blush:1})+sparkle(370,140,.7,'#fff7b0')+sparkle(290,150,.5,'#fff7b0')+VIG,
   b:[{x:2,y:4,w:31,sx:17},{x:35,y:3,w:30,sx:46},{x:67,y:5,w:31,sx:82}]},
- {cap:'프로젝트 성공!',svg:()=>bg('#fff0f6')+burst(200,200,'#ffe0ec',28)+confetti(46)+floor(262,'#f5d0dc')+
+ {cap:'프로젝트 성공!',svg:()=>`<rect width="400" height="300" fill="url(#gWallPink)"/>`+burst(200,210,'#ffe3ee',28)+confetti(56)+`<rect x="0" y="262" width="400" height="40" fill="url(#gFloorPink)"/>`+
+   [58,150,250,342].map(x=>shadow(x,294,50)).join('')+
    person('A',58,216,{s:.85,arm:'up',eyes:'happy',mouth:'grin',blush:1})+person('B',150,216,{s:.85,arm:'up',eyes:'happy',mouth:'grin',blush:1})+
-   person('C',250,216,{s:.85,arm:'up',eyes:'happy',mouth:'grin'})+person('D',342,216,{s:.85,arm:'up',eyes:'happy',mouth:'grin',blush:1}),
+   person('C',250,216,{s:.85,arm:'up',eyes:'happy',mouth:'grin'})+person('D',342,216,{s:.85,arm:'up',eyes:'happy',mouth:'grin',blush:1})+
+   sparkle(104,150,.9,'#fff7b0')+sparkle(200,140,1,'#fff7b0')+sparkle(298,150,.9,'#fff7b0')+VIG,
   b:[{x:2,y:4,w:31,sx:15},{x:35,y:3,w:30,sx:50},{x:67,y:4,w:31,sx:86}]}
 ];
 const SVGCACHE={};
 function panelSVG(n){return SVGCACHE[n]||(SVGCACHE[n]=`<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">${PANELS[n-1].svg()}</svg>`)}
+document.body.insertAdjacentHTML('afterbegin',DEFS);
 
 /* ================== 데이터 ================== */
 async function rest(path,opt={}){
