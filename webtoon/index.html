@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>오피스 웹툰 대사 만들기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@700&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f2f6f5;--card:#fff;--ink:#1c2733;--muted:#6b7a8d;--line:#e2e8f0;
+--huons:#0e9b8b;--huons-dark:#0b7a6e;--bad:#dc2626;--good:#16a34a;--warn:#f59e0b}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:var(--bg);color:var(--ink);-webkit-tap-highlight-color:transparent}
+.wrap{max-width:600px;margin:0 auto;padding:16px 14px 90px}
+.wrap.wide{max-width:1100px}
+.top{display:flex;align-items:center;gap:10px;margin:6px 0 14px}
+.logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--huons),#34d399);display:grid;place-items:center;font-size:22px;flex:none}
+.top h1{font-size:18px;margin:0;line-height:1.3}
+.top h1 small{display:block;font-size:12px;color:var(--muted);font-weight:500}
+.top .sp{flex:1}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 6px 20px rgba(16,40,36,.06);margin-bottom:12px}
+.card h2{font-size:16px;margin:0 0 10px}
+.btn{border:0;border-radius:12px;padding:13px 16px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none}
+.btn.full{width:100%}
+.btn-primary{background:var(--huons);color:#fff}
+.btn-primary:active{background:var(--huons-dark)}
+.btn-ghost{background:#fff;border:1.5px solid var(--line);color:var(--ink)}
+.btn-danger{background:#fff;border:1.5px solid #fecaca;color:var(--bad)}
+.btn-small{padding:8px 12px;font-size:13px;border-radius:10px}
+.btn:disabled{opacity:.5;cursor:default}
+input[type=text],input[type=number],input[type=password]{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;font-size:16px;outline:none;font-family:inherit;background:#fff}
+input:focus{border-color:var(--huons)}
+label.f{display:block;font-size:13px;font-weight:700;margin:12px 0 6px}
+.muted{color:var(--muted);font-size:13px;line-height:1.7}
+.row{display:flex;gap:8px;align-items:center}
+.row.wrapr{flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;background:#e6faf6;color:var(--huons-dark)}
+.chip.off{background:#fee2e2;color:var(--bad)}
+.chip.gray{background:#eef2f6;color:var(--muted)}
+.hidden{display:none!important}
+.center{text-align:center}
+.notice{background:#fff7e6;border:1px solid #fde3b0;color:#8a5a00;border-radius:12px;padding:10px 12px;font-size:13px;font-weight:600;margin-bottom:12px}
+
+/* team grid */
+.teams{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+.teambtn{background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:14px 10px;text-align:center;cursor:pointer;font-family:inherit;color:var(--ink)}
+.teambtn:hover{border-color:var(--huons)}
+.teambtn.mine{border-color:var(--huons);background:#effcf9}
+.teambtn b{display:block;font-size:20px;font-weight:900}
+.teambtn span{display:block;font-size:12px;color:var(--muted);margin-top:2px;min-height:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar{height:6px;background:#e9eef2;border-radius:99px;overflow:hidden;margin-top:8px}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--huons),#5eead4)}
+
+/* cast */
+.cast{display:flex;gap:8px;justify-content:space-between}
+.cast div{flex:1;text-align:center;font-size:12px;font-weight:700}
+.cast svg{width:100%;max-width:64px;display:block;margin:0 auto}
+.cast small{display:block;color:var(--muted);font-weight:500;font-size:11px}
+
+/* webtoon */
+.toon{display:flex;flex-direction:column;gap:14px}
+.toonhead{text-align:center;padding:8px 0 2px}
+.toonhead .t{font-size:22px;font-weight:900}
+.toonhead .s{font-size:13px;color:var(--muted)}
+.panel{position:relative;container-type:inline-size;border:3px solid #222;border-radius:6px;overflow:hidden;background:#fff;box-shadow:0 4px 0 rgba(0,0,0,.08)}
+.panel svg{display:block;width:100%;height:auto}
+.pnum{position:absolute;right:6px;bottom:5px;font-size:11px;font-weight:900;color:#fff;background:rgba(0,0,0,.45);border-radius:6px;padding:1px 6px}
+.bub{position:absolute;background:#fff;border:2px solid #222;border-radius:50%/42%;padding:3cqw 3.2cqw;min-height:13cqw;display:flex;align-items:center;justify-content:center;z-index:2}
+.bub::before,.bub::after{content:"";position:absolute;left:var(--tx,50%);transform:translateX(-50%)}
+.bub::before{bottom:-4.6cqw;width:5cqw;height:5cqw;background:#222;clip-path:polygon(15% 0,85% 0,30% 100%)}
+.bub::after{bottom:-2.9cqw;width:3.6cqw;height:3.9cqw;background:#fff;clip-path:polygon(10% 0,90% 0,33% 92%)}
+.bub.thought{border-radius:50%}
+.bub.thought::before{bottom:-3.4cqw;width:2.6cqw;height:2.6cqw;border-radius:50%;background:#fff;border:2px solid #222;clip-path:none;margin-left:-1cqw}
+.bub.thought::after{bottom:-6cqw;width:1.6cqw;height:1.6cqw;border-radius:50%;background:#fff;border:2px solid #222;clip-path:none;margin-left:-2.6cqw}
+.bub.narr{border-radius:2px;background:#fff6c2;min-height:9cqw;padding:2cqw 2.6cqw}
+.bub.narr::before,.bub.narr::after{display:none}
+.bub textarea,.bub .txt{width:100%;border:0;background:transparent;resize:none;outline:none;overflow:hidden;font-family:'Gaegu',cursive;font-weight:700;font-size:4.2cqw;line-height:1.15;text-align:center;color:#111;padding:0;margin:0;display:block;word-break:keep-all;overflow-wrap:anywhere}
+.bub.long textarea,.bub.long .txt{font-size:3.5cqw}
+.bub.narr textarea,.bub.narr .txt{font-size:3.6cqw;text-align:left}
+.bub textarea::placeholder{color:#a4adb8}
+.bub.focus{box-shadow:0 0 0 3px rgba(14,155,139,.45)}
+.bub.ro textarea{cursor:default}
+.saving{font-size:12px;font-weight:700;color:var(--muted)}
+
+/* admin */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.pick{position:relative;cursor:pointer;border-radius:10px;border:3px solid transparent;opacity:.45;transition:.15s}
+.pick.on{border-color:var(--huons);opacity:1}
+.pick .panel{border-width:2px;pointer-events:none}
+.pick .cap{font-size:12px;font-weight:700;margin-top:4px;text-align:center}
+.pick .ck{position:absolute;top:6px;left:6px;z-index:3;width:22px;height:22px;border-radius:50%;background:#fff;border:2px solid #cbd5e1;display:grid;place-items:center;font-size:13px;font-weight:900;color:#fff}
+.pick.on .ck{background:var(--huons);border-color:var(--huons)}
+table.prog{width:100%;border-collapse:collapse;font-size:13px}
+table.prog th,table.prog td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left}
+table.prog th{color:var(--muted);font-weight:700;font-size:12px}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.toggle:last-child{border-bottom:0}
+.toggle b{font-size:14px}
+.toggle small{display:block;color:var(--muted);font-size:12px;font-weight:500}
+.sw{position:relative;width:52px;height:30px;flex:none}
+.sw input{opacity:0;width:0;height:0}
+.sw i{position:absolute;inset:0;background:#cbd5e1;border-radius:99px;transition:.2s;cursor:pointer}
+.sw i::after{content:"";position:absolute;left:3px;top:3px;width:24px;height:24px;background:#fff;border-radius:50%;transition:.2s}
+.sw input:checked+i{background:var(--huons)}
+.sw input:checked+i::after{left:25px}
+.stepper{display:flex;align-items:center;gap:8px}
+.stepper button{width:44px;height:44px;border-radius:12px;border:1.5px solid var(--line);background:#fff;font-size:22px;font-weight:900;cursor:pointer}
+.stepper input{width:90px;text-align:center;font-size:20px;font-weight:900}
+.urlbox{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.urlbox .u{font-size:18px;font-weight:900;word-break:break-all;color:var(--huons-dark)}
+#qr{background:#fff;padding:8px;border-radius:10px;border:1px solid var(--line)}
+#qr img,#qr canvas{display:block;width:140px;height:140px}
+
+/* gallery */
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:4px 0 10px;position:sticky;top:0;background:var(--bg);z-index:5}
+.tabs button{flex:none;border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit}
+.tabs button.on{background:var(--huons);border-color:var(--huons);color:#fff}
+.cols{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px;align-items:start}
+
+/* show mode */
+#show{position:fixed;inset:0;background:#10151c;z-index:100;display:flex;flex-direction:column}
+#show .stage{flex:1;display:flex;align-items:center;justify-content:center;padding:12px;min-height:0}
+#show .slide{width:min(96vw, calc((100vh - 90px) * 4 / 3))}
+#show .title{color:#fff;text-align:center}
+#show .title .t{font-size:clamp(28px,6vw,64px);font-weight:900}
+#show .title .s{font-size:clamp(16px,2.6vw,26px);opacity:.75;margin-top:10px}
+#show .ctrl{display:flex;gap:8px;align-items:center;justify-content:center;padding:10px;color:#cbd5e1;font-weight:700;font-size:14px}
+#show .ctrl button{background:#273140;color:#fff;border:0;border-radius:10px;padding:10px 16px;font-weight:800;cursor:pointer;font-family:inherit;font-size:14px}
+#show .panel{border-color:#000}
+.panel img.art{display:block;width:100%;aspect-ratio:4/3;object-fit:cover}
+.panel.mine{border-color:var(--huons);box-shadow:0 0 0 4px rgba(14,155,139,.25)}
+.lockcover{position:absolute;inset:0;background:rgba(20,28,40,.55);backdrop-filter:grayscale(.8) blur(1px);-webkit-backdrop-filter:grayscale(.8) blur(1px);display:grid;place-items:center;z-index:3}
+.lockcover span{background:rgba(255,255,255,.92);color:var(--ink);font-weight:800;font-size:13px;padding:8px 12px;border-radius:999px}
+.credit{position:absolute;left:6px;bottom:5px;font-size:11px;font-weight:800;color:#fff;background:rgba(14,155,139,.85);border-radius:6px;padding:2px 7px;z-index:2}
+.turnbar{border-radius:14px;padding:12px 14px;font-size:14px;font-weight:600;margin-bottom:12px;line-height:1.5}
+.turnbar.now{background:#e6faf6;border:2px solid var(--huons);color:var(--huons-dark)}
+.turnbar.wait{background:#fff7e6;border:1px solid #fde3b0;color:#8a5a00}
+.turnbar.done{background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3}
+.teambtn .tc{font-size:11px;margin-top:6px;color:var(--muted)}
+.teambtn.now{border-color:#f59e0b;background:#fffbeb}
+.chip.now{background:#fef3c7;color:#b45309}
+tr.nowrow td{background:#fffbeb}
+.passbox{position:sticky;bottom:0;background:linear-gradient(transparent,var(--bg) 22%);padding:22px 0 10px;margin-top:6px;display:grid;gap:6px;text-align:center;z-index:6}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1c2733;color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;font-weight:700;z-index:200;opacity:0;transition:.25s;pointer-events:none}
+.toast.on{opacity:1}
+.footer-links{display:flex;gap:14px;justify-content:center;margin-top:18px;font-size:13px}
+.footer-links a{color:var(--muted);text-decoration:none;font-weight:700}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="show" class="hidden"></div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+/* ================== 설정 ================== */
+const SB_URL='https://rbvhohhuqaryzuahskfe.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJidmhvaGh1cWFyeXp1YWhza2ZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzNTIxNDYsImV4cCI6MjEwNzkyODE0Nn0.oIMmJjotxIGYBWcOkuLe56xae4ATnHTvvb87Jq03Yzc';
+const MAXLEN=40;
+
+/* ================== 그림 ================== */
+const LN='#3a2b27';
+const SW=`stroke="${LN}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"`;
+const SW1=`stroke="${LN}" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"`;
+const DEFS=`<svg width="0" height="0" style="position:absolute;width:0;height:0" aria-hidden="true"><defs>
+${[['gWallWarm','#fff7ea','#f3dfc3'],['gWallCool','#f1f6fb','#d7e3ee'],['gWallMint','#f1fbf7','#d3ebe1'],['gWallLav','#f6f3ff','#ded7f5'],['gWallNight','#323a5e','#1c2138'],['gWallPink','#fff5f9','#ffd9e8'],['gWallSun','#fffbea','#f7e9bf'],['gWallGray','#f7f7f8','#e1e2e6'],
+ ['gFloor','#e6d1b2','#c4a47c'],['gFloorGray','#dfe3e8','#b4bcc7'],['gFloorNight','#2b2f48','#171a2a'],['gFloorPink','#f8d7e2','#eab3c6'],
+ ['gSkyDay','#8ccdfc','#e6f6ff'],['gSkyNight','#0d1533','#2d3d72'],['gWood','#c98f58','#a46f40'],['gWoodTop','#ecc394','#d9a46c'],['gWoodDark','#8a6444','#5e4330'],
+ ['gScreen','#f4fbff','#c9e6fb'],['gMetal','#f2f4f7','#c3c9d2'],['gDark','#4b5563','#2b313b'],['gBoard','#ffffff','#eef2f6'],['gCork','#dcb88a','#c49a68'],
+ ['gBldg','#a9c6dd','#86a8c4'],['gBldgN','#3a4876','#252f55']]
+ .map(([id,a,b])=>`<linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`).join('')}
+<linearGradient id="gRay" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+<radialGradient id="gGlow"><stop offset="0" stop-color="#fff3b0" stop-opacity=".95"/><stop offset="1" stop-color="#fff3b0" stop-opacity="0"/></radialGradient>
+<radialGradient id="gScreenGlow"><stop offset="0" stop-color="#bfe4ff" stop-opacity=".7"/><stop offset="1" stop-color="#bfe4ff" stop-opacity="0"/></radialGradient>
+<radialGradient id="gVig" cx=".5" cy=".5" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".22"/></radialGradient>
+<radialGradient id="gCheek"><stop offset="0" stop-color="#ff7d95" stop-opacity=".6"/><stop offset="1" stop-color="#ff7d95" stop-opacity="0"/></radialGradient>
+<pattern id="pTone" width="5" height="5" patternUnits="userSpaceOnUse"><circle cx="2.5" cy="2.5" r=".9" fill="#000" opacity=".16"/></pattern>
+<pattern id="pTile" width="40" height="40" patternUnits="userSpaceOnUse"><rect width="40" height="40" fill="#eef7fd"/><path d="M0,0 L40,0 M0,0 L0,40" stroke="#d2e6f4" stroke-width="2"/></pattern>
+<filter id="fBlur" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="1.6"/></filter>
+<filter id="fSoft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="4"/></filter>
+</defs></svg>`;
+
+const CAST={
+ A:{name:'김사원',role:'열정 신입',skin:'#ffe3cf',sk2:'#f4b99c',hair:'#6e4631',hair2:'#4a2c1e',hairHi:'#a7795a',iris:'#7a5232',style:'short',sex:'m',outfit:'sweater',c1:'#22b5a3',c2:'#148a7c'},
+ B:{name:'박대리',role:'일잘러 선배',skin:'#ffe6d6',sk2:'#f5bfa6',hair:'#2e2533',hair2:'#17121b',hairHi:'#6a5878',iris:'#4a2e2e',style:'long',sex:'f',outfit:'blouse',c1:'#ff94ab',c2:'#e56e88'},
+ C:{name:'최팀장',role:'든든한 리더',skin:'#f6d3b6',sk2:'#e3ac8b',hair:'#9ba2ab',hair2:'#6e757f',hairHi:'#d2d6db',iris:'#3a3a3a',style:'neat',sex:'m',outfit:'suit',c1:'#2a3d72',c2:'#18264f',tie:'#d64545',glasses:1},
+ D:{name:'이과장',role:'분위기 메이커',skin:'#ffe0c8',sk2:'#f2b593',hair:'#8d5732',hair2:'#5e381d',hairHi:'#c48b60',iris:'#6a4326',style:'bob',sex:'f',outfit:'cardigan',c1:'#f6ba42',c2:'#d9962a'}
+};
+const FACE='M-23,-8 C-23,-31 23,-31 23,-8 C23,12 14,27 0,30 C-14,27 -23,12 -23,-8Z';
+const mirX=d=>d.replace(/(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/g,(m,a,b)=>(-parseFloat(a))+','+b);
+const HAIR={
+ short:{back:'M-26,-4 C-30,-30 -14,-40 2,-39 C20,-40 31,-28 27,-4 C25,-12 -24,-12 -26,-4Z',
+  front:'M-27,2 C-31,-24 -18,-39 0,-39 C19,-39 31,-26 27,0 C25,-7 22,-13 18,-16 C17,-10 15,-7 12,-5 C11,-12 8,-17 4,-19 C2,-12 -2,-9 -6,-8 C-6,-14 -9,-18 -12,-19 C-14,-12 -18,-8 -22,-6 C-22,-10 -21,-14 -20,-16 C-24,-12 -26,-5 -27,2Z',
+  hi:'M-16,-30 C-8,-35 6,-35 15,-30 M-4,-36 C2,-37 8,-36 12,-34'},
+ long:{back:'M-27,-6 C-33,-36 -12,-43 0,-42 C14,-43 33,-36 27,-6 L33,56 C20,62 -20,62 -33,56Z',
+  front:'M-26,6 C-31,-26 -16,-40 0,-40 C18,-40 31,-26 26,4 C24,-9 18,-18 9,-21 C2,-12 -9,-6 -19,-3 C-23,-1 -25,2 -26,6Z',
+  side:'M-25,0 C-28,16 -28,30 -25,44 L-18,42 C-21,28 -21,12 -19,-2Z',
+  hi:'M-17,-30 C-9,-36 7,-36 16,-31'},
+ neat:{back:'',
+  front:'M-25,0 C-29,-27 -12,-38 2,-38 C19,-38 29,-27 25,0 C24,-11 22,-17 18,-20 C8,-23 -3,-20 -11,-25 C-16,-19 -22,-12 -25,0Z',
+  side:'M-24,-4 L-23,6 L-21,-6Z',
+  hi:'M-14,-31 C-6,-35 6,-35 14,-31'},
+ bob:{back:'M-28,-4 C-33,-35 -14,-43 0,-42 C14,-43 33,-35 28,-4 L31,20 C31,28 25,29 20,27 L-20,27 C-25,29 -31,28 -31,20Z',
+  front:'M-25,0 C-28,-28 -14,-39 0,-39 C14,-39 28,-28 25,0 L23,-6 C21,-10 19,-11 17,-11 C8,-9 -8,-9 -17,-11 C-19,-11 -21,-10 -23,-6Z',
+  side:'M-26,-8 C-29,6 -29,16 -27,25 L-19,25 C-21,14 -21,2 -19,-9Z',
+  hi:'M-16,-31 C-8,-36 8,-36 16,-31'}
+};
+function eyes(c,o){
+ const e=o.eyes||'normal'; let s='';
+ [-9.5,9.5].forEach((x,k)=>{const y=3, side=k?1:-1;
+  if(e==='happy'){s+=`<path d="M${x-6},${y+2} Q${x},${y-6} ${x+6},${y+2}" fill="none" stroke="${LN}" stroke-width="2.6" stroke-linecap="round"/>`;return}
+  if(e==='closed'){s+=`<path d="M${x-6},${y} Q${x},${y+4} ${x+6},${y}" fill="none" stroke="${LN}" stroke-width="2.4" stroke-linecap="round"/>`;return}
+  if(e==='shock'){s+=`<ellipse cx="${x}" cy="${y}" rx="6.2" ry="7" fill="#fff" ${SW1}/><circle cx="${x}" cy="${y}" r="1.7" fill="${LN}"/>`;return}
+  const dx=e==='side'?2.2:e==='sideL'?-2.2:0, dy=e==='down'?1.5:0;
+  s+=`<ellipse cx="${x}" cy="${y}" rx="6" ry="6.8" fill="#fff"/>`;
+  s+=`<ellipse cx="${x+dx}" cy="${y+.6+dy}" rx="4.4" ry="5.6" fill="${c.iris}"/><ellipse cx="${x+dx}" cy="${y-1.6+dy}" rx="4.4" ry="2.6" fill="#000" opacity=".28"/>`;
+  s+=`<ellipse cx="${x+dx}" cy="${y+1+dy}" rx="2.1" ry="2.8" fill="#1a1110"/>`;
+  s+=`<circle cx="${x+dx+1.8}" cy="${y-2+dy}" r="1.7" fill="#fff"/><circle cx="${x+dx-1.7}" cy="${y+3+dy}" r=".9" fill="#fff"/>`;
+  if(e==='tired') s+=`<path d="M${x-7},${y-7} L${x+7},${y-7} L${x+7},${y+.5} Q${x},${y-1.5} ${x-7},${y+.5}Z" fill="${c.skin}"/><path d="M${x-6.5},${y+.5} Q${x},${y-1.5} ${x+6.5},${y+.5}" fill="none" stroke="${LN}" stroke-width="2.4" stroke-linecap="round"/><path d="M${x-5},${y+8} Q${x},${y+10} ${x+5},${y+8}" fill="none" stroke="#9b7bb0" stroke-width="1.4" opacity=".7"/>`;
+  else s+=`<path d="M${x-6.8},${y-1.5} Q${x-1},${y-8.6} ${x+6.8},${y-2.6}" fill="none" stroke="${LN}" stroke-width="2.8" stroke-linecap="round"/>`;
+  if(c.sex==='f'&&e!=='tired') s+=`<path d="M${x+side*6.4},${y-2.4} l${side*2.6},-2.4" stroke="${LN}" stroke-width="2" stroke-linecap="round"/>`;
+ });
+ return s;
+}
+function brows(c,o){
+ const b=o.brow||'normal';
+ const P={normal:'M-15,-9 Q-10,-11.5 -5,-10',worried:'M-15,-8 Q-10,-9 -5,-12.5',angry:'M-15,-12.5 Q-10,-11 -4.5,-8',up:'M-15,-11 Q-10,-15 -5,-12'}[b]||'';
+ return `<path d="${P}" fill="none" stroke="${c.hair2}" stroke-width="2.4" stroke-linecap="round"/><path d="${mirX(P)}" fill="none" stroke="${c.hair2}" stroke-width="2.4" stroke-linecap="round"/>`;
+}
+function mouth(c,o){
+ const m=o.mouth||'smile', y=16;
+ return {
+  smile:`<path d="M-6,${y} Q0,${y+5} 6,${y}" fill="none" stroke="${LN}" stroke-width="1.8" stroke-linecap="round"/>`,
+  grin:`<path d="M-8,${y-1} Q0,${y+12} 8,${y-1}Z" fill="#a8323e" ${SW1}/><path d="M-6.5,${y} Q0,${y+2} 6.5,${y} L6,${y+1.6} Q0,${y+3.4} -6,${y+1.6}Z" fill="#fff"/><path d="M-4,${y+7} Q0,${y+4.5} 4,${y+7}" fill="#ff8a8a"/>`,
+  flat:`<path d="M-4.5,${y+1} L4.5,${y+1}" stroke="${LN}" stroke-width="1.8" stroke-linecap="round"/>`,
+  o:`<ellipse cx="0" cy="${y+2}" rx="3.4" ry="4.4" fill="#a8323e" ${SW1}/>`,
+  frown:`<path d="M-5,${y+3} Q0,${y-1} 5,${y+3}" fill="none" stroke="${LN}" stroke-width="1.8" stroke-linecap="round"/>`,
+  wavy:`<path d="M-7,${y+1} q1.75,-2.5 3.5,0 t3.5,0 t3.5,0 t3.5,0" fill="none" stroke="${LN}" stroke-width="1.7" stroke-linecap="round"/>`,
+  cat:`<path d="M-6,${y} Q-3,${y+4} 0,${y} Q3,${y+4} 6,${y}" fill="none" stroke="${LN}" stroke-width="1.8" stroke-linecap="round"/>`
+ }[m];
+}
+function face(c,o){
+ const H=HAIR[c.style];
+ let back=H.back?`<path d="${H.back}" fill="${c.hair}" ${SW}/>`:'';
+ if(c.style==='long') back+=`<path d="M18,-10 C24,10 26,34 24,54" fill="none" stroke="${c.hair2}" stroke-width="1.6" opacity=".6"/><path d="M-18,-10 C-24,10 -26,34 -24,54" fill="none" stroke="${c.hair2}" stroke-width="1.6" opacity=".6"/>`;
+ let f='';
+ f+=`<ellipse cx="-23" cy="3" rx="4.6" ry="6.6" fill="${c.skin}" ${SW}/><ellipse cx="23" cy="3" rx="4.6" ry="6.6" fill="${c.skin}" ${SW}/>`;
+ f+=`<path d="${FACE}" fill="${c.skin}" ${SW}/>`;
+ f+=`<path d="M12,-2 C21,6 18,20 3,29 C14,25 22,12 21,-2Z" fill="${c.sk2}" opacity=".55"/>`;
+ f+=`<path d="M-20,-9 C-10,-4 10,-4 20,-9 L20,-4 C10,1 -10,1 -20,-4Z" fill="${c.sk2}" opacity=".28"/>`;
+ if(o.fx==='gloom') f+=`<path d="M-18,-22 C-10,-10 10,-10 18,-22 L18,-8 C10,0 -10,0 -18,-8Z" fill="#7aa6ff" opacity=".35"/>`+[-12,-6,0,6,12].map(x=>`<path d="M${x},-18 L${x},-6" stroke="#4a6fd8" stroke-width="1.2" opacity=".7"/>`).join('');
+ f+=eyes(c,o)+brows(c,o);
+ f+=`<path d="M1,9 Q2.6,11.5 0.4,12.6" fill="none" stroke="${c.sk2}" stroke-width="1.6" stroke-linecap="round"/>`;
+ if(o.blush) f+=`<ellipse cx="-14" cy="11" rx="7" ry="4" fill="url(#gCheek)"/><ellipse cx="14" cy="11" rx="7" ry="4" fill="url(#gCheek)"/><path d="M-17,10 l2,-2.4 M-14,10.4 l2,-2.4 M-11,10.8 l2,-2.4 M11,10.8 l2,-2.4 M14,10.4 l2,-2.4 M17,10 l2,-2.4" stroke="#ff6b85" stroke-width="1.1" stroke-linecap="round"/>`;
+ else f+=`<ellipse cx="-14" cy="11" rx="5" ry="3" fill="url(#gCheek)" opacity=".6"/><ellipse cx="14" cy="11" rx="5" ry="3" fill="url(#gCheek)" opacity=".6"/>`;
+ f+=mouth(c,o);
+ f+=`<path d="${H.front}" fill="${c.hair}" ${SW}/>`;
+ if(H.side){f+=`<path d="${H.side}" fill="${c.hair}" ${SW}/>`; if(c.style!=='neat'||1) f+=`<path d="${mirX(H.side)}" fill="${c.hair}" ${SW}/>`;}
+ f+=`<path d="${H.hi}" fill="none" stroke="${c.hairHi}" stroke-width="3" stroke-linecap="round" opacity=".85"/>`;
+ if(c.glasses) f+=`<rect x="-17" y="-3.5" width="14" height="12" rx="4" fill="#fff" fill-opacity=".18" stroke="#2b2b2b" stroke-width="1.8"/><rect x="3" y="-3.5" width="14" height="12" rx="4" fill="#fff" fill-opacity=".18" stroke="#2b2b2b" stroke-width="1.8"/><path d="M-3,1 Q0,-1 3,1 M-17,0 L-22,-1 M17,0 L22,-1" stroke="#2b2b2b" stroke-width="1.6" fill="none"/><path d="M-14,-1 l4,-1.5 M6,-1 l4,-1.5" stroke="#fff" stroke-width="1.4" opacity=".9"/>`;
+ if(o.sweat) f+=`<path d="M27,-18 Q34,-6 27,-2 Q20,-6 27,-18Z" fill="#a8dcff" ${SW1}/><path d="M25,-8 q1,-3 2,-4" stroke="#fff" stroke-width="1.3"/>`;
+ if(o.fx==='anger') f+=`<g transform="translate(-20,-28)" stroke="#e11d48" stroke-width="2.4" fill="none" stroke-linecap="round"><path d="M-6,-2 Q-2,-2 -2,-6 M6,-2 Q2,-2 2,-6 M-6,2 Q-2,2 -2,6 M6,2 Q2,2 2,6"/></g>`;
+ return {back,front:f};
+}
+function hand(c,x,y,r=0){return `<g transform="translate(${x},${y}) rotate(${r})"><ellipse rx="6.6" ry="7.6" fill="${c.skin}" ${SW}/><path d="M-3,-5 Q-6,-1 -4,3" fill="none" stroke="${c.sk2}" stroke-width="1.4"/></g>`}
+function sleeve(c,d){return `<path d="${d}" fill="none" stroke="${LN}" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"/><path d="${d}" fill="none" stroke="${c.c1}" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>`}
+const ARMDOWN='M31,14 C40,38 40,66 37,92';
+function arms(a,c){
+ const R={},L={};
+ if(a==='wave'){R.d='M31,16 C52,8 56,-14 54,-30';R.h=[54,-37,-10]}
+ if(a==='point'){R.d='M31,16 C54,14 66,0 78,-6';R.h=[83,-8,-60]}
+ if(a==='up'){R.d='M30,14 C50,-6 50,-30 46,-50';R.h=[46,-57,0];L.d=mirX(R.d);L.h=[-46,-57,0]}
+ if(a==='cup'){R.d='M31,18 C46,50 34,58 16,54';R.h=[13,50,40];R.x=`<path d="M19,40 q9,0 9,7 q0,7 -9,7" fill="none" ${SW}/><path d="M1,34 L21,34 L19,58 Q11,61 3,58Z" fill="#fff" ${SW}/><path d="M2,40 L20,40" stroke="#22b5a3" stroke-width="3"/><path d="M7,27 q-3,-4 0,-8 M14,27 q-3,-4 0,-8" fill="none" stroke="#b6c0ca" stroke-width="2" stroke-linecap="round"/>`}
+ if(a==='marker'){R.d='M31,16 C52,8 56,-14 54,-30';R.h=[54,-37,-10];R.x0=`<g transform="rotate(14 54 -50)"><rect x="50" y="-66" width="8" height="24" rx="2" fill="#2f5bea" ${SW1}/><rect x="51.5" y="-71" width="5" height="6" fill="#1e3a8a"/></g>`}
+ if(a==='chin'){R.d='M31,20 C46,44 34,30 14,12';R.h=[11,8,30]}
+ if(a==='phone'){L.d='M-31,18 C-54,16 -50,-4 -40,-10';L.h=[-36,-14,20];L.x0=`<rect x="-46" y="-46" width="13" height="32" rx="3" fill="#2b2f36" ${SW}/><rect x="-44" y="-43" width="9" height="24" rx="1.5" fill="#5a6b80"/>`}
+ if(a==='box'){R.d='M31,18 C44,40 40,46 30,48';R.h=[30,47,0];L.d=mirX(R.d);L.h=[-30,47,0];R.x0=`<path d="M-46,36 L46,36 L46,56 L-46,56Z" fill="#e8b06d" ${SW}/><path d="M-46,36 L-38,28 L54,28 L46,36Z" fill="#f3c88e" ${SW}/><path d="M46,36 L54,28 L54,48 L46,56Z" fill="#c98f52" ${SW}/><path d="M-20,46 L20,46" stroke="#c0392b" stroke-width="5"/><text x="0" y="50" font-size="8" font-weight="900" fill="#fff" text-anchor="middle" font-family="sans-serif">PIZZA</text>`}
+ if(a==='type'){R.d='M31,18 C40,46 30,60 18,64';R.h=[16,64,60];L.d=mirX(R.d);L.h=[-16,64,-60]}
+ let s='';
+ if(!L.d) s+=sleeve(c,mirX(ARMDOWN))+hand(c,-36,98);
+ if(!R.d) s+=sleeve(c,ARMDOWN)+hand(c,36,98);
+ if(R.x0) s+=R.x0; if(L.x0) s+=L.x0;
+ if(L.d) s+=sleeve(c,L.d)+hand(c,...L.h);
+ if(R.d) s+=sleeve(c,R.d)+(R.x||'')+hand(c,...R.h);
+ return s;
+}
+function outfit(c){
+ let s=`<path d="M-35,140 L-37,22 C-37,8 -28,2 -16,0 L16,0 C28,2 37,8 37,22 L35,140Z" fill="${c.c1}" ${SW}/>`;
+ s+=`<path d="M37,22 C37,8 28,2 16,0 L21,6 C29,12 30,30 28,140 L35,140Z" fill="${c.c2}" opacity=".7"/>`;
+ if(c.outfit==='sweater') s+=`<path d="M-11,0 L-3,11 L0,5 L3,11 L11,0Z" fill="#fff" ${SW1}/><path d="M-13,0 Q0,11 13,0" fill="none" stroke="${c.c2}" stroke-width="3.5"/><path d="M-9,6 L-4,44 M9,6 L4,44" stroke="#3f6fe0" stroke-width="2.2"/><rect x="-8" y="44" width="16" height="20" rx="2" fill="#fff" ${SW1}/><rect x="-8" y="44" width="16" height="5" fill="#3f6fe0"/><circle cx="0" cy="56" r="3" fill="#cbd5e1"/>`;
+ if(c.outfit==='blouse') s+=`<path d="M-16,0 L-3,15 L0,7 L3,15 L16,0 L9,-1 L0,6 L-9,-1Z" fill="#fff" ${SW1}/><circle cx="0" cy="24" r="1.8" fill="#fff"/><circle cx="0" cy="38" r="1.8" fill="#fff"/><circle cx="0" cy="52" r="1.8" fill="#fff"/><path d="M0,15 L0,140" stroke="${c.c2}" stroke-width="1.4"/>`;
+ if(c.outfit==='suit') s+=`<path d="M-15,0 L0,30 L15,0Z" fill="#fff" ${SW1}/><path d="M-4,6 L4,6 L6,40 L0,48 L-6,40Z" fill="${c.tie}" ${SW1}/><path d="M-4,6 L4,6 L3,11 L-3,11Z" fill="#a83232"/><path d="M-15,0 L-3,32 L-11,48 L-22,10Z" fill="${c.c2}" ${SW1}/><path d="M15,0 L3,32 L11,48 L22,10Z" fill="${c.c2}" ${SW1}/><path d="M18,52 L28,52 L27,56 L19,56Z" fill="#fff"/><circle cx="0" cy="62" r="2" fill="#0d1733"/>`;
+ if(c.outfit==='cardigan') s+=`<path d="M-13,0 Q0,10 13,0 L10,140 L-10,140Z" fill="#fffaf0" ${SW1}/><path d="M-13,0 C-10,30 -10,60 -10,140 M13,0 C10,30 10,60 10,140" fill="none" stroke="${c.c2}" stroke-width="3"/><circle cx="-12" cy="28" r="2.3" fill="#fff" ${SW1}/><circle cx="-11" cy="46" r="2.3" fill="#fff" ${SW1}/><circle cx="-11" cy="64" r="2.3" fill="#fff" ${SW1}/>`;
+ return s;
+}
+function person(k,x,y,o={}){
+ const c=CAST[k], s=o.s||1, fl=o.flip?-1:1;
+ const fc=face(c,o);
+ let g=`<g transform="translate(${x},${y}) scale(${fl*s},${s})">`;
+ g+=`<g transform="translate(0,-37)">${fc.back}</g>`;
+ g+=`<path d="M-7,-14 L7,-14 L8,6 L-8,6Z" fill="${c.skin}" ${SW}/><path d="M-7,-10 Q0,-4 7,-10 L7,-4 Q0,2 -7,-4Z" fill="${c.sk2}" opacity=".7"/>`;
+ g+=outfit(c);
+ g+=`<g transform="translate(0,-37)">${fc.front}</g>`;
+ g+=arms(o.arm,c);
+ return g+'</g>';
+}
+function headOnly(k,o={}){
+ const c=CAST[k], fc=face(c,o);
+ return `<svg viewBox="-44 -50 88 88"><circle cx="0" cy="-6" r="42" fill="#eef7f5"/>${fc.back}${fc.front}</svg>`;
+}
+/* ---------- 배경 ---------- */
+const RR=(x,y,w,h,f,extra='')=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${f}" ${SW} ${extra}/>`;
+function room(wall,floorY,floorG='gFloor',vp=200){
+ let s=`<rect width="400" height="300" fill="url(#${wall})"/>`;
+ s+=`<rect x="0" y="${floorY}" width="400" height="${300-floorY}" fill="url(#${floorG})"/>`;
+ const VY=floorY-170;
+ for(let xb=-400;xb<=800;xb+=70){const xt=vp+(xb-vp)*(floorY-VY)/(300-VY);s+=`<path d="M${xt},${floorY} L${xb},300" stroke="#fff" stroke-opacity=".22" stroke-width="1.5"/>`}
+ [12,30,56].forEach(d=>s+=`<path d="M0,${floorY+d} L400,${floorY+d}" stroke="#fff" stroke-opacity=".18" stroke-width="1.5"/>`);
+ s+=`<rect x="0" y="${floorY-6}" width="400" height="7" fill="#fff" fill-opacity=".55"/><path d="M0,${floorY} L400,${floorY}" stroke="${LN}" stroke-width="1.4" opacity=".5"/>`;
+ return s;
+}
+function ceiling(n=3,y=0,c='#fffef6'){let s='';for(let i=0;i<n;i++){const x=40+i*(320/(n-1||1))-30;s+=`<rect x="${x}" y="${y}" width="60" height="7" rx="2" fill="${c}" stroke="#cfd6de" stroke-width="1.2"/><ellipse cx="${x+30}" cy="${y+14}" rx="46" ry="14" fill="url(#gGlow)" opacity=".5"/>`}return s}
+function win(x,y,w,h,t='day',blinds=true){
+ const N=t==='night';
+ let s=`<rect x="${x-4}" y="${y-4}" width="${w+8}" height="${h+10}" rx="3" fill="#f8fafc" ${SW}/>`;
+ s+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="url(#${N?'gSkyNight':'gSkyDay'})"/>`;
+ if(N){s+=`<circle cx="${x+w*.82}" cy="${y+h*.24}" r="${Math.min(w,h)*.1}" fill="#fff7cf"/><circle cx="${x+w*.82+4}" cy="${y+h*.24-3}" r="${Math.min(w,h)*.09}" fill="#16204a"/>`;
+  for(let i=0;i<14;i++)s+=`<circle cx="${x+((i*61)%w)}" cy="${y+((i*29)%(h*.45))+3}" r="${i%3?0.9:1.4}" fill="#fff" opacity=".9"/>`;}
+ else s+=`<circle cx="${x+w*.78}" cy="${y+h*.26}" r="${Math.min(w,h)*.11}" fill="#fff6c2"/><circle cx="${x+w*.78}" cy="${y+h*.26}" r="${Math.min(w,h)*.2}" fill="#fff6c2" opacity=".35"/><ellipse cx="${x+w*.25}" cy="${y+h*.3}" rx="${w*.12}" ry="${h*.06}" fill="#fff" opacity=".8"/>`;
+ const n=Math.max(4,Math.round(w/22)), iw=w/n;
+ for(let i=0;i<n;i++){const bh=h*(.3+((i*37)%7)/14), bx=x+i*iw, by=y+h-bh;
+  s+=`<rect x="${bx+1}" y="${by}" width="${iw-2}" height="${bh}" fill="url(#${N?'gBldgN':'gBldg'})" opacity="${N?1:.85}"/>`;
+  for(let r=0;r<Math.floor(bh/10);r++)for(let q=0;q<2;q++){const lit=N&&((i*3+r+q)%4!==0);
+   s+=`<rect x="${bx+3+q*(iw/2-1)}" y="${by+4+r*10}" width="${iw/2-5}" height="4" fill="${lit?'#ffe28a':N?'#2b3560':'#d6e7f3'}" opacity="${N?1:.9}"/>`;}
+ }
+ if(blinds&&!N) for(let i=0;i<5;i++) s+=`<rect x="${x}" y="${y+i*6}" width="${w}" height="4" fill="#f1f5f9" opacity=".95"/>`;
+ s+=`<path d="M${x+w/2},${y} L${x+w/2},${y+h}" stroke="#f8fafc" stroke-width="5"/><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="none" ${SW}/>`;
+ s+=`<rect x="${x-8}" y="${y+h+4}" width="${w+16}" height="6" rx="2" fill="#eef2f6" ${SW}/>`;
+ return s;
+}
+function rays(x,y,w,h,toY){return `<path d="M${x},${y+h} L${x+w},${y+h} L${x+w+60},${toY} L${x+30},${toY}Z" fill="url(#gRay)" opacity=".5"/>`}
+function bgDesks(y,n=4,tone='#9fb0c2',x0=0,x1=400){let s=`<g filter="url(#fBlur)" opacity=".55">`;const w=(x1-x0)/n;
+ for(let i=0;i<n;i++){const x=x0+i*w+8;s+=`<rect x="${x+8}" y="${y-30}" width="${w*.42}" height="24" rx="3" fill="${tone}"/><rect x="${x+w*.18}" y="${y-6}" width="6" height="8" fill="${tone}"/><rect x="${x}" y="${y}" width="${w-16}" height="6" fill="${tone}"/><rect x="${x+4}" y="${y+6}" width="${w-24}" height="26" fill="${tone}" opacity=".6"/><circle cx="${x+w*.62}" cy="${y-16}" r="9" fill="${tone}"/><rect x="${x+w*.62-10}" y="${y-8}" width="20" height="16" rx="6" fill="${tone}"/>`}
+ return s+'</g>'}
+function desk(x,y,w,dark){const top=dark?'gWoodDark':'gWoodTop';return `<rect x="${x}" y="${y}" width="${w}" height="320" fill="url(#${dark?'gWoodDark':'gWood'})" ${SW}/><rect x="${x-2}" y="${y-8}" width="${w+4}" height="11" rx="2" fill="url(#${top})" ${SW}/><rect x="${x}" y="${y+3}" width="${w}" height="5" fill="#000" opacity=".15"/>`}
+function monitor(x,y,w,h,inner='',night){
+ return `<path d="M${x+w/2-5},${y+h} L${x+w/2+5},${y+h} L${x+w/2+7},${y+h+12} L${x+w/2-7},${y+h+12}Z" fill="url(#gMetal)" ${SW1}/><rect x="${x+w/2-20}" y="${y+h+11}" width="40" height="5" rx="2" fill="url(#gMetal)" ${SW1}/>`+
+  `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="4" fill="#2b2f36" ${SW}/><rect x="${x+4}" y="${y+4}" width="${w-8}" height="${h-8}" rx="1.5" fill="url(#${night?'gScreen':'gScreen'})"/>`+
+  (inner||`<rect x="${x+8}" y="${y+8}" width="${w-16}" height="5" rx="1" fill="#22b5a3" opacity=".8"/><rect x="${x+8}" y="${y+17}" width="${(w-16)*.6}" height="3" rx="1" fill="#94a3b8"/><rect x="${x+8}" y="${y+23}" width="${(w-16)*.8}" height="3" rx="1" fill="#94a3b8"/><rect x="${x+8}" y="${y+29}" width="${(w-16)*.5}" height="3" rx="1" fill="#94a3b8"/>`)+
+  `<path d="M${x+6},${y+6} L${x+w*.35},${y+6} L${x+6},${y+h*.6}Z" fill="#fff" opacity=".35"/>`;
+}
+function keyboard(x,y,w=60){return `<path d="M${x+6},${y} L${x+w-6},${y} L${x+w},${y+9} L${x},${y+9}Z" fill="url(#gMetal)" ${SW1}/><path d="M${x+8},${y+3} L${x+w-8},${y+3} M${x+6},${y+6} L${x+w-6},${y+6}" stroke="#9aa4b2" stroke-width="1.6" stroke-dasharray="3 2"/>`}
+function mug(x,y,c='#fff',s=''){return `<path d="M${x+12},${y+4} q7,0 7,6 q0,6 -7,6" fill="none" ${SW}/><path d="M${x},${y} L${x+14},${y} L${x+13},${y+18} Q${x+7},${y+20} ${x+1},${y+18}Z" fill="${c}" ${SW}/>${s}`}
+function papers(x,y){return `<rect x="${x+3}" y="${y-5}" width="34" height="8" fill="#fff" ${SW1} transform="rotate(-3 ${x} ${y})"/><rect x="${x}" y="${y-2}" width="36" height="8" fill="#f8fafc" ${SW1}/>`}
+function plant(x,y,s=1){return `<g transform="translate(${x},${y}) scale(${s})"><path d="M0,-32 C-30,-56 -26,-84 -8,-96 C-6,-70 -2,-50 0,-32Z" fill="#3fa36b" ${SW}/><path d="M0,-32 C26,-64 22,-92 10,-104 C2,-80 -2,-56 0,-32Z" fill="#52bd7f" ${SW}/><path d="M0,-32 C-38,-40 -46,-58 -40,-70 C-22,-60 -8,-46 0,-32Z" fill="#5fcf8d" ${SW}/><path d="M0,-32 C30,-38 42,-52 40,-66 C24,-58 8,-46 0,-32Z" fill="#46ad73" ${SW}/><path d="M-8,-96 C-6,-70 -2,-50 0,-32 M10,-104 C2,-80 -2,-56 0,-32" stroke="#2b7a4f" stroke-width="1.4" fill="none"/><path d="M-17,-34 L17,-34 L13,0 L-13,0Z" fill="#e8805f" ${SW}/><path d="M-19,-38 L19,-38 L19,-30 L-19,-30Z" fill="#f09a7b" ${SW}/></g>`}
+function clock(x,y,r,h,m){const ha=(h%12+m/60)*30-90,ma=m*6-90,rd=Math.PI/180;let t='';for(let i=0;i<12;i++){const a=i*30*rd;t+=`<path d="M${x+Math.cos(a)*r*.78},${y+Math.sin(a)*r*.78} L${x+Math.cos(a)*r*.9},${y+Math.sin(a)*r*.9}" stroke="${LN}" stroke-width="1.4"/>`}
+ return `<circle cx="${x}" cy="${y}" r="${r+3}" fill="#e2e8f0" ${SW}/><circle cx="${x}" cy="${y}" r="${r}" fill="#fff"/>${t}<path d="M${x},${y} L${x+Math.cos(ha*rd)*r*.48},${y+Math.sin(ha*rd)*r*.48}" stroke="${LN}" stroke-width="2.6" stroke-linecap="round"/><path d="M${x},${y} L${x+Math.cos(ma*rd)*r*.75},${y+Math.sin(ma*rd)*r*.75}" stroke="#e11d48" stroke-width="1.8" stroke-linecap="round"/><circle cx="${x}" cy="${y}" r="2.2" fill="${LN}"/>`}
+function focus(cx,cy,r0=120,n=70,c='#000',op=.5){let s='';for(let i=0;i<n;i++){const a=i/n*Math.PI*2+(i%3)*.02, rr=r0+((i*53)%60), w=1+((i*7)%3)*.6;const ca=Math.cos(a),sa=Math.sin(a);
+ s+=`<path d="M${cx+ca*rr},${cy+sa*rr} L${cx+ca*500+(-sa)*w*3},${cy+sa*500+ca*w*3} L${cx+ca*500-(-sa)*w*3},${cy+sa*500-ca*w*3}Z" fill="${c}" opacity="${op}"/>`}return s}
+function burst(cx,cy,c,n=24){let s='';for(let i=0;i<n;i++){const a=i/n*Math.PI*2,a2=a+Math.PI/n*.55;s+=`<path d="M${cx},${cy} L${cx+Math.cos(a)*600},${cy+Math.sin(a)*600} L${cx+Math.cos(a2)*600},${cy+Math.sin(a2)*600}Z" fill="${c}"/>`}return s}
+function confetti(n){const cs=['#f43f5e','#f59e0b','#10b981','#3b82f6','#a855f7','#facc15'];let s='';for(let i=0;i<n;i++){const x=(i*97)%400,y=(i*53)%180+6,r=(i*41)%180;
+ s+=i%3===0?`<path d="M${x},${y} q4,-5 8,0 t8,0" fill="none" stroke="${cs[i%6]}" stroke-width="2.6" stroke-linecap="round" transform="rotate(${r} ${x+8} ${y})"/>`:`<rect x="${x}" y="${y}" width="8" height="4" rx="1" fill="${cs[i%6]}" transform="rotate(${r} ${x+4} ${y+2})"/>`}return s}
+function sparkle(x,y,s=1,c='#fff'){return `<path d="M${x},${y-9*s} Q${x+1.5*s},${y-1.5*s} ${x+9*s},${y} Q${x+1.5*s},${y+1.5*s} ${x},${y+9*s} Q${x-1.5*s},${y+1.5*s} ${x-9*s},${y} Q${x-1.5*s},${y-1.5*s} ${x},${y-9*s}Z" fill="${c}" stroke="#f5b400" stroke-width="1"/>`}
+function sticky(x,y,c,r){return `<g transform="rotate(${r} ${x+15} ${y+15})"><rect x="${x+1}" y="${y+2}" width="30" height="30" fill="#000" opacity=".12"/><rect x="${x}" y="${y}" width="30" height="30" fill="${c}" ${SW1}/><path d="M${x+6},${y+11} L${x+24},${y+11} M${x+6},${y+18} L${x+20},${y+18}" stroke="${LN}" stroke-width="1.4" opacity=".5"/><circle cx="${x+15}" cy="${y+3}" r="2.4" fill="#e11d48"/></g>`}
+function paper(x,y,r){return `<g transform="rotate(${r} ${x} ${y})"><rect x="${x-11}" y="${y-14}" width="22" height="28" fill="#fff" ${SW1}/><path d="M${x-6},${y-6} L${x+6},${y-6} M${x-6},${y} L${x+6},${y} M${x-6},${y+6} L${x+3},${y+6}" stroke="#9aa6b2" stroke-width="1.4"/></g>`}
+function partition(x,y,w,c='#a9b8c8'){return `<rect x="${x}" y="${y}" width="${w}" height="${320-y}" fill="${c}" ${SW}/><rect x="${x}" y="${y}" width="${w}" height="${320-y}" fill="url(#pTone)"/><rect x="${x-2}" y="${y-4}" width="${w+4}" height="8" rx="2" fill="#7b8a9b" ${SW}/>`}
+function sfx(x,y,t,size=22,c='#e11d48',r=0){return `<text x="${x}" y="${y}" font-family="Gaegu,cursive" font-weight="700" font-size="${size}" fill="${c}" stroke="#fff" stroke-width="5" paint-order="stroke" stroke-linejoin="round" transform="rotate(${r} ${x} ${y})" text-anchor="middle">${t}</text>`}
+function shadow(x,y,w){return `<ellipse cx="${x}" cy="${y}" rx="${w}" ry="${w*.18}" fill="#000" opacity=".12" filter="url(#fSoft)"/>`}
+const VIG=`<rect width="400" height="300" fill="url(#gVig)"/>`;
+
+/* ================== 10컷 시나리오 ================== */
+// 말풍선: x,y,w = 컷 대비 % / sx = 말하는 사람 위치(%) / type: speech|thought|narr
+const PANELS=[
+ {cap:'출근길 인사',svg:()=>room('gWallWarm',232)+ceiling(3)+win(232,58,150,92,'day')+rays(232,58,150,92,300)+
+   `<rect x="16" y="70" width="76" height="162" rx="3" fill="url(#gWood)" ${SW}/><rect x="26" y="82" width="56" height="54" rx="2" fill="url(#gSkyDay)" ${SW}/><rect x="26" y="82" width="56" height="54" fill="url(#pTone)"/><circle cx="80" cy="160" r="4" fill="#fcd34d" ${SW1}/><rect x="96" y="132" width="16" height="20" rx="2" fill="#cbd5e1" ${SW1}/><circle cx="104" cy="140" r="3" fill="#22c55e"/>`+
+   clock(200,44,15,8,58)+
+   person('B',300,194,{arm:'wave',mouth:'grin',eyes:'normal'})+desk(234,234,172)+monitor(330,178,62,44)+keyboard(250,222)+mug(372,214,'#ffd6e0')+plant(212,234,.8)+
+   shadow(134,292,70)+person('A',134,198,{arm:'cup',eyes:'happy',mouth:'grin',blush:1})+sparkle(178,150,.8,'#fff7b0')+sparkle(90,128,.6,'#fff7b0')+VIG,
+  b:[{x:3,y:5,w:40,sx:32},{x:56,y:5,w:41,sx:74}]},
+ {cap:'메일함 폭탄',svg:()=>`<rect width="400" height="300" fill="#e7eefc"/>`+focus(290,175,105,80,'#26335c',.35)+
+   `<ellipse cx="114" cy="150" rx="110" ry="80" fill="url(#gScreenGlow)"/>`+
+   monitor(24,88,180,122,`<rect x="28" y="92" width="172" height="16" fill="#0e9b8b"/><circle cx="36" cy="100" r="3" fill="#fff"/><rect x="44" y="97" width="40" height="5" rx="2" fill="#fff" opacity=".8"/>`+[0,1,2,3,4].map(i=>`<rect x="32" y="${114+i*17}" width="164" height="14" fill="${i%2?'#fff':'#f1f8ff'}"/><rect x="38" y="${117+i*17}" width="12" height="9" fill="#fff" stroke="#e11d48" stroke-width="1.5"/><path d="M38,${117+i*17} l6,5 l6,-5" fill="none" stroke="#e11d48" stroke-width="1.3"/><rect x="56" y="${119+i*17}" width="${110-i*12}" height="4" rx="2" fill="#94a3b8"/><circle cx="188" cy="${121+i*17}" r="3" fill="#e11d48"/>`).join(''))+
+   `<circle cx="198" cy="96" r="19" fill="#e11d48" ${SW}/><text x="198" y="102" font-size="15" font-weight="900" fill="#fff" text-anchor="middle" font-family="Noto Sans KR,sans-serif">99+</text>`+
+   person('A',292,212,{eyes:'shock',mouth:'o',sweat:1,brow:'worried',fx:'gloom'})+desk(-4,250,408)+keyboard(230,240,80)+papers(40,248)+mug(170,232,'#fff')+sfx(354,128,'헉!!',30,'#e11d48',12)+VIG,
+  b:[{x:3,y:4,w:42,type:'narr'},{x:53,y:4,w:44,sx:73,type:'thought'}]},
+ {cap:'팀장님의 호출',svg:()=>room('gWallMint',246,'gFloorGray')+ceiling(3)+win(148,40,96,72,'day')+
+   partition(-4,150,118,'#b4c9bf')+
+   monitor(336,176,58,44)+person('A',300,212,{flip:1,eyes:'shock',mouth:'wavy',sweat:1,brow:'worried'})+desk(226,246,182)+keyboard(250,236)+papers(352,244)+
+   shadow(110,296,80)+person('C',110,190,{s:1.1,arm:'point',mouth:'smile',brow:'up',eyes:'side'})+sfx(262,130,'움찔',20,'#2563eb',-8)+VIG,
+  b:[{x:3,y:4,w:44,sx:26},{x:53,y:7,w:44,sx:75}]},
+ {cap:'긴급 회의',svg:()=>room('gWallLav',240,'gFloorGray')+ceiling(3)+
+   `<rect x="246" y="42" width="144" height="114" rx="3" fill="url(#gBoard)" ${SW}/><rect x="268" y="116" width="18" height="28" fill="#93c5fd" ${SW1}/><rect x="296" y="98" width="18" height="46" fill="#86efac" ${SW1}/><rect x="324" y="76" width="18" height="68" fill="#fca5a5" ${SW1}/><path d="M262,134 L306,94 L352,64" fill="none" stroke="#e11d48" stroke-width="3" stroke-linecap="round"/><path d="M342,62 L353,64 L350,75" fill="none" stroke="#e11d48" stroke-width="3" stroke-linecap="round"/><path d="M262,146 L372,146" stroke="${LN}" stroke-width="1.5"/><rect x="240" y="156" width="156" height="7" rx="2" fill="#94a3b8" ${SW1}/><rect x="300" y="152" width="18" height="5" rx="1" fill="#e11d48"/>`+
+   person('A',54,214,{s:.85,eyes:'side',mouth:'smile'})+person('D',132,214,{s:.85,eyes:'side',mouth:'o',brow:'up'})+
+   `<rect x="-6" y="244" width="246" height="70" fill="url(#gWood)" ${SW}/><rect x="-8" y="236" width="252" height="12" rx="3" fill="url(#gWoodTop)" ${SW}/>`+papers(20,238)+mug(176,220,'#fff')+
+   person('C',214,190,{arm:'point',mouth:'grin',brow:'up'})+VIG,
+  b:[{x:2,y:5,w:28,sx:14},{x:31,y:3,w:34,sx:53}]},
+ {cap:'아이디어 회의',svg:()=>room('gWallSun',250)+ceiling(3)+
+   `<rect x="146" y="28" width="108" height="100" rx="3" fill="url(#gCork)" ${SW}/><rect x="146" y="28" width="108" height="100" fill="url(#pTone)"/>`+sticky(156,36,'#fde68a',-6)+sticky(194,34,'#a7f3d0',4)+sticky(160,78,'#fbcfe8',3)+sticky(202,80,'#bfdbfe',-5)+`<path d="M186,52 C196,60 196,82 210,92" stroke="#e11d48" stroke-width="1.6" fill="none" stroke-dasharray="3 2"/>`+
+   
+   shadow(104,296,70)+person('B',104,204,{arm:'marker',mouth:'grin',brow:'up'})+
+   shadow(300,296,70)+person('D',300,204,{arm:'chin',eyes:'happy',mouth:'cat',blush:1})+
+   `<circle cx="354" cy="112" r="26" fill="url(#gGlow)"/><path d="M342,108 C342,92 366,92 366,108 C366,116 360,118 359,126 L349,126 C348,118 342,116 342,108Z" fill="#fde047" ${SW}/><rect x="348" y="126" width="12" height="8" rx="2" fill="#cbd5e1" ${SW1}/><path d="M354,80 L354,72 M334,90 L328,85 M374,90 L380,85 M330,108 L322,108 M378,108 L386,108" stroke="#f59e0b" stroke-width="2.6" stroke-linecap="round"/>`+sparkle(330,140,.7,'#fff7b0')+VIG,
+  b:[{x:3,y:4,w:38,sx:26},{x:57,y:4,w:39,sx:75}]},
+ {cap:'탕비실 커피타임',svg:()=>`<rect width="400" height="300" fill="url(#pTile)"/>`+
+   `<rect x="110" y="20" width="180" height="60" rx="3" fill="#f8fafc" ${SW}/><path d="M200,20 L200,80" stroke="${LN}" stroke-width="1.5"/><circle cx="192" cy="54" r="2.4" fill="${LN}"/><circle cx="208" cy="54" r="2.4" fill="${LN}"/>`+
+   `<rect x="-6" y="226" width="412" height="80" fill="url(#gWood)" ${SW}/><rect x="-8" y="218" width="416" height="12" rx="2" fill="url(#gWoodTop)" ${SW}/>`+
+   `<rect x="18" y="112" width="82" height="106" rx="8" fill="url(#gDark)" ${SW}/><rect x="28" y="124" width="62" height="24" rx="4" fill="#111827" ${SW1}/><circle cx="40" cy="136" r="4" fill="#34d399"/><circle cx="54" cy="136" r="4" fill="#f87171"/><rect x="64" y="132" width="20" height="8" rx="2" fill="#38bdf8" opacity=".8"/><rect x="44" y="160" width="30" height="7" rx="2" fill="#9ca3af" ${SW1}/><path d="M59,167 L59,180" stroke="#7c4a1e" stroke-width="3" stroke-dasharray="2 3"/>`+mug(52,190,'#fff')+
+   `<rect x="330" y="186" width="54" height="32" rx="4" fill="#f1f5f9" ${SW1}/><circle cx="344" cy="200" r="5" fill="#fbbf24" ${SW1}/><circle cx="358" cy="204" r="5" fill="#f87171" ${SW1}/><circle cx="371" cy="199" r="5" fill="#a3e635" ${SW1}/>`+
+   person('A',196,204,{arm:'cup',eyes:'happy',mouth:'smile'})+person('B',306,204,{arm:'cup',flip:1,eyes:'happy',mouth:'grin',blush:1})+sfx(250,140,'♪',26,'#f472b6',-10)+VIG,
+  b:[{x:21,y:4,w:37,sx:49},{x:61,y:6,w:36,sx:77}]},
+ {cap:'프린터 대참사',svg:()=>room('gWallGray',258,'gFloorGray')+focus(110,175,96,64,'#475569',.28)+
+   `<rect x="252" y="210" width="102" height="52" fill="url(#gMetal)" ${SW}/><path d="M262,226 L344,226 M262,242 L344,242" stroke="#94a3b8" stroke-width="1.5"/>`+
+   `<rect x="226" y="150" width="152" height="64" rx="8" fill="url(#gMetal)" ${SW}/><rect x="240" y="142" width="124" height="12" rx="3" fill="#e5e7eb" ${SW}/><rect x="246" y="184" width="112" height="10" rx="2" fill="#374151" ${SW1}/><rect x="236" y="160" width="40" height="14" rx="2" fill="#1f2937" ${SW1}/><text x="256" y="171" font-size="9" font-weight="900" fill="#f87171" text-anchor="middle" font-family="sans-serif">ERR</text><circle cx="360" cy="166" r="9" fill="url(#gGlow)"/><circle cx="360" cy="166" r="5" fill="#ef4444" ${SW1}/>`+
+   paper(256,118,-20)+paper(300,100,12)+paper(338,124,28)+paper(214,140,-34)+paper(382,106,40)+paper(282,74,-8)+
+   sfx(318,70,'삐삐삐!',22,'#e11d48',-6)+
+   shadow(110,296,70)+person('D',110,204,{arm:'up',eyes:'shock',mouth:'o',sweat:1,brow:'worried'})+VIG,
+  b:[{x:3,y:4,w:40,sx:27},{x:56,y:4,w:41,sx:74}]},
+ {cap:'고객사의 전화',svg:()=>room('gWallCool',240,'gFloorGray')+ceiling(3)+win(38,30,124,80,'day')+rays(38,30,124,80,240)+
+   person('C',118,204,{arm:'phone',mouth:'wavy',sweat:1,brow:'worried',eyes:'down'})+desk(-4,242,256)+
+   `<rect x="150" y="222" width="46" height="20" rx="4" fill="url(#gDark)" ${SW}/><path d="M156,222 Q173,210 190,222" fill="none" stroke="#2b2f36" stroke-width="4"/>`+papers(26,240)+`<rect x="70" y="228" width="40" height="14" rx="2" fill="#fde68a" ${SW1}/>`+
+   person('A',322,212,{s:.9,eyes:'side',mouth:'flat',brow:'worried'})+partition(250,204,160,'#a9b8c8')+sfx(236,120,'꿀꺽',18,'#64748b',8)+VIG,
+  b:[{x:3,y:4,w:44,sx:30},{x:57,y:7,w:39,sx:80,type:'thought'}]},
+ {cap:'야근의 밤',svg:()=>room('gWallNight',244,'gFloorNight')+win(24,44,352,104,'night',false)+
+   `<rect width="400" height="300" fill="#0b1026" opacity=".25"/>`+
+   `<ellipse cx="128" cy="200" rx="150" ry="90" fill="url(#gGlow)" opacity=".45"/>`+
+   person('A',70,214,{eyes:'tired',mouth:'flat',fx:'gloom'})+person('B',184,214,{eyes:'tired',mouth:'o'})+
+   desk(-6,240,286,true)+`<rect x="104" y="208" width="46" height="30" rx="3" fill="#475569" ${SW}/><rect x="108" y="212" width="38" height="22" fill="#bfe0ff" opacity=".9"/><path d="M240,240 L240,196 L262,176" stroke="#cbd5e1" stroke-width="4" fill="none"/><path d="M252,170 L278,170 L272,186 L258,186Z" fill="#fde68a" ${SW1}/>`+mug(22,222,'#fff')+mug(210,222,'#ffd6e0')+
+   sfx(40,150,'Zzz',22,'#c7d2fe',-10)+
+   person('D',330,196,{arm:'box',eyes:'happy',mouth:'grin',blush:1})+sparkle(370,140,.7,'#fff7b0')+sparkle(290,150,.5,'#fff7b0')+VIG,
+  b:[{x:2,y:4,w:31,sx:17},{x:35,y:3,w:30,sx:46},{x:67,y:5,w:31,sx:82}]},
+ {cap:'프로젝트 성공!',svg:()=>`<rect width="400" height="300" fill="url(#gWallPink)"/>`+burst(200,210,'#ffe3ee',28)+confetti(56)+`<rect x="0" y="262" width="400" height="40" fill="url(#gFloorPink)"/>`+
+   [58,150,250,342].map(x=>shadow(x,294,50)).join('')+
+   person('A',58,216,{s:.85,arm:'up',eyes:'happy',mouth:'grin',blush:1})+person('B',150,216,{s:.85,arm:'up',eyes:'happy',mouth:'grin',blush:1})+
+   person('C',250,216,{s:.85,arm:'up',eyes:'happy',mouth:'grin'})+person('D',342,216,{s:.85,arm:'up',eyes:'happy',mouth:'grin',blush:1})+
+   sparkle(104,150,.9,'#fff7b0')+sparkle(200,140,1,'#fff7b0')+sparkle(298,150,.9,'#fff7b0')+VIG,
+  b:[{x:2,y:4,w:31,sx:15},{x:35,y:3,w:30,sx:50},{x:67,y:4,w:31,sx:86}]}
+];
+const SVGCACHE={};
+function panelSVG(n){return SVGCACHE[n]||(SVGCACHE[n]=`<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">${PANELS[n-1].svg()}</svg>`)}
+document.body.insertAdjacentHTML('afterbegin',DEFS);
+/* AI로 만든 그림이 있으면 그 그림을 사용 (img/p1.webp 등) */
+const PANEL_IMG={};
+function panelArt(p){return PANEL_IMG[p]?`<img class="art" src="${PANEL_IMG[p]}" alt="${PANELS[p-1].cap}" loading="lazy">`:panelSVG(p)}
+
+/* ================== 데이터 ================== */
+async function rest(path,opt={}){
+ const r=await fetch(SB_URL+'/rest/v1/'+path,{...opt,headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'Content-Type':'application/json',...(opt.headers||{})}});
+ const t=await r.text(); let j=null; try{j=t?JSON.parse(t):null}catch(e){}
+ if(!r.ok) throw new Error((j&&(j.message||j.hint))||('HTTP '+r.status));
+ return j;
+}
+const rpc=(fn,args)=>rest('rpc/'+fn,{method:'POST',body:JSON.stringify(args)});
+let CFG=null, TEAMS={}, BUB={};
+const key=(p,i)=>p+'-'+i;
+async function loadCfg(){const r=await rest('otoon_config?id=eq.1&select=*');CFG=r[0];if(!Array.isArray(CFG.panels)||!CFG.panels.length)CFG.panels=[1,2,3,4,5,6,7,8,9,10];CFG.panels.sort((a,b)=>a-b);CFG.current_turn=CFG.current_turn||0;return CFG}
+async function loadTeams(){const r=await rest('otoon_teams?select=*');TEAMS={};r.forEach(t=>TEAMS[t.team]=t);}
+async function loadBubbles(){
+ const r=await rest('otoon_bubbles?select=team,panel,idx,text,updated_at&order=updated_at.asc');
+ BUB={}; r.forEach(b=>BUB[key(b.panel,b.idx)]=b);
+}
+const loadAll=()=>Promise.all([loadCfg(),loadTeams(),loadBubbles()]);
+const teamName=t=>(TEAMS[t]&&TEAMS[t].name)||'';
+const teamLabel=t=>t+'팀'+(teamName(t)?' · '+teamName(t):'');
+/* 릴레이 배정: 선택된 컷을 팀 수대로 순서대로 나눔 (DB의 otoon_chunk와 같은 계산) */
+function chunk(t){const n=CFG.panels.length,T=CFG.team_count;return CFG.panels.slice(Math.floor((t-1)*n/T),Math.floor(t*n/T))}
+function ownerOf(p){for(let t=1;t<=CFG.team_count;t++)if(chunk(t).includes(p))return t;return 0}
+const TURN=()=>CFG.current_turn;
+const finished=()=>TURN()>CFG.team_count;
+function panelState(p){const o=ownerOf(p),t=TURN();if(finished()||o<t)return 'done';if(o===t)return 'now';return 'wait'}
+function filledIn(ps){let n=0,tot=0;ps.forEach(p=>PANELS[p-1].b.forEach((_,i)=>{tot++;const b=BUB[key(p,i)];if(b&&b.text.trim())n++}));return [n,tot]}
+
+/* ================== 공통 UI ================== */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),2200)}
+let TIMERS=[];
+function clearTimers(){TIMERS.forEach(clearInterval);TIMERS=[]}
+function every(ms,fn){TIMERS.push(setInterval(fn,ms))}
+function header(sub,right=''){
+ return `<div class="top"><div class="logo">💬</div><h1>${esc(CFG?CFG.title:'오피스 웹툰')}<small>${sub}</small></h1><div class="sp"></div>${right}</div>`;
+}
+function castHTML(){
+ const ex={A:{eyes:'happy',mouth:'grin'},B:{mouth:'smile'},C:{mouth:'smile'},D:{eyes:'happy',mouth:'grin'}};
+ return `<div class="cast">${Object.keys(CAST).map(k=>`<div>${headOnly(k,ex[k])}${CAST[k].name}<small>${CAST[k].role}</small></div>`).join('')}</div>`;
+}
+function turnBanner(myTeam){
+ const t=TURN();
+ if(t===0) return `<div class="turnbar wait">⏳ 아직 시작 전이에요. 진행자가 시작하면 <b>1팀</b>부터 이어 써요.</div>`;
+ if(finished()) return `<div class="turnbar done">🎉 모든 팀이 이어 써서 웹툰이 완성됐어요!</div>`;
+ if(myTeam===t) return `<div class="turnbar now">✍️ <b>우리 팀 차례예요!</b> 앞 이야기를 읽고 ${chunk(t).length}컷을 이어 써 주세요.</div>`;
+ if(myTeam&&myTeam<t) return `<div class="turnbar done">✅ 우리 팀은 완료! 지금은 <b>${esc(teamLabel(t))}</b>이 이어 쓰는 중이에요.</div>`;
+ const wait=myTeam?myTeam-t:0;
+ return `<div class="turnbar wait">👀 지금 <b>${esc(teamLabel(t))}</b>이 쓰는 중이에요.${myTeam?` 우리 팀까지 <b>${wait}팀</b> 남았어요.`:''}</div>`;
+}
+function bubbleHTML(p,i,b,mode){
+ const cur=BUB[key(p,i)], txt=cur?cur.text:'';
+ if(mode==='view'&&!txt.trim()) return '';
+ const type=b.type||'speech';
+ const tx=b.sx==null?50:Math.min(85,Math.max(15,(b.sx-b.x)/b.w*100));
+ const long=txt.length>22?' long':'';
+ const st=`left:${b.x}%;top:${b.y}%;width:${b.w}%;--tx:${tx}%`;
+ if(mode==='view') return `<div class="bub ${type}${long}" style="${st}"><div class="txt">${esc(txt).replace(/\n/g,'<br>')}</div></div>`;
+ const ph=type==='narr'?'(해설)':type==='thought'?'(속마음)':'대사 입력';
+ return `<div class="bub ${type}${long}" style="${st}"><textarea rows="1" maxlength="${MAXLEN}" data-p="${p}" data-i="${i}" placeholder="${ph}">${esc(txt)}</textarea></div>`;
+}
+/* mode: edit | view | thumb | locked(그림만, 대기) */
+function panelHTML(p,mode,num,credit){
+ const P=PANELS[p-1];
+ const bubbles=(mode==='edit'||mode==='view')?P.b.map((b,i)=>bubbleHTML(p,i,b,mode)).join(''):'';
+ const lock=mode==='locked'?`<div class="lockcover"><span>🔒 ${credit?esc(credit)+' 차례에':'나중에'} 이어 쓸 장면</span></div>`:'';
+ const cred=credit&&mode!=='locked'&&mode!=='thumb'?`<span class="credit">${esc(credit)}</span>`:'';
+ return `<div class="panel ${mode==='edit'?'mine':''}">${panelArt(p)}${bubbles}${lock}${cred}${num?`<span class="pnum">${num}</span>`:''}</div>`;
+}
+/* 전체 웹툰(하나) — opts.edit: 편집 가능한 팀, opts.reveal: 대기 컷을 잠금으로 보여줄지 */
+function storyHTML(opts={}){
+ return `<div class="toon">${CFG.panels.map((p,i)=>{
+  const o=ownerOf(p), st=panelState(p);
+  let mode='view';
+  if(st==='wait') mode='locked';
+  if(st==='now'&&opts.edit===o&&CFG.editing_open) mode='edit';
+  return panelHTML(p,mode,i+1,o?teamLabel(o):'');
+ }).join('')}</div>`;
+}
+function autosize(ta){ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';ta.parentElement.classList.toggle('long',ta.value.length>22)}
+
+/* ================== 화면: 홈 ================== */
+async function viewHome(){
+ await loadAll();
+ const mine=+localStorage.getItem('otoon_team')||0;
+ let h=header('팀이 차례대로 이어 쓰는 릴레이 웹툰');
+ h+=`<div class="card"><h2>🎬 이렇게 진행해요</h2><div class="muted">1. 진행자가 알려준 <b>우리 팀 번호</b>를 누르세요.<br>2. 1팀부터 차례로, 앞 팀이 쓴 이야기를 읽고 <b>맡은 컷의 대사를 이어 써요</b>.<br>3. 다 쓰면 <b>“다음 팀에게 넘기기”</b>! 모든 팀이 끝나면 웹툰 한 편이 완성돼요.</div></div>`;
+ h+=turnBanner(0);
+ h+=`<div class="card"><h2>👥 등장인물</h2>${castHTML()}</div>`;
+ h+=`<div class="card"><h2>우리 팀 선택</h2><div class="teams">`;
+ for(let t=1;t<=CFG.team_count;t++){const c=chunk(t);const nums=c.map(p=>CFG.panels.indexOf(p)+1);
+  const st=finished()||t<TURN()?'✅ 완료':t===TURN()?'✍️ 작성 중':'⏳ 대기';
+  h+=`<button class="teambtn ${t===mine?'mine':''} ${t===TURN()?'now':''}" onclick="go('#/team/${t}')"><b>${t}팀</b><span>${esc(teamName(t))||'&nbsp;'}</span><span class="tc">${c.length?`${nums[0]}${nums.length>1?'~'+nums[nums.length-1]:''}컷 · ${st}`:'맡은 컷 없음'}</span></button>`;}
+ h+=`</div></div>`;
+ h+=`<a class="btn btn-primary full" href="#/story">📖 지금까지의 웹툰 보기</a>`;
+ h+=`<div class="footer-links"><a href="#/admin">관리자</a></div>`;
+ $('#app').innerHTML=`<div class="wrap">${h}</div>`;
+ const sig=()=>JSON.stringify([CFG.team_count,CFG.current_turn,CFG.title,CFG.panels,CFG.editing_open]);
+ const s0=sig();
+ every(5000,async()=>{try{await Promise.all([loadCfg(),loadTeams()]);if(sig()!==s0)route();}catch(e){}});
+}
+
+/* ================== 화면: 팀 ================== */
+const DIRTY={}; const SAVET={};
+function setSave(s){const el=$('#savest');if(el)el.textContent=s}
+async function saveBubble(ta,t){
+ const p=+ta.dataset.p,i=+ta.dataset.i,k=key(p,i),v=ta.value.slice(0,MAXLEN);
+ setSave('저장 중…');
+ try{await rpc('otoon_relay_save',{p_team:t,p_panel:p,p_idx:i,p_text:v});
+  BUB[k]={team:t,panel:p,idx:i,text:v};
+  if(ta.value.slice(0,MAXLEN)===v) delete DIRTY[k];
+  setSave('✅ 저장됨');
+ }catch(e){setSave('⚠️ 저장 실패');toast(/turn/.test(e.message)?'지금은 우리 팀 차례가 아니에요':/closed/.test(e.message)?'편집이 마감되었어요':'저장 실패: 네트워크를 확인해 주세요');}
+}
+async function viewTeam(t){
+ await loadAll();
+ if(t<1||t>CFG.team_count){go('#/');return}
+ localStorage.setItem('otoon_team',t);
+ const myTurn=TURN()===t&&CFG.editing_open;
+ const c=chunk(t), nums=c.map(p=>CFG.panels.indexOf(p)+1);
+ let h=header(`${t}팀 · 릴레이 웹툰`,`<a class="btn btn-ghost btn-small" href="#/">팀 변경</a>`);
+ h+=turnBanner(t);
+ h+=`<div class="card"><label class="f" style="margin-top:0">우리 팀 이름 <span class="muted">(웹툰에 작가로 표시돼요)</span></label><input type="text" id="tname" maxlength="20" placeholder="예) 커피수혈단" value="${esc(teamName(t))}">
+  <div class="row" style="justify-content:space-between;margin-top:10px"><span class="muted">우리 팀 담당: <b>${c.length?nums.map(n=>n+'컷').join(', '):'없음'}</b></span><span class="saving" id="savest"></span></div></div>`;
+ h+=`<div class="card" style="padding:12px">${castHTML()}</div>`;
+ h+=`<div class="toonhead"><div class="t">${esc(CFG.title)}</div><div class="s">${CFG.team_count}개 팀이 이어 쓰는 릴레이 웹툰</div></div>`;
+ h+=`<div id="toon">${storyHTML({edit:t})}</div>`;
+ if(myTurn) h+=`<div class="passbox"><div class="muted">우리 팀 컷을 다 썼나요? 넘기면 더 이상 고칠 수 없어요.</div><button class="btn btn-primary full" id="pass">✅ 다 썼어요! ${t<CFG.team_count?'다음 팀에게 넘기기':'웹툰 완성하기'}</button></div>`;
+ h+=`<div style="margin-top:12px"><a class="btn btn-ghost full" href="#/story">📖 웹툰 전체 보기</a></div>`;
+ $('#app').innerHTML=`<div class="wrap">${h}</div>`;
+ if(myTurn){const first=document.querySelector('.panel.mine');if(first)setTimeout(()=>first.scrollIntoView({behavior:'smooth',block:'center'}),300)}
+ document.querySelectorAll('#toon textarea').forEach(ta=>{
+  autosize(ta);
+  ta.addEventListener('focus',()=>ta.parentElement.classList.add('focus'));
+  ta.addEventListener('blur',()=>{ta.parentElement.classList.remove('focus');const k=key(ta.dataset.p,ta.dataset.i);if(DIRTY[k]){clearTimeout(SAVET[k]);saveBubble(ta,t)}});
+  ta.addEventListener('input',()=>{if(ta.value.includes('\n'))ta.value=ta.value.replace(/\n/g,' ');autosize(ta);const k=key(ta.dataset.p,ta.dataset.i);DIRTY[k]=1;setSave('입력 중…');clearTimeout(SAVET[k]);SAVET[k]=setTimeout(()=>saveBubble(ta,t),700)});
+ });
+ const pass=$('#pass');
+ if(pass) pass.onclick=async()=>{
+  const [n,tot]=filledIn(c);
+  if(!confirm(`${n}/${tot}개 말풍선을 채웠어요.${n<tot?' (빈 말풍선은 완성본에서 숨겨져요)':''}\n${t<CFG.team_count?'다음 팀에게 넘길까요?':'웹툰을 완성할까요?'}`))return;
+  try{
+   await Promise.all(Object.keys(SAVET).map(k=>{clearTimeout(SAVET[k]);const ta=document.querySelector(`textarea[data-p="${k.split('-')[0]}"][data-i="${k.split('-')[1]}"]`);return DIRTY[k]&&ta?saveBubble(ta,t):null}));
+   await rpc('otoon_pass_turn',{p_team:t});toast('바통을 넘겼어요! 🏃');route();
+  }catch(e){toast('넘기기 실패: '+e.message)}
+ };
+ const tn=$('#tname'); let tnT;
+ tn.addEventListener('input',()=>{clearTimeout(tnT);tnT=setTimeout(async()=>{try{await rpc('otoon_save_team_name',{p_team:t,p_name:tn.value.trim()});TEAMS[t]={team:t,name:tn.value.trim()};setSave('✅ 팀 이름 저장됨')}catch(e){setSave('⚠️ 저장 실패')}},600)});
+ const sig=()=>JSON.stringify([CFG.current_turn,CFG.editing_open,CFG.panels,CFG.team_count]);
+ const s0=sig();
+ every(3000,async()=>{
+  try{await Promise.all([loadCfg(),loadBubbles(),loadTeams()]);}catch(e){return}
+  if(sig()!==s0&&!Object.keys(DIRTY).length&&document.activeElement!==tn){route();return}
+  if(myTurn){ // 같은 팀원끼리 실시간 반영
+   document.querySelectorAll('#toon textarea').forEach(ta=>{
+    const k=key(ta.dataset.p,ta.dataset.i); if(DIRTY[k]||document.activeElement===ta) return;
+    const v=BUB[k]?BUB[k].text:''; if(ta.value!==v){ta.value=v;autosize(ta)}
+   });
+  } else if(TURN()>=1&&!finished()){ // 다른 팀이 쓰는 중 → 그 팀 컷만 다시 그림
+   const live=document.getElementById('toon'); const y=scrollY; live.innerHTML=storyHTML({edit:t}); scrollTo(0,y);
+  }
+ });
+}
+
+/* ================== 화면: 전체 웹툰 ================== */
+async function viewStory(){
+ await loadAll();
+ let h=header('하나로 이어진 웹툰',`<button class="btn btn-primary btn-small" onclick="startShow()">▶ 발표 모드</button>`);
+ h+=turnBanner(+localStorage.getItem('otoon_team')||0);
+ h+=`<div class="toonhead"><div class="t">${esc(CFG.title)}</div><div class="s">${creditsLine()}</div></div>`;
+ h+=`<div id="toon">${storyHTML()}</div>`;
+ h+=`<div class="footer-links"><a href="#/">처음으로</a></div>`;
+ $('#app').innerHTML=`<div class="wrap">${h}</div>`;
+ every(3000,async()=>{try{await loadAll();const y=scrollY;$('#toon').innerHTML=storyHTML();scrollTo(0,y)}catch(e){}});
+}
+function creditsLine(){const a=[];for(let t=1;t<=CFG.team_count;t++)if(chunk(t).length)a.push(teamLabel(t));return '그림·글: '+a.map(esc).join(' → ')}
+
+/* 발표 모드: 표지 → 컷 하나씩 → 작가 소개 */
+let SHOW=0;
+function startShow(){SHOW=0;$('#show').classList.remove('hidden');renderShow();document.documentElement.requestFullscreen?.().catch(()=>{})}
+function endShow(){$('#show').classList.add('hidden');if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});route()}
+function showStep(d){const n=CFG.panels.length;SHOW=Math.max(0,Math.min(n+1,SHOW+d));renderShow()}
+function renderShow(){
+ const n=CFG.panels.length, i=SHOW;
+ let stage;
+ if(i===0) stage=`<div class="title"><div class="s">${CFG.team_count}개 팀의 릴레이 웹툰</div><div class="t">${esc(CFG.title)}</div><div class="s">▶ 눌러서 시작</div></div>`;
+ else if(i>n) stage=`<div class="title"><div class="t">THE END</div><div class="s" style="line-height:1.8">${creditsLine()}</div></div>`;
+ else {const p=CFG.panels[i-1],o=ownerOf(p);stage=`<div class="slide">${panelHTML(p,panelState(p)==='wait'?'locked':'view',i,o?teamLabel(o):'')}</div>`}
+ $('#show').innerHTML=`<div class="stage" onclick="showStep(1)">${stage}</div><div class="ctrl"><button onclick="showStep(-1)">◀</button><span>${i===0?'표지':i>n?'끝':i+' / '+n}</span><button onclick="showStep(1)">▶</button><button onclick="endShow()">✕ 닫기</button></div>`;
+}
+document.addEventListener('keydown',e=>{if($('#show').classList.contains('hidden'))return;
+ if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){e.preventDefault();showStep(1)}
+ if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();showStep(-1)}
+ if(e.key==='Escape')endShow();});
+
+/* ================== 화면: 관리자 ================== */
+let ADM=null;
+function spread(n){if(n>=10)return [1,2,3,4,5,6,7,8,9,10];if(n<=1)return [1];const s=new Set();for(let i=0;i<n;i++)s.add(Math.round(i*9/(n-1))+1);return [...s].sort((a,b)=>a-b)}
+async function viewAdmin(){
+ await loadCfg();
+ const pin=sessionStorage.getItem('otoon_pin');
+ if(!pin){
+  $('#app').innerHTML=`<div class="wrap">${header('관리자')}<div class="card"><h2>🔐 관리자 PIN</h2><input type="password" id="pin" inputmode="numeric" placeholder="PIN 입력"><button class="btn btn-primary full" style="margin-top:10px" id="login">로그인</button></div><div class="footer-links"><a href="#/">처음으로</a></div></div>`;
+  const tryLogin=async()=>{const v=$('#pin').value.trim();try{const ok=await rpc('otoon_admin_check',{p_pin:v});if(ok){sessionStorage.setItem('otoon_pin',v);route()}else toast('PIN이 올바르지 않아요')}catch(e){toast('오류: '+e.message)}};
+  $('#login').onclick=tryLogin;$('#pin').onkeydown=e=>{if(e.key==='Enter')tryLogin()};$('#pin').focus();return;
+ }
+ await Promise.all([loadTeams(),loadBubbles()]);
+ ADM={panels:[...CFG.panels]};
+ const url=location.origin+location.pathname;
+ let h=header('관리자 화면',`<button class="btn btn-ghost btn-small" onclick="sessionStorage.removeItem('otoon_pin');route()">로그아웃</button>`);
+ h+=`<div class="card"><h2>📱 참가자 접속 주소</h2><div class="urlbox"><div id="qr"></div><div style="flex:1;min-width:200px"><div class="u">${esc(url)}</div><div class="muted" style="margin-top:6px">화면에 띄워 QR을 찍게 하거나 주소를 공유하세요.</div><button class="btn btn-ghost btn-small" style="margin-top:8px" onclick="navigator.clipboard.writeText('${esc(url)}').then(()=>toast('주소를 복사했어요'))">주소 복사</button></div></div></div>`;
+ h+=`<div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">🏃 릴레이 진행</h2><span class="chip gray" id="a-upd">자동 갱신</span></div><div id="a-turn" style="margin-top:10px"></div>
+  <div class="row wrapr" style="margin-top:10px"><button class="btn btn-ghost btn-small" id="t-prev">◀ 이전 팀으로</button><button class="btn btn-primary btn-small" id="t-next">다음 팀으로 ▶</button><button class="btn btn-ghost btn-small" id="t-start">처음부터(1팀) 시작</button><button class="btn btn-ghost btn-small" id="t-end">완성 처리</button></div>
+  <div id="a-prog" style="margin-top:12px"></div>
+  <div class="row" style="margin-top:12px"><a class="btn btn-primary full" href="#/story">📖 웹툰 전체 보기</a><button class="btn btn-ghost full" onclick="loadAll().then(startShow)">▶ 발표 모드</button></div></div>`;
+ h+=`<div class="card"><h2>⚙️ 웹툰 설정</h2>
+  <label class="f">웹툰 제목</label><input type="text" id="a-title" maxlength="40" value="${esc(CFG.title)}">
+  <label class="f">참가 인원으로 팀 수 계산 (선택)</label>
+  <div class="row"><input type="number" id="a-people" min="1" max="300" placeholder="예) 50"><span style="flex:none;font-size:13px;font-weight:700">명 ÷</span><input type="number" id="a-per" min="2" max="20" value="6" style="width:80px"><span style="flex:none;font-size:13px;font-weight:700">명/팀</span><button class="btn btn-ghost btn-small" style="flex:none" id="a-calc">적용</button></div>
+  <div class="muted" id="a-calcmsg"></div>
+  <label class="f">팀 수</label>
+  <div class="stepper"><button id="tm">−</button><input type="number" id="a-teams" min="1" max="30" value="${CFG.team_count}"><button id="tp">+</button><span class="muted">팀</span></div>
+  <label class="f">컷 수 · 사용할 컷 선택</label>
+  <div class="stepper"><button id="pm">−</button><input type="number" id="a-pc" min="1" max="10" value="${ADM.panels.length}"><button id="pp">+</button><span class="muted">컷 (최대 10)</span></div>
+  <div class="muted" id="a-assign" style="margin-top:8px"></div>
+  <div class="pgrid" id="picks" style="margin-top:12px"></div>
+  <div style="margin-top:14px">
+   <div class="toggle"><div><b>✏️ 대사 편집 허용</b><small>끄면 차례인 팀도 편집할 수 없어요 (일시정지)</small></div><label class="sw"><input type="checkbox" id="a-edit" ${CFG.editing_open?'checked':''}><i></i></label></div>
+  </div>
+  <button class="btn btn-primary full" style="margin-top:12px" id="a-save">설정 저장</button></div>`;
+ h+=`<div class="card"><h2>🧹 기타</h2><div class="row wrapr"><button class="btn btn-danger btn-small" id="a-reset">모든 대사·팀 이름 초기화</button><button class="btn btn-ghost btn-small" id="a-pin">PIN 변경</button></div><div class="muted" style="margin-top:8px">새 교육 차수를 시작할 때 초기화하세요. 차례도 '시작 전'으로 돌아가요.</div></div>`;
+ h+=`<div class="footer-links"><a href="#/">참가자 화면</a></div>`;
+ $('#app').innerHTML=`<div class="wrap">${h}</div>`;
+ try{new QRCode($('#qr'),{text:url,width:280,height:280,correctLevel:QRCode.CorrectLevel.M})}catch(e){$('#qr').remove()}
+ const teamsNow=()=>Math.max(1,Math.min(30,+$('#a-teams').value||1));
+ const showAssign=()=>{const n=ADM.panels.length,T=teamsNow();
+  $('#a-assign').innerHTML=T>n?`⚠️ 팀(${T})이 컷(${n})보다 많아서 <b>${T-n}개 팀은 맡을 컷이 없어요</b>. 컷을 늘리거나 팀을 줄여 주세요.`:`→ 팀당 ${Math.floor(n/T)}${n%T?'~'+Math.ceil(n/T):''}컷씩 이어 써요.`};
+ const renderPicks=()=>{$('#picks').innerHTML=PANELS.map((P,i)=>{const n=i+1,on=ADM.panels.includes(n);return `<div class="pick ${on?'on':''}" data-n="${n}"><span class="ck">${on?ADM.panels.indexOf(n)+1:''}</span>${panelHTML(n,'thumb')}<div class="cap">${n}. ${P.cap}</div></div>`}).join('');
+  $('#a-pc').value=ADM.panels.length;showAssign();
+  document.querySelectorAll('.pick').forEach(el=>el.onclick=()=>{const n=+el.dataset.n;if(ADM.panels.includes(n)){if(ADM.panels.length===1)return toast('최소 1컷은 필요해요');ADM.panels=ADM.panels.filter(x=>x!==n)}else{ADM.panels.push(n);ADM.panels.sort((a,b)=>a-b)}renderPicks()})};
+ renderPicks();
+ const setTeams=v=>{$('#a-teams').value=Math.max(1,Math.min(30,v||1));showAssign()};
+ $('#tm').onclick=()=>setTeams(+$('#a-teams').value-1);$('#tp').onclick=()=>setTeams(+$('#a-teams').value+1);$('#a-teams').onchange=()=>setTeams(+$('#a-teams').value);
+ const setPc=v=>{ADM.panels=spread(Math.max(1,Math.min(10,v||1)));renderPicks()};
+ $('#pm').onclick=()=>setPc(ADM.panels.length-1);$('#pp').onclick=()=>setPc(ADM.panels.length+1);$('#a-pc').onchange=()=>setPc(+$('#a-pc').value);
+ $('#a-calc').onclick=()=>{const p=+$('#a-people').value,per=+$('#a-per').value||6;if(!p)return toast('참가 인원을 입력하세요');const n=Math.min(30,Math.ceil(p/per));setTeams(n);
+  const base=Math.floor(p/n),extra=p%n;$('#a-calcmsg').textContent=`→ ${n}팀 (${extra?`${extra}개 팀 ${base+1}명, ${n-extra}개 팀 ${base}명`:`팀당 ${base}명`}) · 저장을 눌러 적용하세요`;};
+ $('#a-save').onclick=async()=>{
+  try{await rpc('otoon_admin_config',{p_pin:pin,p_title:$('#a-title').value.trim()||'우리 팀 오피스 웹툰',p_team_count:teamsNow(),p_panels:ADM.panels,p_editing_open:$('#a-edit').checked,p_gallery_open:true});
+   toast('✅ 저장했어요');await loadCfg();renderProg();$('.top h1').firstChild.textContent=CFG.title}catch(e){toast('저장 실패: '+e.message)}
+ };
+ $('#a-edit').onchange=()=>$('#a-save').click();
+ const setTurn=async v=>{try{await rpc('otoon_admin_set_turn',{p_pin:pin,p_turn:v});await loadCfg();renderProg();toast(v>CFG.team_count?'완성 처리했어요':v<1?'시작 전으로 돌렸어요':v+'팀 차례로 바꿨어요')}catch(e){toast('실패: '+e.message)}};
+ $('#t-prev').onclick=()=>setTurn(TURN()-1);$('#t-next').onclick=()=>setTurn(TURN()+1);
+ $('#t-start').onclick=()=>{if(TURN()===0||confirm('1팀 차례로 되돌릴까요? 이미 쓴 대사는 그대로 남아요.'))setTurn(1)};
+ $('#t-end').onclick=()=>setTurn(CFG.team_count+1);
+ $('#a-reset').onclick=async()=>{if(!confirm('모든 대사와 팀 이름을 지울까요? 되돌릴 수 없어요.'))return;try{await rpc('otoon_admin_reset',{p_pin:pin});toast('초기화했어요');await loadAll();renderProg()}catch(e){toast('실패: '+e.message)}};
+ $('#a-pin').onclick=async()=>{const v=prompt('새 PIN (4자 이상)');if(!v)return;try{await rpc('otoon_admin_set_pin',{p_pin:pin,p_new:v.trim()});sessionStorage.setItem('otoon_pin',v.trim());toast('PIN을 변경했어요')}catch(e){toast('실패: '+e.message)}};
+ const renderProg=()=>{
+  const t=TURN();
+  $('#a-turn').innerHTML=turnBanner(0);
+  let r=`<table class="prog"><tr><th>순서</th><th>팀 이름</th><th>담당 컷</th><th>진행</th><th>상태</th></tr>`;
+  for(let k=1;k<=CFG.team_count;k++){const c=chunk(k),nums=c.map(p=>CFG.panels.indexOf(p)+1),[f,tot]=filledIn(c);
+   const st=!c.length?'<span class="chip gray">없음</span>':finished()||k<t?'<span class="chip">완료</span>':k===t?'<span class="chip now">작성 중</span>':'<span class="chip gray">대기</span>';
+   r+=`<tr ${k===t?'class="nowrow"':''}><td><b>${k}팀</b></td><td>${esc(teamName(k))||'<span class="muted">-</span>'}</td><td>${nums.length?nums.join(', '):'-'}</td><td style="min-width:90px"><div class="bar" style="margin:0"><i style="width:${tot?f/tot*100:0}%"></i></div><span class="muted">${f}/${tot}</span></td><td>${st}</td></tr>`}
+  $('#a-prog').innerHTML=r+'</table>'};
+ renderProg();
+ every(4000,async()=>{try{await loadAll();renderProg();$('#a-upd').textContent='갱신 '+new Date().toTimeString().slice(0,8)}catch(e){}});
+}
+
+/* ================== 라우터 ================== */
+function go(h){location.hash=h}
+async function route(){
+ clearTimers();
+ const h=location.hash||'#/';
+ try{
+  let m;
+  if((m=h.match(/^#\/team\/(\d+)/))) await viewTeam(+m[1]);
+  else if(h.startsWith('#/story')||h.startsWith('#/gallery')||h.startsWith('#/view')) await viewStory();
+  else if(h.startsWith('#/admin')) await viewAdmin();
+  else await viewHome();
+ }catch(e){
+  console.error(e);
+  const needSql=/current_turn|otoon_relay|otoon_pass|schema cache/.test(e.message);
+  $('#app').innerHTML=`<div class="wrap"><div class="card center"><div style="font-size:40px">📡</div><h2>${needSql?'데이터베이스 업데이트가 필요해요':'연결에 문제가 있어요'}</h2><div class="muted">${esc(e.message)}</div><button class="btn btn-primary" style="margin-top:12px" onclick="route()">다시 시도</button></div></div>`;
+ }
+}
+window.addEventListener('hashchange',route);
+route();
+</script>
+</body>
+</html>
