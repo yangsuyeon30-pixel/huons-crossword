@@ -2,13 +2,6 @@
   "version": 2,
   "cleanUrls": true,
   "routes": [
-    {
-      "src": "/webtoon",
-      "dest": "/webtoon.html"
-    },
-    {
-      "src": "/",
-      "dest": "/huons-crossword.html"
-    }
+    { "src": "/", "dest": "/huons-crossword.html" }
   ]
 }
