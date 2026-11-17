@@ -129,6 +129,20 @@ table.prog th{color:var(--muted);font-weight:700;font-size:12px}
 #show .ctrl{display:flex;gap:8px;align-items:center;justify-content:center;padding:10px;color:#cbd5e1;font-weight:700;font-size:14px}
 #show .ctrl button{background:#273140;color:#fff;border:0;border-radius:10px;padding:10px 16px;font-weight:800;cursor:pointer;font-family:inherit;font-size:14px}
 #show .panel{border-color:#000}
+.panel img.art{display:block;width:100%;aspect-ratio:4/3;object-fit:cover}
+.panel.mine{border-color:var(--huons);box-shadow:0 0 0 4px rgba(14,155,139,.25)}
+.lockcover{position:absolute;inset:0;background:rgba(20,28,40,.55);backdrop-filter:grayscale(.8) blur(1px);-webkit-backdrop-filter:grayscale(.8) blur(1px);display:grid;place-items:center;z-index:3}
+.lockcover span{background:rgba(255,255,255,.92);color:var(--ink);font-weight:800;font-size:13px;padding:8px 12px;border-radius:999px}
+.credit{position:absolute;left:6px;bottom:5px;font-size:11px;font-weight:800;color:#fff;background:rgba(14,155,139,.85);border-radius:6px;padding:2px 7px;z-index:2}
+.turnbar{border-radius:14px;padding:12px 14px;font-size:14px;font-weight:600;margin-bottom:12px;line-height:1.5}
+.turnbar.now{background:#e6faf6;border:2px solid var(--huons);color:var(--huons-dark)}
+.turnbar.wait{background:#fff7e6;border:1px solid #fde3b0;color:#8a5a00}
+.turnbar.done{background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3}
+.teambtn .tc{font-size:11px;margin-top:6px;color:var(--muted)}
+.teambtn.now{border-color:#f59e0b;background:#fffbeb}
+.chip.now{background:#fef3c7;color:#b45309}
+tr.nowrow td{background:#fffbeb}
+.passbox{position:sticky;bottom:0;background:linear-gradient(transparent,var(--bg) 22%);padding:22px 0 10px;margin-top:6px;display:grid;gap:6px;text-align:center;z-index:6}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1c2733;color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;font-weight:700;z-index:200;opacity:0;transition:.25s;pointer-events:none}
 .toast.on{opacity:1}
 .footer-links{display:flex;gap:14px;justify-content:center;margin-top:18px;font-size:13px}
@@ -427,6 +441,9 @@ const PANELS=[
 const SVGCACHE={};
 function panelSVG(n){return SVGCACHE[n]||(SVGCACHE[n]=`<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">${PANELS[n-1].svg()}</svg>`)}
 document.body.insertAdjacentHTML('afterbegin',DEFS);
+/* AI로 만든 그림이 있으면 그 그림을 사용 (img/p1.webp 등) */
+const PANEL_IMG={};
+function panelArt(p){return PANEL_IMG[p]?`<img class="art" src="${PANEL_IMG[p]}" alt="${PANELS[p-1].cap}" loading="lazy">`:panelSVG(p)}
 
 /* ================== 데이터 ================== */
 async function rest(path,opt={}){
@@ -437,23 +454,28 @@ async function rest(path,opt={}){
 }
 const rpc=(fn,args)=>rest('rpc/'+fn,{method:'POST',body:JSON.stringify(args)});
 let CFG=null, TEAMS={}, BUB={};
-const key=(t,p,i)=>t+'-'+p+'-'+i;
-async function loadCfg(){const r=await rest('otoon_config?id=eq.1&select=*');CFG=r[0];if(!Array.isArray(CFG.panels)||!CFG.panels.length)CFG.panels=[1,2,3,4,5,6,7,8,9,10];CFG.panels.sort((a,b)=>a-b);return CFG}
+const key=(p,i)=>p+'-'+i;
+async function loadCfg(){const r=await rest('otoon_config?id=eq.1&select=*');CFG=r[0];if(!Array.isArray(CFG.panels)||!CFG.panels.length)CFG.panels=[1,2,3,4,5,6,7,8,9,10];CFG.panels.sort((a,b)=>a-b);CFG.current_turn=CFG.current_turn||0;return CFG}
 async function loadTeams(){const r=await rest('otoon_teams?select=*');TEAMS={};r.forEach(t=>TEAMS[t.team]=t);}
-async function loadBubbles(team){
- const r=await rest('otoon_bubbles?select=team,panel,idx,text,updated_at'+(team?'&team=eq.'+team:''));
- if(team){Object.keys(BUB).forEach(k=>{if(k.startsWith(team+'-'))delete BUB[k]})} else BUB={};
- r.forEach(b=>BUB[key(b.team,b.panel,b.idx)]=b);
+async function loadBubbles(){
+ const r=await rest('otoon_bubbles?select=team,panel,idx,text,updated_at&order=updated_at.asc');
+ BUB={}; r.forEach(b=>BUB[key(b.panel,b.idx)]=b);
 }
+const loadAll=()=>Promise.all([loadCfg(),loadTeams(),loadBubbles()]);
 const teamName=t=>(TEAMS[t]&&TEAMS[t].name)||'';
 const teamLabel=t=>t+'팀'+(teamName(t)?' · '+teamName(t):'');
-function totalBubbles(){return CFG.panels.reduce((s,p)=>s+PANELS[p-1].b.length,0)}
-function filledCount(t){let n=0;CFG.panels.forEach(p=>PANELS[p-1].b.forEach((_,i)=>{const b=BUB[key(t,p,i)];if(b&&b.text.trim())n++}));return n}
+/* 릴레이 배정: 선택된 컷을 팀 수대로 순서대로 나눔 (DB의 otoon_chunk와 같은 계산) */
+function chunk(t){const n=CFG.panels.length,T=CFG.team_count;return CFG.panels.slice(Math.floor((t-1)*n/T),Math.floor(t*n/T))}
+function ownerOf(p){for(let t=1;t<=CFG.team_count;t++)if(chunk(t).includes(p))return t;return 0}
+const TURN=()=>CFG.current_turn;
+const finished=()=>TURN()>CFG.team_count;
+function panelState(p){const o=ownerOf(p),t=TURN();if(finished()||o<t)return 'done';if(o===t)return 'now';return 'wait'}
+function filledIn(ps){let n=0,tot=0;ps.forEach(p=>PANELS[p-1].b.forEach((_,i)=>{tot++;const b=BUB[key(p,i)];if(b&&b.text.trim())n++}));return [n,tot]}
 
 /* ================== 공통 UI ================== */
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),2000)}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),2200)}
 let TIMERS=[];
 function clearTimers(){TIMERS.forEach(clearInterval);TIMERS=[]}
 function every(ms,fn){TIMERS.push(setInterval(fn,ms))}
@@ -464,8 +486,17 @@ function castHTML(){
  const ex={A:{eyes:'happy',mouth:'grin'},B:{mouth:'smile'},C:{mouth:'smile'},D:{eyes:'happy',mouth:'grin'}};
  return `<div class="cast">${Object.keys(CAST).map(k=>`<div>${headOnly(k,ex[k])}${CAST[k].name}<small>${CAST[k].role}</small></div>`).join('')}</div>`;
 }
-function bubbleHTML(t,p,i,b,mode){
- const cur=BUB[key(t,p,i)], txt=cur?cur.text:'';
+function turnBanner(myTeam){
+ const t=TURN();
+ if(t===0) return `<div class="turnbar wait">⏳ 아직 시작 전이에요. 진행자가 시작하면 <b>1팀</b>부터 이어 써요.</div>`;
+ if(finished()) return `<div class="turnbar done">🎉 모든 팀이 이어 써서 웹툰이 완성됐어요!</div>`;
+ if(myTeam===t) return `<div class="turnbar now">✍️ <b>우리 팀 차례예요!</b> 앞 이야기를 읽고 ${chunk(t).length}컷을 이어 써 주세요.</div>`;
+ if(myTeam&&myTeam<t) return `<div class="turnbar done">✅ 우리 팀은 완료! 지금은 <b>${esc(teamLabel(t))}</b>이 이어 쓰는 중이에요.</div>`;
+ const wait=myTeam?myTeam-t:0;
+ return `<div class="turnbar wait">👀 지금 <b>${esc(teamLabel(t))}</b>이 쓰는 중이에요.${myTeam?` 우리 팀까지 <b>${wait}팀</b> 남았어요.`:''}</div>`;
+}
+function bubbleHTML(p,i,b,mode){
+ const cur=BUB[key(p,i)], txt=cur?cur.text:'';
  if(mode==='view'&&!txt.trim()) return '';
  const type=b.type||'speech';
  const tx=b.sx==null?50:Math.min(85,Math.max(15,(b.sx-b.x)/b.w*100));
@@ -473,131 +504,136 @@ function bubbleHTML(t,p,i,b,mode){
  const st=`left:${b.x}%;top:${b.y}%;width:${b.w}%;--tx:${tx}%`;
  if(mode==='view') return `<div class="bub ${type}${long}" style="${st}"><div class="txt">${esc(txt).replace(/\n/g,'<br>')}</div></div>`;
  const ph=type==='narr'?'(해설)':type==='thought'?'(속마음)':'대사 입력';
- return `<div class="bub ${type}${long}${mode==='ro'?' ro':''}" style="${st}"><textarea rows="1" maxlength="${MAXLEN}" data-k="${key(t,p,i)}" data-t="${t}" data-p="${p}" data-i="${i}" placeholder="${ph}" ${mode==='ro'?'readonly':''}>${esc(txt)}</textarea></div>`;
+ return `<div class="bub ${type}${long}" style="${st}"><textarea rows="1" maxlength="${MAXLEN}" data-p="${p}" data-i="${i}" placeholder="${ph}">${esc(txt)}</textarea></div>`;
 }
-function panelHTML(t,p,mode,num){
+/* mode: edit | view | thumb | locked(그림만, 대기) */
+function panelHTML(p,mode,num,credit){
  const P=PANELS[p-1];
- return `<div class="panel">${panelSVG(p)}${mode==='thumb'?'':P.b.map((b,i)=>bubbleHTML(t,p,i,b,mode)).join('')}${num?`<span class="pnum">${num}</span>`:''}</div>`;
+ const bubbles=(mode==='edit'||mode==='view')?P.b.map((b,i)=>bubbleHTML(p,i,b,mode)).join(''):'';
+ const lock=mode==='locked'?`<div class="lockcover"><span>🔒 ${credit?esc(credit)+' 차례에':'나중에'} 이어 쓸 장면</span></div>`:'';
+ const cred=credit&&mode!=='locked'&&mode!=='thumb'?`<span class="credit">${esc(credit)}</span>`:'';
+ return `<div class="panel ${mode==='edit'?'mine':''}">${panelArt(p)}${bubbles}${lock}${cred}${num?`<span class="pnum">${num}</span>`:''}</div>`;
 }
-function toonHTML(t,mode){
- return `<div class="toon">${CFG.panels.map((p,i)=>panelHTML(t,p,mode,i+1)).join('')}</div>`;
+/* 전체 웹툰(하나) — opts.edit: 편집 가능한 팀, opts.reveal: 대기 컷을 잠금으로 보여줄지 */
+function storyHTML(opts={}){
+ return `<div class="toon">${CFG.panels.map((p,i)=>{
+  const o=ownerOf(p), st=panelState(p);
+  let mode='view';
+  if(st==='wait') mode='locked';
+  if(st==='now'&&opts.edit===o&&CFG.editing_open) mode='edit';
+  return panelHTML(p,mode,i+1,o?teamLabel(o):'');
+ }).join('')}</div>`;
 }
 function autosize(ta){ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';ta.parentElement.classList.toggle('long',ta.value.length>22)}
 
-/* ================== 화면: 홈(팀 선택) ================== */
+/* ================== 화면: 홈 ================== */
 async function viewHome(){
- await Promise.all([loadCfg(),loadTeams(),loadBubbles()]);
+ await loadAll();
  const mine=+localStorage.getItem('otoon_team')||0;
- const tot=totalBubbles();
- let h=header('팀별로 말풍선 대사를 채워 웹툰을 완성해요');
- h+=`<div class="card"><h2>🎬 이렇게 진행해요</h2><div class="muted">1. 진행자가 알려준 <b>우리 팀 번호</b>를 누르세요.<br>2. 같은 팀원은 모두 같은 웹툰을 함께 편집해요. (자동 저장)<br>3. 말풍선을 눌러 대사를 적으면 끝! 팀원끼리 상의해서 재미있게 채워 보세요.</div></div>`;
+ let h=header('팀이 차례대로 이어 쓰는 릴레이 웹툰');
+ h+=`<div class="card"><h2>🎬 이렇게 진행해요</h2><div class="muted">1. 진행자가 알려준 <b>우리 팀 번호</b>를 누르세요.<br>2. 1팀부터 차례로, 앞 팀이 쓴 이야기를 읽고 <b>맡은 컷의 대사를 이어 써요</b>.<br>3. 다 쓰면 <b>“다음 팀에게 넘기기”</b>! 모든 팀이 끝나면 웹툰 한 편이 완성돼요.</div></div>`;
+ h+=turnBanner(0);
  h+=`<div class="card"><h2>👥 등장인물</h2>${castHTML()}</div>`;
  h+=`<div class="card"><h2>우리 팀 선택</h2><div class="teams">`;
- for(let t=1;t<=CFG.team_count;t++){const f=filledCount(t);
-  h+=`<button class="teambtn ${t===mine?'mine':''}" onclick="go('#/team/${t}')"><b>${t}팀</b><span>${esc(teamName(t))||'&nbsp;'}</span><div class="bar"><i style="width:${tot?f/tot*100:0}%"></i></div></button>`;}
- h+=`</div>${CFG.editing_open?'':'<div class="notice" style="margin:12px 0 0">✋ 지금은 편집이 마감되었어요.</div>'}</div>`;
- if(CFG.gallery_open) h+=`<a class="btn btn-primary full" href="#/gallery">🏆 전체 팀 결과 보러가기</a>`;
+ for(let t=1;t<=CFG.team_count;t++){const c=chunk(t);const nums=c.map(p=>CFG.panels.indexOf(p)+1);
+  const st=finished()||t<TURN()?'✅ 완료':t===TURN()?'✍️ 작성 중':'⏳ 대기';
+  h+=`<button class="teambtn ${t===mine?'mine':''} ${t===TURN()?'now':''}" onclick="go('#/team/${t}')"><b>${t}팀</b><span>${esc(teamName(t))||'&nbsp;'}</span><span class="tc">${c.length?`${nums[0]}${nums.length>1?'~'+nums[nums.length-1]:''}컷 · ${st}`:'맡은 컷 없음'}</span></button>`;}
+ h+=`</div></div>`;
+ h+=`<a class="btn btn-primary full" href="#/story">📖 지금까지의 웹툰 보기</a>`;
  h+=`<div class="footer-links"><a href="#/admin">관리자</a></div>`;
  $('#app').innerHTML=`<div class="wrap">${h}</div>`;
- every(10000,async()=>{try{const before=JSON.stringify([CFG.team_count,CFG.gallery_open,CFG.editing_open,CFG.title,CFG.panels]);await loadCfg();if(JSON.stringify([CFG.team_count,CFG.gallery_open,CFG.editing_open,CFG.title,CFG.panels])!==before)route();}catch(e){}});
+ const sig=()=>JSON.stringify([CFG.team_count,CFG.current_turn,CFG.title,CFG.panels,CFG.editing_open]);
+ const s0=sig();
+ every(5000,async()=>{try{await Promise.all([loadCfg(),loadTeams()]);if(sig()!==s0)route();}catch(e){}});
 }
 
-/* ================== 화면: 팀 편집 ================== */
+/* ================== 화면: 팀 ================== */
 const DIRTY={}; const SAVET={};
-let saveState='';
-function setSave(s){saveState=s;const el=$('#savest');if(el)el.textContent=s}
-async function saveBubble(ta){
- const {t,p,i}=ta.dataset; const k=ta.dataset.k; const v=ta.value.slice(0,MAXLEN);
+function setSave(s){const el=$('#savest');if(el)el.textContent=s}
+async function saveBubble(ta,t){
+ const p=+ta.dataset.p,i=+ta.dataset.i,k=key(p,i),v=ta.value.slice(0,MAXLEN);
  setSave('저장 중…');
- try{await rpc('otoon_save_bubble',{p_team:+t,p_panel:+p,p_idx:+i,p_text:v});
-  BUB[k]={team:+t,panel:+p,idx:+i,text:v};
+ try{await rpc('otoon_relay_save',{p_team:t,p_panel:p,p_idx:i,p_text:v});
+  BUB[k]={team:t,panel:p,idx:i,text:v};
   if(ta.value.slice(0,MAXLEN)===v) delete DIRTY[k];
   setSave('✅ 저장됨');
- }catch(e){setSave('⚠️ 저장 실패');toast(e.message.includes('closed')?'편집이 마감되었어요':'저장 실패: 네트워크를 확인해 주세요');}
+ }catch(e){setSave('⚠️ 저장 실패');toast(/turn/.test(e.message)?'지금은 우리 팀 차례가 아니에요':/closed/.test(e.message)?'편집이 마감되었어요':'저장 실패: 네트워크를 확인해 주세요');}
 }
 async function viewTeam(t){
- await Promise.all([loadCfg(),loadTeams(),loadBubbles(t)]);
+ await loadAll();
  if(t<1||t>CFG.team_count){go('#/');return}
  localStorage.setItem('otoon_team',t);
- const open=CFG.editing_open;
- let h=header(t+'팀 웹툰 만들기',`<a class="btn btn-ghost btn-small" href="#/">팀 변경</a>`);
- h+=`<div class="card"><label class="f" style="margin-top:0">우리 팀 이름</label><div class="row"><input type="text" id="tname" maxlength="20" placeholder="예) 커피수혈단" value="${esc(teamName(t))}" ${open?'':'readonly'}></div>
-  <div class="row" style="justify-content:space-between;margin-top:10px"><span class="muted">말풍선을 눌러 대사를 입력하세요 (최대 ${MAXLEN}자)</span><span class="saving" id="savest">${open?'':'🔒 편집 마감'}</span></div></div>`;
- if(!open) h+=`<div class="notice">✋ 편집이 마감되었어요. 완성된 웹툰을 확인해 보세요!</div>`;
+ const myTurn=TURN()===t&&CFG.editing_open;
+ const c=chunk(t), nums=c.map(p=>CFG.panels.indexOf(p)+1);
+ let h=header(`${t}팀 · 릴레이 웹툰`,`<a class="btn btn-ghost btn-small" href="#/">팀 변경</a>`);
+ h+=turnBanner(t);
+ h+=`<div class="card"><label class="f" style="margin-top:0">우리 팀 이름 <span class="muted">(웹툰에 작가로 표시돼요)</span></label><input type="text" id="tname" maxlength="20" placeholder="예) 커피수혈단" value="${esc(teamName(t))}">
+  <div class="row" style="justify-content:space-between;margin-top:10px"><span class="muted">우리 팀 담당: <b>${c.length?nums.map(n=>n+'컷').join(', '):'없음'}</b></span><span class="saving" id="savest"></span></div></div>`;
  h+=`<div class="card" style="padding:12px">${castHTML()}</div>`;
- h+=`<div class="toonhead"><div class="t" id="thead">${esc(teamLabel(t))}</div><div class="s">${esc(CFG.title)}</div></div>`;
- h+=`<div id="toon">${toonHTML(t,open?'edit':'ro')}</div>`;
- h+=`<div style="margin-top:16px;display:grid;gap:8px"><a class="btn btn-primary full" href="#/view/${t}">👀 완성본 미리보기</a>${CFG.gallery_open?'<a class="btn btn-ghost full" href="#/gallery">🏆 전체 팀 결과</a>':''}</div>`;
+ h+=`<div class="toonhead"><div class="t">${esc(CFG.title)}</div><div class="s">${CFG.team_count}개 팀이 이어 쓰는 릴레이 웹툰</div></div>`;
+ h+=`<div id="toon">${storyHTML({edit:t})}</div>`;
+ if(myTurn) h+=`<div class="passbox"><div class="muted">우리 팀 컷을 다 썼나요? 넘기면 더 이상 고칠 수 없어요.</div><button class="btn btn-primary full" id="pass">✅ 다 썼어요! ${t<CFG.team_count?'다음 팀에게 넘기기':'웹툰 완성하기'}</button></div>`;
+ h+=`<div style="margin-top:12px"><a class="btn btn-ghost full" href="#/story">📖 웹툰 전체 보기</a></div>`;
  $('#app').innerHTML=`<div class="wrap">${h}</div>`;
+ if(myTurn){const first=document.querySelector('.panel.mine');if(first)setTimeout(()=>first.scrollIntoView({behavior:'smooth',block:'center'}),300)}
  document.querySelectorAll('#toon textarea').forEach(ta=>{
   autosize(ta);
   ta.addEventListener('focus',()=>ta.parentElement.classList.add('focus'));
-  ta.addEventListener('blur',()=>{ta.parentElement.classList.remove('focus');if(DIRTY[ta.dataset.k]){clearTimeout(SAVET[ta.dataset.k]);saveBubble(ta)}});
-  ta.addEventListener('input',()=>{if(ta.value.includes('\n'))ta.value=ta.value.replace(/\n/g,' ');autosize(ta);DIRTY[ta.dataset.k]=1;setSave('입력 중…');clearTimeout(SAVET[ta.dataset.k]);SAVET[ta.dataset.k]=setTimeout(()=>saveBubble(ta),700)});
+  ta.addEventListener('blur',()=>{ta.parentElement.classList.remove('focus');const k=key(ta.dataset.p,ta.dataset.i);if(DIRTY[k]){clearTimeout(SAVET[k]);saveBubble(ta,t)}});
+  ta.addEventListener('input',()=>{if(ta.value.includes('\n'))ta.value=ta.value.replace(/\n/g,' ');autosize(ta);const k=key(ta.dataset.p,ta.dataset.i);DIRTY[k]=1;setSave('입력 중…');clearTimeout(SAVET[k]);SAVET[k]=setTimeout(()=>saveBubble(ta,t),700)});
  });
+ const pass=$('#pass');
+ if(pass) pass.onclick=async()=>{
+  const [n,tot]=filledIn(c);
+  if(!confirm(`${n}/${tot}개 말풍선을 채웠어요.${n<tot?' (빈 말풍선은 완성본에서 숨겨져요)':''}\n${t<CFG.team_count?'다음 팀에게 넘길까요?':'웹툰을 완성할까요?'}`))return;
+  try{
+   await Promise.all(Object.keys(SAVET).map(k=>{clearTimeout(SAVET[k]);const ta=document.querySelector(`textarea[data-p="${k.split('-')[0]}"][data-i="${k.split('-')[1]}"]`);return DIRTY[k]&&ta?saveBubble(ta,t):null}));
+   await rpc('otoon_pass_turn',{p_team:t});toast('바통을 넘겼어요! 🏃');route();
+  }catch(e){toast('넘기기 실패: '+e.message)}
+ };
  const tn=$('#tname'); let tnT;
- tn.addEventListener('input',()=>{clearTimeout(tnT);tnT=setTimeout(async()=>{try{await rpc('otoon_save_team_name',{p_team:t,p_name:tn.value.trim()});TEAMS[t]={team:t,name:tn.value.trim()};$('#thead').textContent=teamLabel(t);setSave('✅ 저장됨')}catch(e){setSave('⚠️ 저장 실패')}},600)});
- // 팀원 실시간 반영 (3초마다)
+ tn.addEventListener('input',()=>{clearTimeout(tnT);tnT=setTimeout(async()=>{try{await rpc('otoon_save_team_name',{p_team:t,p_name:tn.value.trim()});TEAMS[t]={team:t,name:tn.value.trim()};setSave('✅ 팀 이름 저장됨')}catch(e){setSave('⚠️ 저장 실패')}},600)});
+ const sig=()=>JSON.stringify([CFG.current_turn,CFG.editing_open,CFG.panels,CFG.team_count]);
+ const s0=sig();
  every(3000,async()=>{
-  try{await Promise.all([loadBubbles(t),loadTeams()]);}catch(e){return}
-  document.querySelectorAll('#toon textarea').forEach(ta=>{
-   const k=ta.dataset.k; if(DIRTY[k]||document.activeElement===ta) return;
-   const v=BUB[k]?BUB[k].text:''; if(ta.value!==v){ta.value=v;autosize(ta)}
-  });
-  if(document.activeElement!==tn&&tn.value!==teamName(t)){tn.value=teamName(t);$('#thead').textContent=teamLabel(t)}
+  try{await Promise.all([loadCfg(),loadBubbles(),loadTeams()]);}catch(e){return}
+  if(sig()!==s0&&!Object.keys(DIRTY).length&&document.activeElement!==tn){route();return}
+  if(myTurn){ // 같은 팀원끼리 실시간 반영
+   document.querySelectorAll('#toon textarea').forEach(ta=>{
+    const k=key(ta.dataset.p,ta.dataset.i); if(DIRTY[k]||document.activeElement===ta) return;
+    const v=BUB[k]?BUB[k].text:''; if(ta.value!==v){ta.value=v;autosize(ta)}
+   });
+  } else if(TURN()>=1&&!finished()){ // 다른 팀이 쓰는 중 → 그 팀 컷만 다시 그림
+   const live=document.getElementById('toon'); const y=scrollY; live.innerHTML=storyHTML({edit:t}); scrollTo(0,y);
+  }
  });
- every(8000,async()=>{try{const b=JSON.stringify([CFG.editing_open,CFG.panels,CFG.team_count,CFG.gallery_open]);await loadCfg();if(JSON.stringify([CFG.editing_open,CFG.panels,CFG.team_count,CFG.gallery_open])!==b&&!Object.keys(DIRTY).length)route();}catch(e){}});
 }
 
-/* ================== 화면: 한 팀 완성본 ================== */
-async function viewOne(t){
- await Promise.all([loadCfg(),loadTeams(),loadBubbles(t)]);
- let h=header('완성본',`<a class="btn btn-ghost btn-small" href="#/team/${t}">✏️ 편집으로</a>`);
- h+=`<div class="toonhead"><div class="t">${esc(teamLabel(t))}</div><div class="s">${esc(CFG.title)}</div></div>${toonHTML(t,'view')}`;
+/* ================== 화면: 전체 웹툰 ================== */
+async function viewStory(){
+ await loadAll();
+ let h=header('하나로 이어진 웹툰',`<button class="btn btn-primary btn-small" onclick="startShow()">▶ 발표 모드</button>`);
+ h+=turnBanner(+localStorage.getItem('otoon_team')||0);
+ h+=`<div class="toonhead"><div class="t">${esc(CFG.title)}</div><div class="s">${creditsLine()}</div></div>`;
+ h+=`<div id="toon">${storyHTML()}</div>`;
+ h+=`<div class="footer-links"><a href="#/">처음으로</a></div>`;
  $('#app').innerHTML=`<div class="wrap">${h}</div>`;
+ every(3000,async()=>{try{await loadAll();const y=scrollY;$('#toon').innerHTML=storyHTML();scrollTo(0,y)}catch(e){}});
 }
+function creditsLine(){const a=[];for(let t=1;t<=CFG.team_count;t++)if(chunk(t).length)a.push(teamLabel(t));return '그림·글: '+a.map(esc).join(' → ')}
 
-/* ================== 화면: 결과 갤러리 ================== */
-let galTeam=1, galMode='one';
-async function viewGallery(){
- await Promise.all([loadCfg(),loadTeams(),loadBubbles()]);
- const admin=!!sessionStorage.getItem('otoon_pin');
- if(!CFG.gallery_open&&!admin){
-  $('#app').innerHTML=`<div class="wrap">${header('결과 보기')}<div class="card center"><div style="font-size:44px">⏳</div><h2>아직 결과 공개 전이에요</h2><div class="muted">관리자가 결과를 공개하면 자동으로 열려요.</div><a class="btn btn-ghost" style="margin-top:12px" href="#/">처음으로</a></div></div>`;
-  every(6000,async()=>{try{await loadCfg();if(CFG.gallery_open)route()}catch(e){}});return;
- }
- if(galTeam>CFG.team_count) galTeam=1;
- let h=header('🏆 팀별 완성 웹툰',`<button class="btn btn-primary btn-small" onclick="startShow(${galTeam})">▶ 발표 모드</button>`);
- h+=`<div class="tabs"><button class="${galMode==='all'?'on':''}" onclick="galMode='all';route()">전체 한눈에</button>`;
- for(let t=1;t<=CFG.team_count;t++) h+=`<button class="${galMode==='one'&&galTeam===t?'on':''}" onclick="galMode='one';galTeam=${t};route()">${esc(teamLabel(t))}</button>`;
- h+=`</div>`;
- if(galMode==='all'){
-  h+=`<div class="cols">`;
-  for(let t=1;t<=CFG.team_count;t++) h+=`<div><div class="toonhead"><div class="t" style="font-size:18px">${esc(teamLabel(t))}</div></div>${toonHTML(t,'view')}</div>`;
-  h+=`</div>`;
- } else {
-  h+=`<div style="max-width:600px;margin:0 auto"><div class="toonhead"><div class="t">${esc(teamLabel(galTeam))}</div><div class="s">${esc(CFG.title)}</div></div>${toonHTML(galTeam,'view')}
-   <div class="row" style="margin-top:14px"><button class="btn btn-ghost full" ${galTeam<=1?'disabled':''} onclick="galTeam--;route();scrollTo(0,0)">◀ 이전 팀</button><button class="btn btn-ghost full" ${galTeam>=CFG.team_count?'disabled':''} onclick="galTeam++;route();scrollTo(0,0)">다음 팀 ▶</button></div></div>`;
- }
- h+=`<div class="footer-links"><a href="#/">처음으로</a>${admin?'<a href="#/admin">관리자</a>':''}</div>`;
- $('#app').innerHTML=`<div class="wrap ${galMode==='all'?'wide':''}">${h}</div>`;
-}
-/* 발표 모드: 팀 제목 → 컷 하나씩 */
-let SHOW={t:1,i:0};
-function startShow(t){SHOW={t,i:0};$('#show').classList.remove('hidden');renderShow();document.documentElement.requestFullscreen?.().catch(()=>{})}
+/* 발표 모드: 표지 → 컷 하나씩 → 작가 소개 */
+let SHOW=0;
+function startShow(){SHOW=0;$('#show').classList.remove('hidden');renderShow();document.documentElement.requestFullscreen?.().catch(()=>{})}
 function endShow(){$('#show').classList.add('hidden');if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});route()}
-function showStep(d){
- const n=CFG.panels.length; let {t,i}=SHOW; i+=d;
- if(i>n){if(t<CFG.team_count){t++;i=0}else i=n}
- if(i<0){if(t>1){t--;i=n}else i=0}
- SHOW={t,i};renderShow();
-}
+function showStep(d){const n=CFG.panels.length;SHOW=Math.max(0,Math.min(n+1,SHOW+d));renderShow()}
 function renderShow(){
- const {t,i}=SHOW; const n=CFG.panels.length;
+ const n=CFG.panels.length, i=SHOW;
  let stage;
- if(i===0) stage=`<div class="title"><div class="s">${esc(CFG.title)}</div><div class="t">${esc(teamLabel(t))}</div><div class="s">▶ 눌러서 시작</div></div>`;
- else stage=`<div class="slide">${panelHTML(t,CFG.panels[i-1],'view',i)}</div>`;
- $('#show').innerHTML=`<div class="stage" onclick="showStep(1)">${stage}</div><div class="ctrl"><button onclick="showStep(-1)">◀</button><span>${esc(teamLabel(t))} · ${i===0?'표지':i+' / '+n}</span><button onclick="showStep(1)">▶</button><button onclick="SHOW={t:Math.min(CFG.team_count,SHOW.t+1),i:0};renderShow()">다음 팀 ⏭</button><button onclick="endShow()">✕ 닫기</button></div>`;
+ if(i===0) stage=`<div class="title"><div class="s">${CFG.team_count}개 팀의 릴레이 웹툰</div><div class="t">${esc(CFG.title)}</div><div class="s">▶ 눌러서 시작</div></div>`;
+ else if(i>n) stage=`<div class="title"><div class="t">THE END</div><div class="s" style="line-height:1.8">${creditsLine()}</div></div>`;
+ else {const p=CFG.panels[i-1],o=ownerOf(p);stage=`<div class="slide">${panelHTML(p,panelState(p)==='wait'?'locked':'view',i,o?teamLabel(o):'')}</div>`}
+ $('#show').innerHTML=`<div class="stage" onclick="showStep(1)">${stage}</div><div class="ctrl"><button onclick="showStep(-1)">◀</button><span>${i===0?'표지':i>n?'끝':i+' / '+n}</span><button onclick="showStep(1)">▶</button><button onclick="endShow()">✕ 닫기</button></div>`;
 }
 document.addEventListener('keydown',e=>{if($('#show').classList.contains('hidden'))return;
  if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){e.preventDefault();showStep(1)}
@@ -616,54 +652,67 @@ async function viewAdmin(){
   $('#login').onclick=tryLogin;$('#pin').onkeydown=e=>{if(e.key==='Enter')tryLogin()};$('#pin').focus();return;
  }
  await Promise.all([loadTeams(),loadBubbles()]);
- ADM={title:CFG.title,team_count:CFG.team_count,panels:[...CFG.panels],editing_open:CFG.editing_open,gallery_open:CFG.gallery_open};
+ ADM={panels:[...CFG.panels]};
  const url=location.origin+location.pathname;
  let h=header('관리자 화면',`<button class="btn btn-ghost btn-small" onclick="sessionStorage.removeItem('otoon_pin');route()">로그아웃</button>`);
- h+=`<div class="card"><h2>📱 참가자 접속 주소</h2><div class="urlbox"><div id="qr"></div><div style="flex:1;min-width:200px"><div class="u">${esc(url)}</div><div class="muted" style="margin-top:6px">화면에 띄워 QR을 찍게 하거나 주소를 공유하세요.<br>휴대폰·노트북 어디서든 접속할 수 있어요.</div><button class="btn btn-ghost btn-small" style="margin-top:8px" onclick="navigator.clipboard.writeText('${esc(url)}').then(()=>toast('주소를 복사했어요'))">주소 복사</button></div></div></div>`;
+ h+=`<div class="card"><h2>📱 참가자 접속 주소</h2><div class="urlbox"><div id="qr"></div><div style="flex:1;min-width:200px"><div class="u">${esc(url)}</div><div class="muted" style="margin-top:6px">화면에 띄워 QR을 찍게 하거나 주소를 공유하세요.</div><button class="btn btn-ghost btn-small" style="margin-top:8px" onclick="navigator.clipboard.writeText('${esc(url)}').then(()=>toast('주소를 복사했어요'))">주소 복사</button></div></div></div>`;
+ h+=`<div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">🏃 릴레이 진행</h2><span class="chip gray" id="a-upd">자동 갱신</span></div><div id="a-turn" style="margin-top:10px"></div>
+  <div class="row wrapr" style="margin-top:10px"><button class="btn btn-ghost btn-small" id="t-prev">◀ 이전 팀으로</button><button class="btn btn-primary btn-small" id="t-next">다음 팀으로 ▶</button><button class="btn btn-ghost btn-small" id="t-start">처음부터(1팀) 시작</button><button class="btn btn-ghost btn-small" id="t-end">완성 처리</button></div>
+  <div id="a-prog" style="margin-top:12px"></div>
+  <div class="row" style="margin-top:12px"><a class="btn btn-primary full" href="#/story">📖 웹툰 전체 보기</a><button class="btn btn-ghost full" onclick="loadAll().then(startShow)">▶ 발표 모드</button></div></div>`;
  h+=`<div class="card"><h2>⚙️ 웹툰 설정</h2>
-  <label class="f">웹툰 제목</label><input type="text" id="a-title" maxlength="40" value="${esc(ADM.title)}">
+  <label class="f">웹툰 제목</label><input type="text" id="a-title" maxlength="40" value="${esc(CFG.title)}">
   <label class="f">참가 인원으로 팀 수 계산 (선택)</label>
   <div class="row"><input type="number" id="a-people" min="1" max="300" placeholder="예) 50"><span style="flex:none;font-size:13px;font-weight:700">명 ÷</span><input type="number" id="a-per" min="2" max="20" value="6" style="width:80px"><span style="flex:none;font-size:13px;font-weight:700">명/팀</span><button class="btn btn-ghost btn-small" style="flex:none" id="a-calc">적용</button></div>
   <div class="muted" id="a-calcmsg"></div>
   <label class="f">팀 수</label>
-  <div class="stepper"><button id="tm">−</button><input type="number" id="a-teams" min="1" max="30" value="${ADM.team_count}"><button id="tp">+</button><span class="muted">팀 (최대 30)</span></div>
+  <div class="stepper"><button id="tm">−</button><input type="number" id="a-teams" min="1" max="30" value="${CFG.team_count}"><button id="tp">+</button><span class="muted">팀</span></div>
   <label class="f">컷 수 · 사용할 컷 선택</label>
-  <div class="stepper"><button id="pm">−</button><input type="number" id="a-pc" min="1" max="10" value="${ADM.panels.length}"><button id="pp">+</button><span class="muted">컷 (최대 10) · 아래에서 직접 골라도 돼요</span></div>
+  <div class="stepper"><button id="pm">−</button><input type="number" id="a-pc" min="1" max="10" value="${ADM.panels.length}"><button id="pp">+</button><span class="muted">컷 (최대 10)</span></div>
+  <div class="muted" id="a-assign" style="margin-top:8px"></div>
   <div class="pgrid" id="picks" style="margin-top:12px"></div>
   <div style="margin-top:14px">
-   <div class="toggle"><div><b>✏️ 대사 편집 허용</b><small>끄면 모든 팀의 편집이 잠겨요 (마감)</small></div><label class="sw"><input type="checkbox" id="a-edit" ${ADM.editing_open?'checked':''}><i></i></label></div>
-   <div class="toggle"><div><b>🏆 결과 공개</b><small>켜면 참가자도 전체 팀 결과를 볼 수 있어요</small></div><label class="sw"><input type="checkbox" id="a-gal" ${ADM.gallery_open?'checked':''}><i></i></label></div>
+   <div class="toggle"><div><b>✏️ 대사 편집 허용</b><small>끄면 차례인 팀도 편집할 수 없어요 (일시정지)</small></div><label class="sw"><input type="checkbox" id="a-edit" ${CFG.editing_open?'checked':''}><i></i></label></div>
   </div>
   <button class="btn btn-primary full" style="margin-top:12px" id="a-save">설정 저장</button></div>`;
- h+=`<div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">📊 팀별 진행 현황</h2><span class="chip gray" id="a-upd">자동 갱신</span></div><div id="a-prog" style="margin-top:8px"></div>
-  <div class="row" style="margin-top:12px"><a class="btn btn-primary full" href="#/gallery">🏆 결과 갤러리</a><button class="btn btn-ghost full" onclick="loadCfg().then(()=>startShow(1))">▶ 발표 모드</button></div></div>`;
- h+=`<div class="card"><h2>🧹 기타</h2><div class="row wrapr"><button class="btn btn-danger btn-small" id="a-reset">모든 대사·팀 이름 초기화</button><button class="btn btn-ghost btn-small" id="a-pin">PIN 변경</button></div><div class="muted" style="margin-top:8px">새 교육 차수를 시작할 때 초기화하세요. 되돌릴 수 없어요.</div></div>`;
+ h+=`<div class="card"><h2>🧹 기타</h2><div class="row wrapr"><button class="btn btn-danger btn-small" id="a-reset">모든 대사·팀 이름 초기화</button><button class="btn btn-ghost btn-small" id="a-pin">PIN 변경</button></div><div class="muted" style="margin-top:8px">새 교육 차수를 시작할 때 초기화하세요. 차례도 '시작 전'으로 돌아가요.</div></div>`;
  h+=`<div class="footer-links"><a href="#/">참가자 화면</a></div>`;
  $('#app').innerHTML=`<div class="wrap">${h}</div>`;
  try{new QRCode($('#qr'),{text:url,width:280,height:280,correctLevel:QRCode.CorrectLevel.M})}catch(e){$('#qr').remove()}
- const renderPicks=()=>{$('#picks').innerHTML=PANELS.map((P,i)=>{const n=i+1,on=ADM.panels.includes(n);return `<div class="pick ${on?'on':''}" data-n="${n}"><span class="ck">${on?ADM.panels.indexOf(n)+1:''}</span>${panelHTML(0,n,'thumb')}<div class="cap">${n}. ${P.cap}</div></div>`}).join('');
-  $('#a-pc').value=ADM.panels.length;
+ const teamsNow=()=>Math.max(1,Math.min(30,+$('#a-teams').value||1));
+ const showAssign=()=>{const n=ADM.panels.length,T=teamsNow();
+  $('#a-assign').innerHTML=T>n?`⚠️ 팀(${T})이 컷(${n})보다 많아서 <b>${T-n}개 팀은 맡을 컷이 없어요</b>. 컷을 늘리거나 팀을 줄여 주세요.`:`→ 팀당 ${Math.floor(n/T)}${n%T?'~'+Math.ceil(n/T):''}컷씩 이어 써요.`};
+ const renderPicks=()=>{$('#picks').innerHTML=PANELS.map((P,i)=>{const n=i+1,on=ADM.panels.includes(n);return `<div class="pick ${on?'on':''}" data-n="${n}"><span class="ck">${on?ADM.panels.indexOf(n)+1:''}</span>${panelHTML(n,'thumb')}<div class="cap">${n}. ${P.cap}</div></div>`}).join('');
+  $('#a-pc').value=ADM.panels.length;showAssign();
   document.querySelectorAll('.pick').forEach(el=>el.onclick=()=>{const n=+el.dataset.n;if(ADM.panels.includes(n)){if(ADM.panels.length===1)return toast('최소 1컷은 필요해요');ADM.panels=ADM.panels.filter(x=>x!==n)}else{ADM.panels.push(n);ADM.panels.sort((a,b)=>a-b)}renderPicks()})};
  renderPicks();
- const setTeams=v=>{v=Math.max(1,Math.min(30,v||1));$('#a-teams').value=v};
- $('#tm').onclick=()=>setTeams(+$('#a-teams').value-1);$('#tp').onclick=()=>setTeams(+$('#a-teams').value+1);
- $('#a-teams').onchange=()=>setTeams(+$('#a-teams').value);
- const setPc=v=>{v=Math.max(1,Math.min(10,v||1));ADM.panels=spread(v);renderPicks()};
+ const setTeams=v=>{$('#a-teams').value=Math.max(1,Math.min(30,v||1));showAssign()};
+ $('#tm').onclick=()=>setTeams(+$('#a-teams').value-1);$('#tp').onclick=()=>setTeams(+$('#a-teams').value+1);$('#a-teams').onchange=()=>setTeams(+$('#a-teams').value);
+ const setPc=v=>{ADM.panels=spread(Math.max(1,Math.min(10,v||1)));renderPicks()};
  $('#pm').onclick=()=>setPc(ADM.panels.length-1);$('#pp').onclick=()=>setPc(ADM.panels.length+1);$('#a-pc').onchange=()=>setPc(+$('#a-pc').value);
  $('#a-calc').onclick=()=>{const p=+$('#a-people').value,per=+$('#a-per').value||6;if(!p)return toast('참가 인원을 입력하세요');const n=Math.min(30,Math.ceil(p/per));setTeams(n);
   const base=Math.floor(p/n),extra=p%n;$('#a-calcmsg').textContent=`→ ${n}팀 (${extra?`${extra}개 팀 ${base+1}명, ${n-extra}개 팀 ${base}명`:`팀당 ${base}명`}) · 저장을 눌러 적용하세요`;};
  $('#a-save').onclick=async()=>{
-  const body={p_pin:pin,p_title:$('#a-title').value.trim()||'우리 팀 오피스 웹툰',p_team_count:+$('#a-teams').value,p_panels:ADM.panels,p_editing_open:$('#a-edit').checked,p_gallery_open:$('#a-gal').checked};
-  try{await rpc('otoon_admin_config',body);toast('✅ 저장했어요');await loadCfg();renderProg();$('.top h1').firstChild.textContent=CFG.title}catch(e){toast('저장 실패: '+e.message)}
+  try{await rpc('otoon_admin_config',{p_pin:pin,p_title:$('#a-title').value.trim()||'우리 팀 오피스 웹툰',p_team_count:teamsNow(),p_panels:ADM.panels,p_editing_open:$('#a-edit').checked,p_gallery_open:true});
+   toast('✅ 저장했어요');await loadCfg();renderProg();$('.top h1').firstChild.textContent=CFG.title}catch(e){toast('저장 실패: '+e.message)}
  };
- ['a-edit','a-gal'].forEach(id=>$('#'+id).onchange=()=>$('#a-save').click());
- $('#a-reset').onclick=async()=>{if(!confirm('모든 팀의 대사와 팀 이름을 지울까요? 되돌릴 수 없어요.'))return;try{await rpc('otoon_admin_reset',{p_pin:pin});toast('초기화했어요');await Promise.all([loadTeams(),loadBubbles()]);renderProg()}catch(e){toast('실패: '+e.message)}};
+ $('#a-edit').onchange=()=>$('#a-save').click();
+ const setTurn=async v=>{try{await rpc('otoon_admin_set_turn',{p_pin:pin,p_turn:v});await loadCfg();renderProg();toast(v>CFG.team_count?'완성 처리했어요':v<1?'시작 전으로 돌렸어요':v+'팀 차례로 바꿨어요')}catch(e){toast('실패: '+e.message)}};
+ $('#t-prev').onclick=()=>setTurn(TURN()-1);$('#t-next').onclick=()=>setTurn(TURN()+1);
+ $('#t-start').onclick=()=>{if(TURN()===0||confirm('1팀 차례로 되돌릴까요? 이미 쓴 대사는 그대로 남아요.'))setTurn(1)};
+ $('#t-end').onclick=()=>setTurn(CFG.team_count+1);
+ $('#a-reset').onclick=async()=>{if(!confirm('모든 대사와 팀 이름을 지울까요? 되돌릴 수 없어요.'))return;try{await rpc('otoon_admin_reset',{p_pin:pin});toast('초기화했어요');await loadAll();renderProg()}catch(e){toast('실패: '+e.message)}};
  $('#a-pin').onclick=async()=>{const v=prompt('새 PIN (4자 이상)');if(!v)return;try{await rpc('otoon_admin_set_pin',{p_pin:pin,p_new:v.trim()});sessionStorage.setItem('otoon_pin',v.trim());toast('PIN을 변경했어요')}catch(e){toast('실패: '+e.message)}};
- const renderProg=()=>{const tot=totalBubbles();let r=`<table class="prog"><tr><th>팀</th><th>팀 이름</th><th>진행</th><th></th></tr>`;
-  for(let t=1;t<=CFG.team_count;t++){const f=filledCount(t);r+=`<tr><td><b>${t}팀</b></td><td>${esc(teamName(t))||'<span class="muted">-</span>'}</td><td style="min-width:110px"><div class="bar" style="margin:0"><i style="width:${tot?f/tot*100:0}%"></i></div><span class="muted">${f}/${tot}</span></td><td><a class="btn btn-ghost btn-small" href="#/view/${t}">보기</a></td></tr>`}
+ const renderProg=()=>{
+  const t=TURN();
+  $('#a-turn').innerHTML=turnBanner(0);
+  let r=`<table class="prog"><tr><th>순서</th><th>팀 이름</th><th>담당 컷</th><th>진행</th><th>상태</th></tr>`;
+  for(let k=1;k<=CFG.team_count;k++){const c=chunk(k),nums=c.map(p=>CFG.panels.indexOf(p)+1),[f,tot]=filledIn(c);
+   const st=!c.length?'<span class="chip gray">없음</span>':finished()||k<t?'<span class="chip">완료</span>':k===t?'<span class="chip now">작성 중</span>':'<span class="chip gray">대기</span>';
+   r+=`<tr ${k===t?'class="nowrow"':''}><td><b>${k}팀</b></td><td>${esc(teamName(k))||'<span class="muted">-</span>'}</td><td>${nums.length?nums.join(', '):'-'}</td><td style="min-width:90px"><div class="bar" style="margin:0"><i style="width:${tot?f/tot*100:0}%"></i></div><span class="muted">${f}/${tot}</span></td><td>${st}</td></tr>`}
   $('#a-prog').innerHTML=r+'</table>'};
  renderProg();
- every(5000,async()=>{try{await Promise.all([loadTeams(),loadBubbles()]);renderProg();const d=new Date();$('#a-upd').textContent='갱신 '+d.toTimeString().slice(0,8)}catch(e){}});
+ every(4000,async()=>{try{await loadAll();renderProg();$('#a-upd').textContent='갱신 '+new Date().toTimeString().slice(0,8)}catch(e){}});
 }
 
 /* ================== 라우터 ================== */
@@ -674,13 +723,13 @@ async function route(){
  try{
   let m;
   if((m=h.match(/^#\/team\/(\d+)/))) await viewTeam(+m[1]);
-  else if((m=h.match(/^#\/view\/(\d+)/))) await viewOne(+m[1]);
-  else if(h.startsWith('#/gallery')) await viewGallery();
+  else if(h.startsWith('#/story')||h.startsWith('#/gallery')||h.startsWith('#/view')) await viewStory();
   else if(h.startsWith('#/admin')) await viewAdmin();
   else await viewHome();
  }catch(e){
   console.error(e);
-  $('#app').innerHTML=`<div class="wrap"><div class="card center"><div style="font-size:40px">📡</div><h2>연결에 문제가 있어요</h2><div class="muted">${esc(e.message)}</div><button class="btn btn-primary" style="margin-top:12px" onclick="route()">다시 시도</button></div></div>`;
+  const needSql=/current_turn|otoon_relay|otoon_pass|schema cache/.test(e.message);
+  $('#app').innerHTML=`<div class="wrap"><div class="card center"><div style="font-size:40px">📡</div><h2>${needSql?'데이터베이스 업데이트가 필요해요':'연결에 문제가 있어요'}</h2><div class="muted">${esc(e.message)}</div><button class="btn btn-primary" style="margin-top:12px" onclick="route()">다시 시도</button></div></div>`;
  }
 }
 window.addEventListener('hashchange',route);
