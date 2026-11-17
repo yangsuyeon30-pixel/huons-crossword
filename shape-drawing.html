@@ -133,15 +133,11 @@ textarea{resize:vertical;min-height:40px}
         <svg viewBox="0 0 56 56" aria-hidden="true"><rect width="56" height="56" rx="14" fill="var(--accent-soft)"/><path d="M14 24 h8 l10 -8 v24 l-10 -8 h-8 Z" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round"/><path d="M38 22 q5 6 0 12" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/></svg>
         <div><b>리더 (설명하는 사람)</b><span>뽑힌 사람만 도형을 보고 말로 설명합니다</span></div>
       </button>
-      <button class="role" type="button" data-go="host">
-        <svg viewBox="0 0 56 56" aria-hidden="true"><rect width="56" height="56" rx="14" fill="var(--accent-soft)"/><rect x="13" y="15" width="30" height="20" rx="3" fill="none" stroke="var(--accent)" stroke-width="3"/><path d="M28 35 v7 M20 42 h16" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/></svg>
-        <div><b>진행자 (강사)</b><span>조 설정, 리더 추첨, 타이머, 정답 공개</span></div>
-      </button>
     </div>
   </section>
 
   <!-- HOST -->
-  <section id="v-host" hidden style="display:flex;flex-direction:column;gap:14px">
+  <section id="v-admin" hidden style="display:flex;flex-direction:column;gap:14px">
     <div class="card">
       <span class="eyebrow">1 · 조 설정</span>
       <div class="row">
@@ -382,11 +378,11 @@ function drawInto(box,shapes,label,keepVeil){
 function summary(r){var c={ellipse:0,rect:0,tri:0,bar:0};R[r].s.forEach(function(s){c[s.t]++});var out=[];if(c.ellipse)out.push("원 "+c.ellipse);if(c.rect)out.push("네모 "+c.rect);if(c.tri)out.push("세모 "+c.tri);if(c.bar)out.push("막대 "+c.bar);return out.join(" · ")}
 
 /* ---------- 라우팅 ---------- */
-var VIEWS=["home","host","leader","follower"],TITLES={home:"리더의 말, 팔로워의 그림",host:"진행자 화면",leader:"리더 화면",follower:"팔로워 화면"};
+var VIEWS=["home","admin","leader","follower"],TITLES={home:"리더의 말, 팔로워의 그림",admin:"진행자(관리자) 화면",leader:"리더 화면",follower:"팔로워 화면"};
 function show(){
   var v=(location.hash||"").replace("#","");if(VIEWS.indexOf(v)<0)v="home";
   VIEWS.forEach(function(n){$("v-"+n).hidden=(n!==v)});
-  $("backBtn").hidden=(v==="home");$("hdTitle").textContent=TITLES[v];
+  $("backBtn").hidden=(v==="home"||v==="admin");$("hdTitle").textContent=TITLES[v];
   $("hdSub").textContent=v==="home"?"휴온스 HRD · 조별 도형 설명 게임":"리더의 말, 팔로워의 그림";
   window.scrollTo(0,0);
 }
