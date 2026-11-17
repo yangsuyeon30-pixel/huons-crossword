@@ -92,6 +92,15 @@ textarea{resize:vertical;min-height:40px}
 .score{font-family:var(--display);font-size:30px;color:var(--accent);text-align:center}
 .qlist{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:14px}
 .rule-pill{display:inline-block;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--accent-soft);color:var(--ink)}
+.editor{display:flex;flex-direction:column;gap:12px}
+.thumbs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.thumb{display:flex;flex-direction:column;gap:3px;align-items:stretch;background:none;border:0;padding:0;font:inherit;color:var(--ink);cursor:pointer;min-width:0}
+.thumb .board{border-width:2px;border-radius:10px}
+.thumb[aria-pressed="true"] .board{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.thumb span{font-size:11px;font-weight:700;color:var(--muted);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.thumb span b{color:var(--accent)}
+.linkbox{display:flex;flex-direction:column;gap:6px}
+.linkbox input{font-size:13px}
 .desc-tips{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px}
 .desc-tips div{background:var(--bg);border-radius:10px;padding:10px}
 @media (max-width:420px){.team{grid-template-columns:56px 64px 1fr}.tools{grid-template-columns:repeat(3,1fr)}}
@@ -138,6 +147,35 @@ textarea{resize:vertical;min-height:40px}
 
   <!-- HOST -->
   <section id="v-admin" hidden style="display:flex;flex-direction:column;gap:14px">
+    <div class="card">
+      <span class="eyebrow">준비 · 라운드 도형 직접 그리기</span>
+      <p class="muted">아래 칸에서 라운드를 고르고 도형을 그리세요. 그리지 않은 라운드는 기본 도형이 나갑니다. 다 그렸으면 <b>참여자 링크 만들기</b>를 눌러 새 링크를 참여자에게 보내세요.</p>
+      <div class="thumbs" id="aThumbs"></div>
+      <div class="row" style="justify-content:space-between">
+        <h2 id="aTitle">1라운드</h2>
+        <span class="rule-pill" id="aState"></span>
+      </div>
+      <div id="aEditor"></div>
+      <div class="row">
+        <button class="btn ghost" id="aDefault" type="button">기본 도형 불러와서 고치기</button>
+      </div>
+      <p class="muted">전체 지우기를 하면 그 라운드는 기본 도형으로 돌아갑니다. 그린 내용은 이 기기에 자동 저장됩니다.</p>
+      <button class="btn" id="aMakeLink" type="button">참여자 링크 만들기</button>
+      <p class="notice" id="aStale" hidden>도형을 바꿨어요. 참여자 링크를 다시 만들어 보내야 바뀐 도형이 보입니다.</p>
+      <div id="aLinks" hidden style="display:flex;flex-direction:column;gap:12px">
+        <div class="linkbox">
+          <b style="font-size:14px">참여자 링크 (조원 전체에게 보내기)</b>
+          <input type="text" id="aPLink" readonly aria-label="참여자 링크">
+          <button class="btn sm" id="aPCopy" type="button">참여자 링크 복사</button>
+        </div>
+        <div class="linkbox">
+          <b style="font-size:14px">관리자 링크 (진행자만)</b>
+          <input type="text" id="aALink" readonly aria-label="관리자 링크">
+          <button class="btn ghost sm" id="aACopy" type="button">관리자 링크 복사</button>
+        </div>
+        <p class="muted" id="aCopyMsg" role="status"></p>
+      </div>
+    </div>
     <div class="card">
       <span class="eyebrow">1 · 조 설정</span>
       <div class="row">
@@ -225,27 +263,7 @@ textarea{resize:vertical;min-height:40px}
         <h2>설명을 듣고 그려 보세요</h2>
         <span class="muted" id="fCount">도형 0개</span>
       </div>
-      <div class="tools" id="fTools"></div>
-      <div class="board" id="fBoard"></div>
-      <div class="selbar" id="fSel" hidden>
-        <button class="btn ghost sm" type="button" data-act="rotL">↺ 회전</button>
-        <button class="btn ghost sm" type="button" data-act="rotR">↻ 회전</button>
-        <button class="btn ghost sm" type="button" data-act="grow">크게</button>
-        <button class="btn ghost sm" type="button" data-act="shrink">작게</button>
-        <button class="btn ghost sm" type="button" data-act="fill">채우기</button>
-        <button class="btn ghost sm" type="button" data-act="del">삭제</button>
-      </div>
-      <div class="row">
-        <button class="btn ghost" id="fUndo" type="button">되돌리기</button>
-        <button class="btn ghost" id="fClear" type="button">전체 지우기</button>
-      </div>
-      <div class="notice" id="fClearAsk" hidden>
-        전체를 지울까요?
-        <div class="row" style="margin-top:8px">
-          <button class="btn warn sm" id="fClearYes" type="button">지우기</button>
-          <button class="btn ghost sm" id="fClearNo" type="button">취소</button>
-        </div>
-      </div>
+      <div id="fEditor"></div>
       <p class="muted">도구를 고르고 화면을 드래그하면 도형이 생깁니다. <b>선택</b> 도구로 도형을 눌러 옮기고, 회전·크기·채우기를 바꿀 수 있어요. 종이에 그려도 됩니다.</p>
     </div>
     <div class="card">
@@ -337,6 +355,38 @@ var R = [
 ];
 var CODES = ["3172","5840","2619","7403","9286","4157","6931","8024"];
 var NS = "http://www.w3.org/2000/svg";
+var DEF = R.map(function(r){return r.s});
+var N = R.length;
+
+/* ---------- 직접 그린 도형: 링크(?s=)에 담기 ---------- */
+function rnd(v){return Math.round(v)}
+function packShape(s){
+  if(s.t==="bar")return["b",rnd(s.x1),rnd(s.y1),rnd(s.x2),rnd(s.y2)];
+  if(s.t==="pen"){var flat=[],last=null;s.p.forEach(function(q){var x=rnd(q[0]),y=rnd(q[1]);if(!last||Math.abs(x-last[0])+Math.abs(y-last[1])>=3){flat.push(x,y);last=[x,y]}});return["p",flat,rnd(s.r||0)]}
+  return[{ellipse:"e",rect:"r",tri:"t"}[s.t],rnd(s.x),rnd(s.y),rnd(s.w),rnd(s.h),rnd(s.r||0),s.f?1:0];
+}
+function unpackShape(a){
+  if(!Array.isArray(a))return null;var k=a[0],num=function(v){v=+v;return isFinite(v)?v:0};
+  if(k==="b")return{t:"bar",x1:num(a[1]),y1:num(a[2]),x2:num(a[3]),y2:num(a[4])};
+  if(k==="p"){var f=Array.isArray(a[1])?a[1]:[],pts=[];for(var i=0;i+1<f.length;i+=2)pts.push([num(f[i]),num(f[i+1])]);return pts.length>1?{t:"pen",p:pts,r:num(a[2])}:null}
+  var t={e:"ellipse",r:"rect",t:"tri"}[k];if(!t)return null;
+  return{t:t,x:num(a[1]),y:num(a[2]),w:num(a[3]),h:num(a[4]),r:num(a[5]),f:a[6]?1:0};
+}
+function encodeSet(set){
+  var out=set.map(function(r){return r&&r.length?r.map(packShape):0});
+  return btoa(JSON.stringify(out)).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+function decodeSet(str){
+  try{var b=str.replace(/-/g,"+").replace(/_/g,"/");while(b.length%4)b+="=";var arr=JSON.parse(atob(b));if(!Array.isArray(arr))return null;
+    var set=[];for(var i=0;i<N;i++){var r=arr[i];set.push(Array.isArray(r)?r.map(unpackShape).filter(Boolean):[])}return set}catch(e){return null}
+}
+var URLSET=(function(){try{var v=new URLSearchParams(location.search).get("s");return v?decodeSet(v):null}catch(e){return null}})();
+function emptySet(){var a=[];for(var i=0;i<N;i++)a.push([]);return a}
+function clone(x){return JSON.parse(JSON.stringify(x))}
+var DRAFT=(function(){var d=null;try{d=JSON.parse(localStorage.getItem("shp_custom")||"null")}catch(e){}
+  if(Array.isArray(d)&&d.length===N)return d;return URLSET?clone(URLSET):emptySet()})();
+function isCustom(i,admin){var c=admin?DRAFT:URLSET;return!!(c&&c[i]&&c[i].length)}
+function roundShapes(i,admin){return isCustom(i,admin)?(admin?DRAFT:URLSET)[i]:DEF[i]}
 
 function store(k,v){try{if(v===undefined){var s=localStorage.getItem("shp_"+k);return s?JSON.parse(s):null}localStorage.setItem("shp_"+k,JSON.stringify(v))}catch(e){return null}}
 function $(id){return document.getElementById(id)}
@@ -375,7 +425,7 @@ function drawInto(box,shapes,label,keepVeil){
   shapes.forEach(function(s){svg.appendChild(shapeNode(s))});
   box.appendChild(svg);if(veil)box.appendChild(veil);return svg;
 }
-function summary(r){var c={ellipse:0,rect:0,tri:0,bar:0};R[r].s.forEach(function(s){c[s.t]++});var out=[];if(c.ellipse)out.push("원 "+c.ellipse);if(c.rect)out.push("네모 "+c.rect);if(c.tri)out.push("세모 "+c.tri);if(c.bar)out.push("막대 "+c.bar);return out.join(" · ")}
+function summary(list){var c={ellipse:0,rect:0,tri:0,bar:0,pen:0};list.forEach(function(s){c[s.t]++});var out=[];if(c.ellipse)out.push("원 "+c.ellipse);if(c.rect)out.push("네모 "+c.rect);if(c.tri)out.push("세모 "+c.tri);if(c.bar)out.push("막대 "+c.bar);if(c.pen)out.push("선 "+c.pen);return out.join(" · ")}
 
 /* ---------- 라우팅 ---------- */
 var VIEWS=["home","admin","leader","follower"],TITLES={home:"리더의 말, 팔로워의 그림",admin:"진행자(관리자) 화면",leader:"리더 화면",follower:"팔로워 화면"};
@@ -456,21 +506,20 @@ paintTimer();
 
 function hideAnswer(){$("hAnswer").hidden=true;$("hReveal").hidden=false}
 $("hReveal").addEventListener("click",function(){$("hAnswer").hidden=false;$("hReveal").hidden=true;
-  drawInto($("hBoard"),R[H.round].s,R[H.round].name);$("hCode").textContent=CODES[H.round]});
+  drawInto($("hBoard"),roundShapes(H.round,true),(H.round+1)+"라운드 정답");$("hCode").textContent=CODES[H.round]});
 
 /* ---------- 리더 ---------- */
 var LR=store("lround")||0,lShown=false;
 function paintLeader(){
-  $("lTitle").textContent=(LR+1)+"라운드 · "+R[LR].name;$("lCount").textContent=R[LR].level+" · "+summary(LR);
-  drawInto($("lBoard"),R[LR].s,R[LR].name,true);$("lVeil").hidden=lShown;$("lToggle").textContent=lShown?"도형 가리기":"도형 보기";
+  var cus=isCustom(LR,false),list=roundShapes(LR,false);
+  $("lTitle").textContent=(LR+1)+"라운드"+(cus?"":" · "+R[LR].name);$("lCount").textContent=(cus?"진행자가 그린 도형":R[LR].level)+" · "+summary(list);
+  drawInto($("lBoard"),list,(LR+1)+"라운드 도형",true);$("lVeil").hidden=lShown;$("lToggle").textContent=lShown?"도형 가리기":"도형 보기";
 }
 roundChips($("lRounds"),LR,function(i){LR=i;store("lround",i);lShown=false;paintLeader()});
 $("lToggle").addEventListener("click",function(){lShown=!lShown;paintLeader()});
 paintLeader();
 
-/* ---------- 팔로워 그리기 ---------- */
-var F=store("draw")||{shapes:[]};var undo=[],tool="ellipse",selId=null,drag=null,nextId=1;
-F.shapes.forEach(function(s){if(!s.id)s.id=nextId++;nextId=Math.max(nextId,s.id+1)});
+/* ---------- 그리기 편집기 (팔로워와 진행자가 함께 씀) ---------- */
 var TOOLS=[
  {k:"ellipse",n:"동그라미",i:'<ellipse cx="12" cy="12" rx="8" ry="8"/>'},
  {k:"rect",n:"네모",i:'<rect x="4" y="5" width="16" height="14"/>'},
@@ -478,64 +527,116 @@ var TOOLS=[
  {k:"bar",n:"막대",i:'<line x1="4" y1="18" x2="20" y2="6" stroke-width="3"/>'},
  {k:"pen",n:"펜",i:'<path d="M4 17 C8 8, 12 20, 20 7"/>'},
  {k:"select",n:"선택",i:'<path d="M6 4 L6 19 L10 15 L13 21 L15 20 L12 14 L18 14 Z"/>'}];
-(function(){var box=$("fTools");TOOLS.forEach(function(t){var b=document.createElement("button");b.type="button";b.className="tool";b.setAttribute("data-tool",t.k);b.setAttribute("aria-pressed",t.k===tool?"true":"false");
-  b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">'+t.i+'</svg>'+t.n;
-  b.addEventListener("click",function(){tool=t.k;box.querySelectorAll(".tool").forEach(function(x){x.setAttribute("aria-pressed",x===b?"true":"false")});if(tool!=="select"){selId=null;paintF()}});box.appendChild(b)})})();
-var fSvg=null,fLayer=null;
-function snapshot(){undo.push(JSON.stringify(F.shapes));if(undo.length>60)undo.shift()}
-function saveF(){store("draw",F)}
-function byId(id){for(var i=0;i<F.shapes.length;i++)if(F.shapes[i].id===id)return F.shapes[i];return null}
-function paintF(){
-  if(!fSvg){var box=$("fBoard");box.innerHTML="";fSvg=makeSvg();fSvg.setAttribute("aria-label","내 그림");fLayer=el("g",{});fSvg.appendChild(fLayer);box.appendChild(fSvg);bindBoard()}
-  fLayer.innerHTML="";
-  F.shapes.forEach(function(s){var g=shapeNode(s,s.id===selId);g.setAttribute("data-id",s.id);g.style.cursor=tool==="select"?"move":"crosshair";fLayer.appendChild(g)});
-  $("fSel").hidden=!selId;$("fCount").textContent="도형 "+F.shapes.length+"개";
+function makeEditor(root,io){
+  root.className="editor";
+  root.innerHTML='<div class="tools"></div><div class="board"></div>'+
+   '<div class="selbar" hidden><button class="btn ghost sm" type="button" data-act="rotL">↺ 회전</button><button class="btn ghost sm" type="button" data-act="rotR">↻ 회전</button><button class="btn ghost sm" type="button" data-act="grow">크게</button><button class="btn ghost sm" type="button" data-act="shrink">작게</button><button class="btn ghost sm" type="button" data-act="fill">채우기</button><button class="btn ghost sm" type="button" data-act="del">삭제</button></div>'+
+   '<div class="row"><button class="btn ghost" type="button" data-e="undo">되돌리기</button><button class="btn ghost" type="button" data-e="clear">전체 지우기</button></div>'+
+   '<div class="notice" data-e="ask" hidden>전체를 지울까요?<div class="row" style="margin-top:8px"><button class="btn warn sm" type="button" data-e="yes">지우기</button><button class="btn ghost sm" type="button" data-e="no">취소</button></div></div>';
+  var q=function(x){return root.querySelector(x)};
+  var tool="ellipse",selId=null,drag=null,undo=[],nextId=1,svg=null,layer=null;
+  function list(){return io.get()}
+  function ids(){list().forEach(function(s){if(!s.id)s.id=nextId++;nextId=Math.max(nextId,s.id+1)})}
+  var tbox=q(".tools");
+  TOOLS.forEach(function(t){var b=document.createElement("button");b.type="button";b.className="tool";b.setAttribute("aria-pressed",t.k===tool?"true":"false");
+    b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">'+t.i+'</svg>'+t.n;
+    b.addEventListener("click",function(){tool=t.k;tbox.querySelectorAll(".tool").forEach(function(x){x.setAttribute("aria-pressed",x===b?"true":"false")});if(tool!=="select"){selId=null;paint()}});tbox.appendChild(b)});
+  function snapshot(){undo.push(JSON.stringify(list()));if(undo.length>60)undo.shift()}
+  function byId(id){var a=list();for(var i=0;i<a.length;i++)if(a[i].id===id)return a[i];return null}
+  function changed(){io.save();paint();if(io.onChange)io.onChange(list().length)}
+  function paint(){
+    if(!svg){var box=q(".board");box.innerHTML="";svg=makeSvg();svg.setAttribute("aria-label",io.label||"그림");layer=el("g",{});svg.appendChild(layer);box.appendChild(svg);bind()}
+    layer.innerHTML="";
+    list().forEach(function(s){var g=shapeNode(s,s.id===selId);g.setAttribute("data-id",s.id);g.style.cursor=tool==="select"?"move":"crosshair";layer.appendChild(g)});
+    q(".selbar").hidden=!selId;
+  }
+  function pt(e){var p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;var r=p.matrixTransform(svg.getScreenCTM().inverse());return[Math.max(0,Math.min(300,r.x)),Math.max(0,Math.min(300,r.y))]}
+  function bind(){
+    svg.addEventListener("pointerdown",function(e){
+      e.preventDefault();var p=pt(e);try{svg.setPointerCapture(e.pointerId)}catch(_){}
+      if(tool==="select"){var g=e.target.closest("g[data-id]");if(g){selId=+g.getAttribute("data-id");snapshot();drag={mode:"move",last:p}}else{selId=null;drag=null}paint();return}
+      snapshot();var s={id:nextId++,t:tool};
+      if(tool==="bar"){s.x1=p[0];s.y1=p[1];s.x2=p[0];s.y2=p[1]}else if(tool==="pen"){s.p=[[Math.round(p[0]),Math.round(p[1])]]}else{s.x=p[0];s.y=p[1];s.w=0;s.h=0}
+      list().push(s);drag={mode:"new",s:s,start:p};paint();
+    });
+    svg.addEventListener("pointermove",function(e){
+      if(!drag)return;var p=pt(e);
+      if(drag.mode==="move"){var s=byId(selId);if(!s)return;var dx=p[0]-drag.last[0],dy=p[1]-drag.last[1];drag.last=p;
+        if(s.t==="bar"){s.x1+=dx;s.y1+=dy;s.x2+=dx;s.y2+=dy}else if(s.t==="pen"){s.p=s.p.map(function(r){return[r[0]+dx,r[1]+dy]})}else{s.x+=dx;s.y+=dy}paint();return}
+      var s2=drag.s,a=drag.start;
+      if(s2.t==="bar"){s2.x2=p[0];s2.y2=p[1]}else if(s2.t==="pen"){s2.p.push([Math.round(p[0]),Math.round(p[1])])}
+      else{s2.x=Math.min(a[0],p[0]);s2.y=Math.min(a[1],p[1]);s2.w=Math.abs(p[0]-a[0]);s2.h=Math.abs(p[1]-a[1])}
+      paint();
+    });
+    function end(){if(!drag)return;
+      if(drag.mode==="new"){var s=drag.s,tiny=s.t==="bar"?Math.hypot(s.x2-s.x1,s.y2-s.y1)<6:s.t==="pen"?s.p.length<2:(s.w<6&&s.h<6);
+        if(tiny){list().pop();undo.pop()}}
+      drag=null;changed()}
+    svg.addEventListener("pointerup",end);svg.addEventListener("pointercancel",end);
+  }
+  q(".selbar").addEventListener("click",function(e){var b=e.target.closest("[data-act]");if(!b)return;var s=byId(selId);if(!s)return;snapshot();var a=b.getAttribute("data-act");
+    if(a==="rotL")s.r=((s.r||0)-15+360)%360;else if(a==="rotR")s.r=((s.r||0)+15)%360;
+    else if(a==="grow"||a==="shrink"){var k=a==="grow"?1.12:1/1.12,c=center(s);
+      if(s.t==="bar"){s.x1=c[0]+(s.x1-c[0])*k;s.y1=c[1]+(s.y1-c[1])*k;s.x2=c[0]+(s.x2-c[0])*k;s.y2=c[1]+(s.y2-c[1])*k}
+      else if(s.t==="pen"){s.p=s.p.map(function(r){return[c[0]+(r[0]-c[0])*k,c[1]+(r[1]-c[1])*k]})}
+      else{s.w*=k;s.h*=k;s.x=c[0]-s.w/2;s.y=c[1]-s.h/2}}
+    else if(a==="fill"){if(s.t!=="bar"&&s.t!=="pen")s.f=s.f?0:1}
+    else if(a==="del"){io.set(list().filter(function(x){return x.id!==selId}));selId=null}
+    changed()});
+  root.addEventListener("click",function(e){var b=e.target.closest("[data-e]");if(!b)return;var k=b.getAttribute("data-e");
+    if(k==="undo"){if(!undo.length)return;io.set(JSON.parse(undo.pop()));selId=null;changed()}
+    else if(k==="clear"){if(list().length)q('[data-e="ask"]').hidden=false}
+    else if(k==="no"){q('[data-e="ask"]').hidden=true}
+    else if(k==="yes"){snapshot();io.set([]);selId=null;q('[data-e="ask"]').hidden=true;changed()}});
+  ids();paint();
+  return{refresh:function(){undo=[];selId=null;drag=null;q('[data-e="ask"]').hidden=true;ids();paint()}};
 }
-function pt(e){var p=fSvg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;var q=p.matrixTransform(fSvg.getScreenCTM().inverse());return[Math.max(0,Math.min(300,q.x)),Math.max(0,Math.min(300,q.y))]}
-function bindBoard(){
-  fSvg.addEventListener("pointerdown",function(e){
-    e.preventDefault();var p=pt(e);try{fSvg.setPointerCapture(e.pointerId)}catch(_){}
-    if(tool==="select"){var g=e.target.closest("g[data-id]");if(g){selId=+g.getAttribute("data-id");snapshot();drag={mode:"move",last:p}}else{selId=null;drag=null}paintF();return}
-    snapshot();var s={id:nextId++,t:tool};
-    if(tool==="bar"){s.x1=p[0];s.y1=p[1];s.x2=p[0];s.y2=p[1]}else if(tool==="pen"){s.p=[[Math.round(p[0]),Math.round(p[1])]]}else{s.x=p[0];s.y=p[1];s.w=0;s.h=0}
-    F.shapes.push(s);drag={mode:"new",s:s,start:p};paintF();
-  });
-  fSvg.addEventListener("pointermove",function(e){
-    if(!drag)return;var p=pt(e);
-    if(drag.mode==="move"){var s=byId(selId);if(!s)return;var dx=p[0]-drag.last[0],dy=p[1]-drag.last[1];drag.last=p;
-      if(s.t==="bar"){s.x1+=dx;s.y1+=dy;s.x2+=dx;s.y2+=dy}else if(s.t==="pen"){s.p=s.p.map(function(q){return[q[0]+dx,q[1]+dy]})}else{s.x+=dx;s.y+=dy}paintF();return}
-    var s2=drag.s,a=drag.start;
-    if(s2.t==="bar"){s2.x2=p[0];s2.y2=p[1]}else if(s2.t==="pen"){s2.p.push([Math.round(p[0]),Math.round(p[1])])}
-    else{s2.x=Math.min(a[0],p[0]);s2.y=Math.min(a[1],p[1]);s2.w=Math.abs(p[0]-a[0]);s2.h=Math.abs(p[1]-a[1])}
-    paintF();
-  });
-  function end(){if(!drag)return;
-    if(drag.mode==="new"){var s=drag.s,tiny=s.t==="bar"?Math.hypot(s.x2-s.x1,s.y2-s.y1)<6:s.t==="pen"?s.p.length<2:(s.w<6&&s.h<6);
-      if(tiny){F.shapes.pop();undo.pop()}}
-    drag=null;saveF();paintF()}
-  fSvg.addEventListener("pointerup",end);fSvg.addEventListener("pointercancel",end);
+
+/* ---------- 팔로워 ---------- */
+var F=store("draw")||{shapes:[]};
+function paintFCount(n){$("fCount").textContent="도형 "+n+"개";if(!n)$("fResult").hidden=true}
+makeEditor($("fEditor"),{label:"내 그림",get:function(){return F.shapes},set:function(a){F.shapes=a},save:function(){store("draw",F)},onChange:paintFCount});
+paintFCount(F.shapes.length);
+
+/* ---------- 진행자: 라운드 도형 직접 그리기 ---------- */
+var AR=0,linkSig=null;
+function saveDraft(){try{localStorage.setItem("shp_custom",JSON.stringify(DRAFT))}catch(e){}}
+var aEd=makeEditor($("aEditor"),{label:"라운드 도형 그리기",get:function(){return DRAFT[AR]},set:function(a){DRAFT[AR]=a},save:saveDraft,onChange:function(){paintAdminDraw()}});
+function paintThumbs(){
+  var box=$("aThumbs");box.innerHTML="";
+  for(var i=0;i<N;i++){(function(i){var b=document.createElement("button");b.type="button";b.className="thumb";b.setAttribute("aria-pressed",i===AR?"true":"false");
+    var bd=document.createElement("div");bd.className="board";drawInto(bd,roundShapes(i,true),(i+1)+"라운드");
+    var cap=document.createElement("span");cap.innerHTML=(i+1)+"R · "+(isCustom(i,true)?"<b>직접</b>":"기본");
+    b.appendChild(bd);b.appendChild(cap);b.addEventListener("click",function(){AR=i;aEd.refresh();paintAdminDraw()});box.appendChild(b)})(i)}
 }
-$("fSel").addEventListener("click",function(e){var b=e.target.closest("[data-act]");if(!b)return;var s=byId(selId);if(!s)return;snapshot();var a=b.getAttribute("data-act");
-  if(a==="rotL")s.r=((s.r||0)-15+360)%360;else if(a==="rotR")s.r=((s.r||0)+15)%360;
-  else if(a==="grow"||a==="shrink"){var k=a==="grow"?1.12:1/1.12,c=center(s);
-    if(s.t==="bar"){s.x1=c[0]+(s.x1-c[0])*k;s.y1=c[1]+(s.y1-c[1])*k;s.x2=c[0]+(s.x2-c[0])*k;s.y2=c[1]+(s.y2-c[1])*k}
-    else if(s.t==="pen"){s.p=s.p.map(function(q){return[c[0]+(q[0]-c[0])*k,c[1]+(q[1]-c[1])*k]})}
-    else{s.w*=k;s.h*=k;s.x=c[0]-s.w/2;s.y=c[1]-s.h/2}}
-  else if(a==="fill"){if(s.t!=="bar"&&s.t!=="pen")s.f=s.f?0:1}
-  else if(a==="del"){F.shapes=F.shapes.filter(function(x){return x.id!==selId});selId=null}
-  saveF();paintF()});
-$("fUndo").addEventListener("click",function(){if(!undo.length)return;F.shapes=JSON.parse(undo.pop());selId=null;saveF();paintF()});
-$("fClear").addEventListener("click",function(){if(F.shapes.length)$("fClearAsk").hidden=false});
-$("fClearNo").addEventListener("click",function(){$("fClearAsk").hidden=true});
-$("fClearYes").addEventListener("click",function(){snapshot();F.shapes=[];selId=null;saveF();paintF();$("fClearAsk").hidden=true;$("fResult").hidden=true});
-paintF();
+function paintAdminDraw(){
+  var cus=isCustom(AR,true);
+  $("aTitle").textContent=(AR+1)+"라운드";
+  $("aState").textContent=cus?"직접 그림 · "+summary(DRAFT[AR]):"기본 도형 사용 중 · 그리면 바뀝니다";
+  paintThumbs();
+  var sig=encodeSet(DRAFT),pub=URLSET?encodeSet(URLSET):encodeSet(emptySet());
+  $("aStale").hidden=(sig===(linkSig||pub));
+  if(H.round===AR&&!$("hAnswer").hidden)drawInto($("hBoard"),roundShapes(H.round,true),(H.round+1)+"라운드 정답");
+}
+$("aDefault").addEventListener("click",function(){DRAFT[AR]=clone(DEF[AR]);saveDraft();aEd.refresh();paintAdminDraw()});
+$("aMakeLink").addEventListener("click",function(){
+  var sig=encodeSet(DRAFT),base=location.origin+location.pathname,any=DRAFT.some(function(r){return r.length});
+  var pl=any?base+"?s="+sig:base;
+  $("aPLink").value=pl;$("aALink").value=pl+"#admin";$("aLinks").hidden=false;$("aCopyMsg").textContent="";
+  linkSig=sig;$("aStale").hidden=true;
+});
+function copyFrom(id,msg){var inp=$(id);function fallback(){inp.focus();inp.select();$("aCopyMsg").textContent="링크를 선택했어요. 길게 눌러 복사하세요."}
+  try{navigator.clipboard.writeText(inp.value).then(function(){$("aCopyMsg").textContent=msg},fallback)}catch(e){fallback()}}
+$("aPCopy").addEventListener("click",function(){copyFrom("aPLink","참여자 링크를 복사했어요.")});
+$("aACopy").addEventListener("click",function(){copyFrom("aALink","관리자 링크를 복사했어요. 이 링크는 참여자에게 보내지 마세요.")});
+paintAdminDraw();
 
 /* ---------- 정답 비교 ---------- */
 $("fCheck").addEventListener("click",function(){
   var c=($("fCode").value||"").replace(/\D/g,""),i=CODES.indexOf(c);
   if(i<0){$("fCodeMsg").textContent="코드가 맞지 않아요. 진행자 화면의 4자리 숫자를 다시 확인해 주세요.";$("fResult").hidden=true;return}
-  $("fCodeMsg").textContent=(i+1)+"라운드 정답이에요.";$("fAnsCap").textContent="정답 · "+R[i].name;
-  drawInto($("fMine"),F.shapes,"내 그림");drawInto($("fAns"),R[i].s,R[i].name);
+  $("fCodeMsg").textContent=(i+1)+"라운드 정답이에요.";$("fAnsCap").textContent="정답 · "+(i+1)+"라운드";
+  drawInto($("fMine"),F.shapes,"내 그림");drawInto($("fAns"),roundShapes(i,false),(i+1)+"라운드 정답");
   document.querySelectorAll("#fChecks input").forEach(function(x){x.checked=false});paintScore();$("fResult").hidden=false;
 });
 function paintScore(){var n=0;document.querySelectorAll("#fChecks input").forEach(function(x){if(x.checked)n++});$("fScore").textContent=n+" / 5"}
