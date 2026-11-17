@@ -149,17 +149,14 @@ textarea{resize:vertical;min-height:40px}
   <section id="v-admin" hidden style="display:flex;flex-direction:column;gap:14px">
     <div class="card">
       <span class="eyebrow">준비 · 라운드 도형 직접 그리기</span>
-      <p class="muted">아래 칸에서 라운드를 고르고 도형을 그리세요. 그리지 않은 라운드는 기본 도형이 나갑니다. 다 그렸으면 <b>참여자 링크 만들기</b>를 눌러 새 링크를 참여자에게 보내세요.</p>
+      <p class="muted">아래 칸에서 라운드를 고르고 도형을 그리세요. 쓸 라운드만 그리면 됩니다. 다 그렸으면 <b>참여자 링크 만들기</b>를 눌러 새 링크를 참여자에게 보내세요.</p>
       <div class="thumbs" id="aThumbs"></div>
       <div class="row" style="justify-content:space-between">
         <h2 id="aTitle">1라운드</h2>
         <span class="rule-pill" id="aState"></span>
       </div>
       <div id="aEditor"></div>
-      <div class="row">
-        <button class="btn ghost" id="aDefault" type="button">기본 도형 불러와서 고치기</button>
-      </div>
-      <p class="muted">전체 지우기를 하면 그 라운드는 기본 도형으로 돌아갑니다. 그린 내용은 이 기기에 자동 저장됩니다.</p>
+      <p class="muted">그린 내용은 이 기기에 자동 저장됩니다. 원·네모·세모·막대로 6~8개 정도면 설명하기 알맞습니다.</p>
       <button class="btn" id="aMakeLink" type="button">참여자 링크 만들기</button>
       <p class="notice" id="aStale" hidden>도형을 바꿨어요. 참여자 링크를 다시 만들어 보내야 바뀐 도형이 보입니다.</p>
       <div id="aLinks" hidden style="display:flex;flex-direction:column;gap:12px">
@@ -212,6 +209,7 @@ textarea{resize:vertical;min-height:40px}
     <div class="card">
       <span class="eyebrow">5 · 정답 공개와 비교</span>
       <button class="btn warn" id="hReveal" type="button">정답 도형 공개</button>
+      <p class="notice" id="hRevealMsg" hidden></p>
       <div id="hAnswer" hidden style="display:flex;flex-direction:column;gap:12px">
         <div class="board" id="hBoard"></div>
         <div class="ok">팔로워 비교 코드: <b id="hCode" style="font-size:20px;letter-spacing:.15em"></b> · 팔로워가 이 코드를 넣으면 자기 그림과 정답을 나란히 봅니다.</div>
@@ -296,67 +294,10 @@ textarea{resize:vertical;min-height:40px}
 <script>
 (function(){
 "use strict";
-/* ---------- 도형 데이터 (300 x 300 좌표) ---------- */
-// type: ellipse / rect / tri (박스 안 이등변삼각형, 꼭짓점 위) / bar (x1,y1,x2,y2)
-var R = [
- {name:"도형 1", level:"쉬움", s:[
-  {t:"rect",x:100,y:130,w:100,h:100},
-  {t:"tri",x:100,y:70,w:100,h:60},
-  {t:"ellipse",x:215,y:35,w:50,h:50},
-  {t:"bar",x1:40,y1:255,x2:260,y2:255}]},
- {name:"도형 2", level:"쉬움", s:[
-  {t:"ellipse",x:30,y:100,w:60,h:60},
-  {t:"ellipse",x:120,y:100,w:60,h:60},
-  {t:"ellipse",x:210,y:100,w:60,h:60},
-  {t:"bar",x1:90,y1:130,x2:120,y2:130},
-  {t:"bar",x1:180,y1:130,x2:210,y2:130},
-  {t:"tri",x:120,y:195,w:60,h:55,r:180}]},
- {name:"도형 3", level:"보통", s:[
-  {t:"rect",x:85,y:85,w:130,h:130,r:45},
-  {t:"ellipse",x:125,y:125,w:50,h:50,f:1},
-  {t:"bar",x1:25,y1:150,x2:275,y2:150},
-  {t:"bar",x1:150,y1:25,x2:150,y2:60}]},
- {name:"도형 4", level:"보통", s:[
-  {t:"tri",x:60,y:40,w:180,h:150,r:180},
-  {t:"ellipse",x:42,y:22,w:36,h:36},
-  {t:"ellipse",x:222,y:22,w:36,h:36},
-  {t:"ellipse",x:132,y:172,w:36,h:36},
-  {t:"bar",x1:150,y1:208,x2:150,y2:232},
-  {t:"rect",x:105,y:232,w:90,h:45}]},
- {name:"도형 5", level:"보통", s:[
-  {t:"rect",x:55,y:55,w:120,h:120},
-  {t:"ellipse",x:125,y:125,w:125,h:125},
-  {t:"tri",x:163,y:165,w:50,h:45,f:1},
-  {t:"bar",x1:30,y1:275,x2:110,y2:195}]},
- {name:"도형 6", level:"어려움", s:[
-  {t:"rect",x:40,y:210,w:60,h:60},
-  {t:"rect",x:100,y:150,w:60,h:60},
-  {t:"rect",x:160,y:90,w:60,h:60},
-  {t:"ellipse",x:175,y:58,w:30,h:30,f:1},
-  {t:"tri",x:40,y:152,w:60,h:55},
-  {t:"bar",x1:255,y1:40,x2:255,y2:270}]},
- {name:"도형 7", level:"어려움", s:[
-  {t:"ellipse",x:40,y:40,w:220,h:220},
-  {t:"rect",x:100,y:100,w:100,h:100,r:45},
-  {t:"tri",x:127,y:128,w:46,h:42,f:1},
-  {t:"bar",x1:150,y1:40,x2:150,y2:10},
-  {t:"bar",x1:260,y1:150,x2:290,y2:150},
-  {t:"ellipse",x:18,y:240,w:32,h:32,f:1}]},
- {name:"도형 8", level:"매우 어려움", s:[
-  {t:"rect",x:30,y:30,w:85,h:50},
-  {t:"bar",x1:130,y1:55,x2:190,y2:55},
-  {t:"ellipse",x:200,y:20,w:70,h:70},
-  {t:"tri",x:40,y:115,w:70,h:85,r:30},
-  {t:"rect",x:150,y:135,w:50,h:110,r:20,f:1},
-  {t:"tri",x:228,y:118,w:40,h:35,r:180,f:1},
-  {t:"ellipse",x:232,y:205,w:40,h:40},
-  {t:"bar",x1:35,y1:250,x2:125,y2:250},
-  {t:"bar",x1:80,y1:225,x2:80,y2:275}]}
-];
+/* 라운드 수. 도형은 진행자가 관리자 화면에서 직접 그리고, 링크(?s=)에 담겨 전달됩니다. */
+var N = 8;
 var CODES = ["3172","5840","2619","7403","9286","4157","6931","8024"];
 var NS = "http://www.w3.org/2000/svg";
-var DEF = R.map(function(r){return r.s});
-var N = R.length;
 
 /* ---------- 직접 그린 도형: 링크(?s=)에 담기 ---------- */
 function rnd(v){return Math.round(v)}
@@ -386,7 +327,7 @@ function clone(x){return JSON.parse(JSON.stringify(x))}
 var DRAFT=(function(){var d=null;try{d=JSON.parse(localStorage.getItem("shp_custom")||"null")}catch(e){}
   if(Array.isArray(d)&&d.length===N)return d;return URLSET?clone(URLSET):emptySet()})();
 function isCustom(i,admin){var c=admin?DRAFT:URLSET;return!!(c&&c[i]&&c[i].length)}
-function roundShapes(i,admin){return isCustom(i,admin)?(admin?DRAFT:URLSET)[i]:DEF[i]}
+function roundShapes(i,admin){return isCustom(i,admin)?(admin?DRAFT:URLSET)[i]:[]}
 
 function store(k,v){try{if(v===undefined){var s=localStorage.getItem("shp_"+k);return s?JSON.parse(s):null}localStorage.setItem("shp_"+k,JSON.stringify(v))}catch(e){return null}}
 function $(id){return document.getElementById(id)}
@@ -442,8 +383,8 @@ $("backBtn").addEventListener("click",function(){location.hash=""});
 
 function roundChips(box,cur,onPick){
   box.innerHTML="";
-  R.forEach(function(r,i){var b=document.createElement("button");b.type="button";b.className="chip";b.textContent=(i+1)+"라운드";b.setAttribute("aria-pressed",i===cur?"true":"false");b.title=r.level;
-    b.addEventListener("click",function(){box.querySelectorAll(".chip").forEach(function(c){c.setAttribute("aria-pressed","false")});b.setAttribute("aria-pressed","true");onPick(i)});box.appendChild(b)});
+  for(var i=0;i<N;i++)(function(i){var b=document.createElement("button");b.type="button";b.className="chip";b.textContent=(i+1)+"라운드";b.setAttribute("aria-pressed",i===cur?"true":"false");
+    b.addEventListener("click",function(){box.querySelectorAll(".chip").forEach(function(c){c.setAttribute("aria-pressed","false")});b.setAttribute("aria-pressed","true");onPick(i)});box.appendChild(b)})(i);
 }
 
 /* ---------- 진행자 ---------- */
@@ -505,15 +446,20 @@ $("hReset").addEventListener("click",function(){stopT();left=H.secs;paintTimer()
 paintTimer();
 
 function hideAnswer(){$("hAnswer").hidden=true;$("hReveal").hidden=false}
-$("hReveal").addEventListener("click",function(){$("hAnswer").hidden=false;$("hReveal").hidden=true;
+$("hReveal").addEventListener("click",function(){
+  if(!roundShapes(H.round,true).length){$("hRevealMsg").hidden=false;$("hRevealMsg").textContent=(H.round+1)+"라운드에는 그린 도형이 없어요. 맨 위에서 도형을 그리거나 다른 라운드를 고르세요.";return}
+  $("hRevealMsg").hidden=true;$("hAnswer").hidden=false;$("hReveal").hidden=true;
   drawInto($("hBoard"),roundShapes(H.round,true),(H.round+1)+"라운드 정답");$("hCode").textContent=CODES[H.round]});
 
 /* ---------- 리더 ---------- */
 var LR=store("lround")||0,lShown=false;
 function paintLeader(){
   var cus=isCustom(LR,false),list=roundShapes(LR,false);
-  $("lTitle").textContent=(LR+1)+"라운드"+(cus?"":" · "+R[LR].name);$("lCount").textContent=(cus?"진행자가 그린 도형":R[LR].level)+" · "+summary(list);
-  drawInto($("lBoard"),list,(LR+1)+"라운드 도형",true);$("lVeil").hidden=lShown;$("lToggle").textContent=lShown?"도형 가리기":"도형 보기";
+  $("lTitle").textContent=(LR+1)+"라운드";$("lCount").textContent=cus?"도형 "+list.length+"개 · "+summary(list):"도형 없음";
+  drawInto($("lBoard"),list,(LR+1)+"라운드 도형",true);
+  $("lVeil").innerHTML=cus?"팔로워가 보지 않는지 확인한 뒤<br>아래 버튼을 누르세요":"이 라운드에는 도형이 없어요.<br>진행자에게 새 참여자 링크를 받아 주세요.";
+  $("lToggle").disabled=!cus;if(!cus)lShown=false;
+  $("lVeil").hidden=lShown;$("lToggle").textContent=lShown?"도형 가리기":"도형 보기";
 }
 roundChips($("lRounds"),LR,function(i){LR=i;store("lround",i);lShown=false;paintLeader()});
 $("lToggle").addEventListener("click",function(){lShown=!lShown;paintLeader()});
@@ -606,22 +552,23 @@ function paintThumbs(){
   var box=$("aThumbs");box.innerHTML="";
   for(var i=0;i<N;i++){(function(i){var b=document.createElement("button");b.type="button";b.className="thumb";b.setAttribute("aria-pressed",i===AR?"true":"false");
     var bd=document.createElement("div");bd.className="board";drawInto(bd,roundShapes(i,true),(i+1)+"라운드");
-    var cap=document.createElement("span");cap.innerHTML=(i+1)+"R · "+(isCustom(i,true)?"<b>직접</b>":"기본");
+    var cap=document.createElement("span");cap.innerHTML=(i+1)+"R · "+(isCustom(i,true)?"<b>"+DRAFT[i].length+"개</b>":"비어 있음");
     b.appendChild(bd);b.appendChild(cap);b.addEventListener("click",function(){AR=i;aEd.refresh();paintAdminDraw()});box.appendChild(b)})(i)}
 }
 function paintAdminDraw(){
   var cus=isCustom(AR,true);
   $("aTitle").textContent=(AR+1)+"라운드";
-  $("aState").textContent=cus?"직접 그림 · "+summary(DRAFT[AR]):"기본 도형 사용 중 · 그리면 바뀝니다";
+  $("aState").textContent=cus?"도형 "+DRAFT[AR].length+"개 · "+summary(DRAFT[AR]):"아직 비어 있음";
   paintThumbs();
   var sig=encodeSet(DRAFT),pub=URLSET?encodeSet(URLSET):encodeSet(emptySet());
   $("aStale").hidden=(sig===(linkSig||pub));
   if(H.round===AR&&!$("hAnswer").hidden)drawInto($("hBoard"),roundShapes(H.round,true),(H.round+1)+"라운드 정답");
 }
-$("aDefault").addEventListener("click",function(){DRAFT[AR]=clone(DEF[AR]);saveDraft();aEd.refresh();paintAdminDraw()});
 $("aMakeLink").addEventListener("click",function(){
   var sig=encodeSet(DRAFT),base=location.origin+location.pathname,any=DRAFT.some(function(r){return r.length});
-  var pl=any?base+"?s="+sig:base;
+  if(!any){$("aLinks").hidden=true;$("aStale").hidden=false;$("aStale").textContent="먼저 한 라운드 이상 도형을 그려 주세요.";return}
+  $("aStale").textContent="도형을 바꿨어요. 참여자 링크를 다시 만들어 보내야 바뀐 도형이 보입니다.";
+  var pl=base+"?s="+sig;
   $("aPLink").value=pl;$("aALink").value=pl+"#admin";$("aLinks").hidden=false;$("aCopyMsg").textContent="";
   linkSig=sig;$("aStale").hidden=true;
 });
@@ -635,6 +582,7 @@ paintAdminDraw();
 $("fCheck").addEventListener("click",function(){
   var c=($("fCode").value||"").replace(/\D/g,""),i=CODES.indexOf(c);
   if(i<0){$("fCodeMsg").textContent="코드가 맞지 않아요. 진행자 화면의 4자리 숫자를 다시 확인해 주세요.";$("fResult").hidden=true;return}
+  if(!roundShapes(i,false).length){$("fCodeMsg").textContent="이 링크에는 "+(i+1)+"라운드 도형이 없어요. 진행자에게 새 링크를 받아 주세요.";$("fResult").hidden=true;return}
   $("fCodeMsg").textContent=(i+1)+"라운드 정답이에요.";$("fAnsCap").textContent="정답 · "+(i+1)+"라운드";
   drawInto($("fMine"),F.shapes,"내 그림");drawInto($("fAns"),roundShapes(i,false),(i+1)+"라운드 정답");
   document.querySelectorAll("#fChecks input").forEach(function(x){x.checked=false});paintScore();$("fResult").hidden=false;
