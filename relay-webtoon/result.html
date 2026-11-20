@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>릴레이 결과 📖</title>
+<link rel="stylesheet" href="style.css">
+<script src="common.js"></script>
+</head>
+<body>
+<div class="topbar">
+  <a href="index.html">‹ 홈</a>
+  <span class="logo">📖 릴레이 결과</span>
+  <span class="spacer"></span>
+  <a href="#" onclick="window.print();return false;" class="no-print">🖨️ 인쇄</a>
+</div>
+<div class="wrap">
+  <div id="relayBanner"></div>
+  <h2 class="sec center" style="margin-top:0">🎬 우리 모두의 릴레이 웹툰</h2>
+  <div id="panels"><p class="note center">불러오는 중…</p></div>
+</div>
+<script>
+(async function () {
+  const s = await getSettings();
+  const [st, bubbles] = await Promise.all([getRelayState(s.n, s.pc), getRelayBubbles()]);
+  document.getElementById('relayBanner').innerHTML = bannerHTML(st.complete ? 'done' : 'wait', statusLine(st));
+  document.getElementById('panels').innerHTML = webtoonHTML(st, bubbles);
+})();
+
+watchReset(() => location.reload());
+</script>
+</body>
+</html>

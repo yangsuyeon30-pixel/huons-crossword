@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>릴레이 이어쓰기 ✏️</title>
+<link rel="stylesheet" href="style.css">
+<script src="common.js"></script>
+</head>
+<body>
+<div class="topbar">
+  <a href="index.html">‹ 팀 선택</a>
+  <span class="logo" id="teamTitle">🏃 릴레이 이어쓰기</span>
+  <span class="spacer"></span>
+  <span class="savestate" id="saveState"></span>
+</div>
+<div class="wrap">
+  <div id="turnBanner"></div>
+  <p id="notice" class="notice" hidden></p>
+  <div id="panels"><p class="note center">불러오는 중…</p></div>
+</div>
+<div class="savebar">
+  <div class="prog">
+    <div class="ptxt" id="progTxt">완성 0컷</div>
+    <div class="pbar"><i id="progBar" style="width:0%"></i></div>
+  </div>
+  <button class="btn" id="submitBtn">다음 팀에게 넘기기 ➡️</button>
+</div>
+<script>
+const team = parseInt(new URLSearchParams(location.search).get('team') || '0', 10);
+if (!(team >= 1)) location.replace('index.html');
+
+const $ = id => document.getElementById(id);
+const PASS_LABEL = '다음 팀에게 넘기기 ➡️';
+
+let relay = null;      // 현재 릴레이 상태
+let data = {};         // "p_b" -> 대사
+let lastSig = '';      // 마지막으로 그린 상태 (같으면 다시 그리지 않음 → 입력 중 화면이 흔들리지 않게)
+let lastEpoch = null;  // 초기화 횟수
+const pending = {};    // 칸별 저장 대기 타이머
+
+const key = (p, b) => p + '_' + b;
+const myChunk = () => teamChunk(team, relay.n, relay.pc);
+const isMyTurn = () => !!relay && !relay.complete && relay.currentTeam === team;
+
+/* ---------- 자동 저장 ---------- */
+function setSaveState(t) { $('saveState').textContent = t; }
+
+function doSave(p, b) {
+  return saveBubble(p, b, data[key(p, b)] || '')
+    .then(() => setSaveState('저장됨 ✓'))
+    .catch(() => setSaveState('저장 실패 ⚠️'));
+}
+function queueSave(p, b, text) {
+  const k = key(p, b);
+  data[k] = text;
+  $('notice').hidden = true;
+  updateProg();
+  setSaveState('저장 중…');
+  clearTimeout(pending[k]);
+  pending[k] = setTimeout(() => { delete pending[k]; doSave(p, b); }, 700);
+}
+/* 대기 중인 저장을 즉시 실행하고 끝날 때까지 기다림 */
+function flush(onlyKey) {
+  const jobs = Object.keys(pending).filter(k => !onlyKey || k === onlyKey).map(k => {
+    clearTimeout(pending[k]); delete pending[k];
+    const [p, b] = k.split('_').map(Number);
+    return doSave(p, b);
+  });
+  return Promise.all(jobs);
+}
+function dropPending() { Object.keys(pending).forEach(k => { clearTimeout(pending[k]); delete pending[k]; }); }
+
+/* ---------- 화면 ---------- */
+function chunkFill(ch) {
+  let filled = 0, firstEmpty = -1;
+  for (let p = ch.start; p <= ch.end; p++) for (let b = 0; b < BUBBLES_PER_PANEL; b++) {
+    if ((data[key(p, b)] || '').trim()) filled++;
+    else if (firstEmpty < 0) firstEmpty = p;
+  }
+  return { filled: filled, total: ch.size * BUBBLES_PER_PANEL, firstEmpty: firstEmpty };
+}
+
+function updateProg() {
+  let cur = '';
+  if (!relay.complete) { const f = chunkFill(relay.currentChunk); cur = ' · 이 차례 ' + f.filled + '/' + f.total + '개'; }
+  $('progTxt').textContent = '완성 ' + relay.doneCount + '/' + relay.pc + '컷' + cur;
+  $('progBar').style.width = Math.round(relay.doneCount / relay.pc * 100) + '%';
+}
+
+function scrollToMyChunk() {
+  const ch = myChunk();
+  const fig = ch && $('panel-' + ch.start);
+  if (fig) fig.scrollIntoView({ behavior: 'auto', block: 'start' });
+}
+
+function render() {
+  lastSig = stateSig(relay);
+  const curLabel = relay.currentTeam ? '<b>' + relay.currentTeam + '팀</b> 차례예요 (' + chunkLabel(relay.currentTeam, relay.n, relay.pc) + ' 작성 중)' : '';
+  let banner;
+  if (relay.complete) banner = bannerHTML('done', statusLine(relay));
+  else if (isMyTurn()) banner = bannerHTML('now', '✍️ 우리 팀 차례예요! <b>' + chunkLabel(team, relay.n, relay.pc) + '</b>의 말풍선을 채워주세요. 앞 컷 이야기를 보고 이어가면 돼요.');
+  else if (!myChunk()) banner = bannerHTML('wait', '⏳ 우리 팀은 맡은 구간이 없어요. 지금은 ' + curLabel + '.');
+  else banner = bannerHTML('wait', '⏳ 지금은 ' + curLabel + '. 우리 팀 차례가 되면 이 화면이 자동으로 열려요.');
+  $('turnBanner').innerHTML = banner;
+
+  const wrap = $('panels');
+  wrap.innerHTML = webtoonHTML(relay, data, team);
+  wrap.querySelectorAll('textarea').forEach(ta => {
+    const p = +ta.dataset.p, b = +ta.dataset.b;
+    ta.addEventListener('input', () => queueSave(p, b, ta.value));
+    ta.addEventListener('blur', () => flush(key(p, b)));
+  });
+
+  updateProg();
+  disarm();
+  const btn = $('submitBtn');
+  btn.disabled = !relay.complete && !isMyTurn();
+  btn.textContent = relay.complete ? '결과 보기 📖'
+    : isMyTurn() ? PASS_LABEL
+    : !myChunk() ? '차례 없음' : '차례 대기 중…';
+}
+
+/* ---------- 서버와 동기화 ---------- */
+async function sync(first) {
+  const s = await getSettings();
+  if (team > s.n) { location.replace('index.html'); return; }
+  const ep = await getResetEpoch();
+  const st = await getRelayState(s.n, s.pc);
+  const wasReset = !first && ep !== null && lastEpoch !== null && ep !== lastEpoch;
+  if (ep !== null) lastEpoch = ep;
+  if (!first && !wasReset && stateSig(st) === lastSig) return;
+
+  // 초기화: 로컬 초안은 버림 / 차례 변경: 쓰던 내용을 먼저 저장하고 다시 읽음
+  if (wasReset) { dropPending(); setSaveState(''); $('notice').hidden = true; }
+  else await flush();
+
+  const wasMine = isMyTurn();
+  relay = st;
+  data = await getRelayBubbles();
+  render();
+  if (first || (isMyTurn() && (wasReset || !wasMine))) scrollToMyChunk();
+}
+
+(async function init() {
+  $('teamTitle').textContent = '🏃 ' + team + '팀 릴레이 이어쓰기';
+  try { await sync(true); }
+  catch (e) { $('panels').innerHTML = '<p class="note center">불러오기에 실패했어요. 새로고침해주세요.</p>'; return; }
+  let busy = false; // 응답이 느릴 때 동기화가 겹치지 않게
+  setInterval(async () => {
+    if (busy) return;
+    busy = true;
+    try { await sync(false); } catch (e) { /* 다음 차례에 다시 시도 */ }
+    busy = false;
+  }, 3000);
+})();
+
+/* ---------- 넘기기 (두 번 눌러 확인: 모바일에서 confirm()이 불안정해서) ---------- */
+let armed = false, armTimer = null;
+function disarm() {
+  armed = false; clearTimeout(armTimer);
+  const btn = $('submitBtn');
+  btn.classList.remove('teal');
+  if (isMyTurn()) btn.textContent = PASS_LABEL;
+}
+
+$('submitBtn').addEventListener('click', async function () {
+  const btn = this;
+  if (relay.complete) { location.href = 'result.html'; return; }
+  if (!isMyTurn()) return;
+  const ch = myChunk();
+  const f = chunkFill(ch);
+  if (f.filled < f.total) {
+    $('notice').textContent = '맡은 구간의 말풍선을 다 채워주세요 🙂 (지금 ' + f.filled + '/' + f.total + '개)';
+    $('notice').hidden = false;
+    const fig = $('panel-' + f.firstEmpty);
+    if (fig) fig.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  $('notice').hidden = true;
+  if (!armed) {
+    armed = true;
+    btn.textContent = '정말 넘길까요? 다시 눌러주세요';
+    btn.classList.add('teal');
+    armTimer = setTimeout(disarm, 8000);
+    return;
+  }
+  clearTimeout(armTimer);
+  btn.disabled = true; btn.textContent = '넘기는 중…';
+  try {
+    await flush();
+    await markPanels(ch.start, ch.end);
+    location.href = 'index.html';
+  } catch (e) {
+    alert('넘기기에 실패했어요. 다시 시도해주세요.');
+    btn.disabled = false; disarm();
+  }
+});
+</script>
+</body>
+</html>
