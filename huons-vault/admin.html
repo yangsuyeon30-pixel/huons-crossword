@@ -155,7 +155,11 @@ async function loadGame(){
 async function loadTeams(){
   if(!game) return;
   const { data } = await sb.from('vault_teams').select('id,name,team_no,character,stage,wrong_total,hints_used,finished_at,elapsed_sec,created_at').eq('round', game.round);
+  const prevFin = new Set(teams.filter(t => t.finished_at).map(t => t.id));
   teams = data || []; renderTeams();
+  // 새로 탈출한 조가 있으면 팡파레
+  if(window._teamsLoaded && bgmOn && teams.some(t => t.finished_at && !prevFin.has(t.id))) VaultBGM.fanfare();
+  window._teamsLoaded = true;
 }
 async function syncClock(){
   // 서버 시간과 로컬 시계 차이를 보정

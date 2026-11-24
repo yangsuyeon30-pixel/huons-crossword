@@ -167,7 +167,9 @@ function curView(){ return views.find(x => !$(x).classList.contains('hidden')); 
 function bgmSync(){
   $('btnBgm').classList.toggle('off', !bgmOn);
   const v = curView();
-  if(!bgmOn || !gestured || v === 'v-done' || v === 'v-over'){ VaultBGM.stop(v === 'v-done' ? 2.5 : .6); return; }
+  if(!bgmOn || !gestured || v === 'v-over'){ VaultBGM.stop(.6); return; }
+  if(v === 'v-done'){ VaultBGM.setMode('win'); VaultBGM.start(); return; }   // 탈출 성공 → 신나는 승리 음악
+  VaultBGM.setMode('tense');
   let lv = 0;
   if(v === 'v-play') lv = (state && state.game.status === 'running' && remainingSec() <= 300) ? 2 : 1;
   VaultBGM.setLevel(lv); VaultBGM.start();
