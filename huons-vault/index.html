@@ -175,6 +175,7 @@
     <div class="confetti" id="confetti"></div>
     <div class="cell big escape-scene" id="doneCell"></div>
     <h2 class="done-title">탈옥 성공! 🎉</h2>
+    <div class="gm-hero gm-done" id="gmDone"></div>
     <p class="team-title"><span class="tn"></span></p>
     <div class="keys final" id="finalKeys"></div>
     <div class="stat-big" id="doneTime">00:00</div>
@@ -298,11 +299,22 @@ $('briefText').innerHTML = [
 ].map(p => `<p>${p}</p>`).join('');
 
 /* ---------- 입소 (조/캐릭터 선택) ---------- */
-(function gmType(){
-  const line = '어서 와라. 휴온스 플랜에 온 걸 환영한다… 과연 너희는 탈출할 수 있을까?';
-  let i = 0; const el = $('gmLine');
-  (function step(){ if(!el) return; el.textContent = line.slice(0, i); if(i++ <= line.length) setTimeout(step, 55); })();
-})();
+function typeLine(el, line, speed = 55){
+  if(!el) return; clearTimeout(el._t); let i = 0;
+  (function step(){ el.textContent = line.slice(0, i); if(i++ <= line.length) el._t = setTimeout(step, speed); })();
+}
+typeLine($('gmLine'), '어서 와라. 휴온스 플랜에 온 걸 환영한다… 과연 너희는 탈출할 수 있을까?');
+
+// 탈출 성공 화면의 게임 마스터 (첫 화면 그림을 id만 바꿔 복제)
+function showGmDone(team){
+  const box = $('gmDone'); if(!box) return;
+  if(!box.innerHTML){
+    const src = document.querySelector('#v-join .gm-svg');
+    if(src) box.innerHTML = src.outerHTML.replace(/id="(g[A-Za-z]+)"/g, 'id="$1D"').replace(/url\(#(g[A-Za-z]+)\)/g, 'url(#$1D)')
+      + '<div class="gm-say"><b>GAME MASTER</b><span id="gmLineDone"></span></div>';
+  }
+  setTimeout(() => typeLine($('gmLineDone'), `…흥미롭군. 휴온스 감옥을 뚫어내다니. 축하한다, ${team}. 다음 게임에서 다시 보자.`), 2600);
+}
 async function loadLobby(){
   try{
     const { data: g } = await sb.from('vault_game').select('round,team_count').eq('id', 1).single();
@@ -620,6 +632,7 @@ async function showDone(){
   $('doneWrong').textContent = t.wrong_total;
   $('doneHints').textContent = t.hints_used;
   if(first){
+    showGmDone(t.name);
     const c = $('doneCell');
     renderCell(c, t.character, 4);
     c.classList.remove('go'); void c.offsetWidth; c.classList.add('go');
