@@ -392,3 +392,11 @@ begin
   insert into vault_team_tokens(team_id) values (v_id) returning token into v_tok;
   return json_build_object('team_id', v_id, 'token', v_tok, 'round', g.round);
 end $$;
+
+-- ===== 입장 코드 + 문제별 퍼즐 설정(cfg) — 문제 내용 자체는 DB에만 보관하고 저장소에는 넣지 않음 =====
+alter table public.vault_questions add column if not exists cfg jsonb;
+insert into public.vault_config(key, value) values ('entry_code', lpad((floor(random() * 10000))::int::text, 4, '0'))
+  on conflict (key) do nothing;
+-- vault_enter(p_no, p_char, p_code): 입장 코드 확인 후 입소 / 예전 vault_enter(int,int)·vault_join(text)는 CODE_REQUIRED로 막음
+-- vault_admin_get_code / vault_admin_set_code: 관리자 화면에서 입장 코드 확인·변경
+-- vault_state: question.cfg(카드 문구·사다리 출발점 등) 포함

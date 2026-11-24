@@ -107,6 +107,11 @@
       <div class="gm-say"><b>GAME MASTER</b><span id="gmLine"></span></div>
     </div>
     <p class="lead center" style="margin-top:0">휴온스 금고를 노리다 <b>붙잡혔다!</b><br>감옥에 갇힐 조와 캐릭터를 고르세요.</p>
+    <label class="code-box" for="entryCode">
+      <span>입장 코드</span>
+      <input id="entryCode" class="code-inp" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="0000" autocomplete="off">
+      <small>진행자 화면에 보이는 4자리 숫자</small>
+    </label>
     <h3 class="pick-title"><span>1</span> 우리 조 선택</h3>
     <div class="team-pick" id="teamPick"></div>
     <h3 class="pick-title"><span>2</span> 캐릭터 선택</h3>
@@ -353,9 +358,11 @@ function renderLobby(){
     return `<button class="cp ${tk ? 'taken' : ''} ${pick.ch === i ? 'sel' : ''}" data-ch="${i}" ${tk ? 'disabled' : ''}>${CH.avatar(i)}<span>${c.name}</span>${tk ? `<small>${chOwner[i]}조 선택</small>` : ''}</button>`;
   }).join('');
   $('charPick').querySelectorAll('.cp').forEach(b => b.onclick = () => { pick.ch = +b.dataset.ch; sfx.tap(); renderLobby(); });
-  $('btnJoin').disabled = !(pick.no && pick.ch !== null);
+  $('btnJoin').disabled = !(pick.no && pick.ch !== null && /^\d{4}$/.test(($('entryCode') || {}).value || ''));
   $('btnJoin').innerHTML = ICO_LOCK + (pick.no && pick.ch !== null ? `${pick.no}조 · ${CH.name(pick.ch)} 감옥 입소` : '조와 캐릭터를 골라주세요');
 }
+
+$('entryCode').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4); renderLobby(); });
 
 /* ---------- 상태 ---------- */
 async function refresh(){
@@ -502,11 +509,20 @@ function rng(seedStr){ let h = 2166136261; for(const ch of seedStr){ h ^= ch.cha
 function shuffleR(arr, r){ const a = arr.slice(); for(let i = a.length - 1; i > 0; i--){ const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 function setPadlock(visible){ $('padlock').classList.toggle('hidden', !visible); $('btnSubmit').classList.toggle('hidden', !visible); }
 
+// 퍼즐 사용법 (퍼즐마다 단계별 안내)
+function howto(steps){
+  return `<details class="howto" open><summary>사용법</summary><ol>${steps.map(s => `<li>${s}</li>`).join('')}</ol></details>`;
+}
+function inputStep(q){
+  return q.lock.kind === 'digits'
+    ? '아래 <b>번호 자물쇠</b>의 ▲▼를 눌러(또는 위아래로 밀어) 숫자를 맞추세요.'
+    : '아래 <b>글자 타일</b>을 순서대로 눌러 빈칸을 채우세요. 잘못 넣으면 <b>⌫ 한 글자 지우기</b>.';
+}
 function renderPuzzle(q){
   const P = $('puzzle'); P.innerHTML = ''; setPadlock(true);
   const pz = q.puzzle || {}, kind = q.lock.kind;
   if(q.no === 1 && kind === 'digits') return puzzleHidden(P, q, pz);
-  if(q.no === 2 && kind === 'digits') return puzzleCards(P, q);
+  if(q.no === 2) return puzzleCards(P, q);
   if(q.no === 3 && kind === 'letters' && pz.jamo) return puzzleJamo(P, q, pz);
   if(q.no === 4 && kind === 'letters') return puzzleLadder(P, q, pz);
 }
@@ -523,7 +539,10 @@ function puzzleHidden(P, q, pz){
   P.innerHTML = `<div class="pz-title">🔍 감방 벽 낙서 — 숨은 숫자를 찾아라</div>
     <div class="scene" id="scene">${spots.map((s, i) => `<button class="spot" data-i="${i}" style="left:${s.x}%;top:${s.y}%"><span class="obj">${s.e}</span><span class="dg" style="transform:rotate(${s.rot}deg)">${s.d}</span></button>`).join('')}</div>
     <div class="tray"><span>찾은 숫자</span><div id="trayD"></div></div>
-    <p class="pz-note">벽 곳곳에 숫자가 숨어 있다. 터치해서 찾아낸 뒤, <b>휴온스가 태어난 해</b>를 번호 자물쇠에 맞춰라.</p>`;
+    ${howto(['벽 그림 속 물건(달력·시계·벽돌 등)을 하나씩 <b>눌러 보세요</b>. 숨은 숫자가 금색으로 빛나요.',
+             '찾은 숫자는 아래 <b>찾은 숫자</b> 칸에 모여요. 정답이 아닌 숫자도 섞여 있어요.',
+             '문제의 답이 되는 숫자 4개를 골라 ' + inputStep(q).replace('아래 ', ''),
+             '<b>자물쇠 열기</b>를 누르세요.'])}`;
   const found = new Set();
   P.querySelectorAll('.spot').forEach(b => b.onclick = () => {
     const i = +b.dataset.i; if(found.has(i)) return;
@@ -534,14 +553,19 @@ function puzzleHidden(P, q, pz){
 
 /* 2) 단서 카드 조합 */
 function puzzleCards(P, q){
-  const cards = [
+  const cfg = q.cfg || {};
+  const cards = cfg.cards || [
     { t:'단서 A', b:'휴온스그룹은 <b>1965년</b>에 창립했다.<br>그렇다면 2025년은 창립 <b>○○주년</b>.' },
     { t:'단서 B', b:'미국 <b>FDA</b> 허가를 받은<br>휴온스 주사제는 <b>○종</b>.' },
     { t:'조합 규칙', b:'비밀번호 =<br><b>A의 답</b> 뒤에 <b>B의 답</b>을<br>이어 붙여라.' },
     { t:'간수의 쪽지', b:'"내 생일은 0815…<br>비밀번호일지도?"<br><small>…믿지 마라.</small>' },
   ];
   const order = shuffleR([0,1,2,3], rng(me.team_id + 'c'));
-  P.innerHTML = `<div class="pz-title">🃏 단서 카드 — 카드를 뒤집어 조합하라</div>
+  P.innerHTML = `<div class="pz-title">🃏 ${esc(cfg.title || '단서 카드 — 카드를 뒤집어 조합하라')}</div>
+    ${howto(['물음표 카드를 <b>눌러서 뒤집으세요</b>. 4장 모두 뒤집을 수 있어요.',
+             '단서를 모두 읽고 정답을 추리하세요. <b>간수의 쪽지</b>는 함정이에요!',
+             inputStep(q),
+             '<b>자물쇠 열기</b>를 누르세요.'])}
     <div class="cards">${order.map(k => `<button class="card3d" data-k="${k}"><div class="inner"><div class="face back"><span>?</span><small>터치해서 뒤집기</small></div>
       <div class="face front"><em>${cards[k].t}</em><p>${cards[k].b}</p></div></div></button>`).join('')}</div>`;
   P.querySelectorAll('.card3d').forEach(b => b.onclick = () => { if(!b.classList.contains('flip')){ b.classList.add('flip'); sfx.tap(); buzz(12); } });
@@ -565,7 +589,10 @@ function composeJamo(seq){
 function puzzleJamo(P, q, pz){
   $('lockName').textContent = '조각 자물쇠';
   P.innerHTML = `<div class="pz-title">🧩 찢어진 쪽지 — 자음·모음 조각을 맞춰라</div>
-    <p class="pz-note">바닥에 떨어진 조각들… 조각을 <b>순서대로</b> 눌러 ○○에 들어갈 두 글자를 완성하세요.</p>`;
+    ${howto(['문제의 <b>○○</b>에 들어갈 말을 먼저 생각하세요.',
+             '아래 자음·모음 조각을 <b>글자 순서대로</b> 누르면 글자가 조립돼요. (예: ㄱ → ㅏ → ㅁ = 감)',
+             '헷갈리는 조각도 섞여 있어요. 잘못 누르면 <b>⌫ 한 글자 지우기</b>.',
+             '완성되면 <b>자물쇠 열기</b>를 누르세요.'])}`;
   const w = $('lockWidget'), pieces = pz.jamo, seq = [];
   w.className = 'jamo';
   w.innerHTML = `<div class="jm-out" id="jmOut"></div><div class="jm-pieces">${pieces.map((p, i) => `<button class="jm" data-i="${i}">${esc(p)}</button>`).join('')}</div>
@@ -585,8 +612,9 @@ function puzzleJamo(P, q, pz){
 /* 4) 사다리 타기 */
 function puzzleLadder(P, q, pz){
   const r = rng(me.team_id + 'L' + q.no);
-  const tops = shuffleR(['엘라비에', '리즈톡스', 'FDA 주사제', '창립 1965'], r);
-  const goal = tops.indexOf('엘라비에');
+  const L = (q.cfg && q.cfg.ladder) || {};
+  const tops = shuffleR(L.tops || ['엘라비에', '리즈톡스', 'FDA 주사제', '창립 1965'], r);
+  const goal = tops.indexOf(L.start || '엘라비에');
   const COLS = 4, LV = 9, rungs = [];
   for(let l = 0; l < LV; l++){ const a = Math.floor(r() * (COLS - 1)); rungs.push(r() < .85 ? a : -1); }
   const walk = c => { const pts = [[c, -0.5]]; for(let l = 0; l < LV; l++){ pts.push([c, l]); if(rungs[l] === c){ c++; pts.push([c, l]); } else if(rungs[l] === c - 1){ c--; pts.push([c, l]); } } pts.push([c, LV - 0.5]); return { end: c, pts }; };
@@ -598,8 +626,12 @@ function puzzleLadder(P, q, pz){
   for(let c = 0; c < COLS; c++) svg += `<line x1="${X(c)}" y1="2" x2="${X(c)}" y2="98" class="lrail"/>`;
   rungs.forEach((a, l) => { if(a >= 0) svg += `<line x1="${X(a)}" y1="${Y(l)}" x2="${X(a+1)}" y2="${Y(l)}" class="lrung"/>`; });
   svg += `<polyline id="lpath" class="lpath" points=""/></svg>`;
-  P.innerHTML = `<div class="pz-title">🪜 탈출 사다리 — 필러 제품에서 출발하라</div>
-    <p class="pz-note">제품을 골라 사다리를 타세요. 잘못 고르면 <b>간수에게 들킵니다!</b></p>
+  P.innerHTML = `<div class="pz-title">🪜 ${esc(L.title || '탈출 사다리 — 필러 제품에서 출발하라')}</div>
+    <p class="pz-note">${L.note || '제품을 골라 사다리를 타세요. 잘못 고르면 <b>간수에게 들킵니다!</b>'}</p>
+    ${howto(['문제에 나온 제품을 사다리 <b>맨 위 칸에서 골라 누르세요</b>.',
+             '금색 선이 사다리를 따라 내려가요. <b>비밀 통로</b>에 도착하면 글자 조각을 얻어요.',
+             '잘못 고르면 <b>간수에게 들켜 5초</b> 동안 기다려야 해요. 다시 골라 보세요.',
+             '얻은 글자 조각을 올바른 순서로 아래 <b>글자 타일</b>에 채우고 <b>자물쇠 열기</b>!'])}
     <div class="ladder"><div class="l-tops">${tops.map((t, i) => `<button class="l-top" data-i="${i}">${esc(t)}</button>`).join('')}</div>
       <div class="l-board">${svg}</div>
       <div class="l-bots">${bottoms.map((b, i) => `<div class="l-bot" data-i="${i}">?</div>`).join('')}</div></div>
@@ -692,12 +724,13 @@ $('btnJoin').onclick = async () => {
   if(!(pick.no && pick.ch !== null) || busy) return;
   busy = true; $('btnJoin').disabled = true; msg.textContent = '';
   try{
-    const r = await rpc('vault_enter', { p_no: pick.no, p_char: pick.ch });
+    const r = await rpc('vault_enter', { p_no: pick.no, p_char: pick.ch, p_code: $('entryCode').value.trim() });
     me = { team_id: r.team_id, token: r.token, round: r.round }; saveMe();
     sfx.clang(); await refresh();
   }catch(e){
     const c = errCode(e);
-    msg.textContent = c === 'TEAM_EXISTS' ? '이미 입소한 조예요. 다른 조를 골라 주세요.'
+    msg.textContent = c === 'BAD_CODE' ? '입장 코드가 맞지 않아요. 진행자 화면의 4자리 숫자를 확인해 주세요.'
+      : c === 'TEAM_EXISTS' ? '이미 입소한 조예요. 다른 조를 골라 주세요.'
       : c === 'CHAR_TAKEN' ? '방금 다른 조가 고른 캐릭터예요. 다른 캐릭터를 골라 주세요.'
       : c === 'BAD_TEAM' ? '조 번호가 바뀌었어요. 다시 골라 주세요.' : '입소에 실패했어요. 다시 시도해 주세요.';
     await loadLobby();

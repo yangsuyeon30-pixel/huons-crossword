@@ -53,6 +53,12 @@
 .qcard textarea,.qcard input{width:100%;background:#060d20;border:1px solid var(--line);border-radius:10px;color:var(--ink);
   padding:10px;font-size:14px;font-family:inherit;resize:vertical}
 .login{max-width:380px;margin:12vh auto 0}
+.entry-code{margin-top:14px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.entry-code span{font-size:14px;color:var(--muted);font-weight:700;letter-spacing:2px}
+.entry-code b{font-size:64px;letter-spacing:14px;color:var(--gold2);font-variant-numeric:tabular-nums;line-height:1.1;padding-left:14px}
+.code-ctl{display:flex;gap:8px;justify-content:center;margin-top:10px}
+.code-ctl input{width:110px;text-align:center;font-size:16px;background:#071026;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:8px;font-family:inherit}
+.code-ctl .btn{width:auto;margin:0;padding:8px 14px;font-size:14px}
 .tc-set{display:flex;align-items:center;gap:6px;margin-left:auto;background:#091127;border:1px solid var(--line);border-radius:14px;padding:6px 8px}
 .tc-set label{font-weight:900;color:var(--gold2);font-size:14px;margin:0 4px}
 .tc-set input{width:56px;text-align:center;font-size:20px;font-weight:900;background:#060d20;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:6px 0;font-family:inherit}
@@ -119,6 +125,11 @@
           <h3 class="sec-title">참가자 접속</h3>
           <img src="qr.png" alt="참가자 접속 QR 코드">
           <div class="url" id="joinUrl"></div>
+          <div class="entry-code"><span>입장 코드</span><b id="entryCode">----</b></div>
+          <div class="code-ctl">
+            <input id="codeInp" type="text" inputmode="numeric" maxlength="4" placeholder="직접 입력">
+            <button id="btnCode" class="btn btn-ghost">코드 바꾸기</button>
+          </div>
         </section>
       </div>
     </div>
@@ -166,7 +177,8 @@ async function syncClock(){
     clockOffset = new Date(now).getTime() - (t0 + t1)/2;
   }catch(e){}
 }
-async function loadAll(){ syncClock(); await loadGame(); await loadTeams(); }
+async function loadCode(){ try{ $('entryCode').textContent = await rpc('vault_admin_get_code', { p_pw: '' }); }catch(e){} }
+async function loadAll(){ syncClock(); loadCode(); await loadGame(); await loadTeams(); }
 
 function remaining(){
   if(!game || !game.started_at) return (game ? game.duration_sec : 1800);
@@ -276,6 +288,14 @@ $('btnReset').onclick = async () => {
   if(!confirm('전체 초기화할까요?\n등록된 모든 팀과 기록이 삭제되고 참가자 화면은 팀 등록으로 돌아갑니다.')) return;
   if(prompt('확인을 위해 "초기화"를 입력하세요.') !== '초기화') return;
   try{ await rpc('vault_admin_reset', { p_pw: pw }); toast('초기화 완료'); loadAll(); }catch(e){ alert('실패: ' + e.message); }
+};
+$('codeInp').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4); });
+$('btnCode').onclick = async () => {
+  const v = $('codeInp').value.trim();
+  if(v && !/^\d{4}$/.test(v)){ alert('입장 코드는 숫자 4자리로 입력해 주세요.'); return; }
+  if(!confirm(v ? `입장 코드를 ${v}(으)로 바꿀까요?` : '새 입장 코드를 무작위로 만들까요?')) return;
+  try{ const c = await rpc('vault_admin_set_code', { p_pw: '', p_code: v }); $('entryCode').textContent = c; $('codeInp').value = ''; toast(`입장 코드: ${c}`); }
+  catch(e){ alert('실패: ' + e.message); }
 };
 $('btnQr').onclick = () => $('qrPanel').classList.toggle('hidden');
 
