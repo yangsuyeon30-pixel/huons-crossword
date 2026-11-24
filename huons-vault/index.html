@@ -274,7 +274,7 @@ function unlockAudio(){
 }
 function onGesture(){ unlockAudio(); if(!gestured){ gestured = true; } bgmSync(); }
 ['pointerdown', 'touchend', 'click', 'keydown'].forEach(ev => document.addEventListener(ev, () => { if(!gestured) onGesture(); }, true));
-$('btnEnter').onclick = () => { onGesture(); $('splash').classList.add('gone'); setTimeout(() => $('splash').remove(), 600); };
+$('btnEnter').onclick = () => { onGesture(); $('splash').classList.add('gone'); setTimeout(() => $('splash').remove(), 600); if(typeof startGmWelcome === 'function') startGmWelcome(); };
 $('btnBgm').onclick = () => { bgmOn = !bgmOn; try{ localStorage.setItem('vault_bgm', bgmOn ? '1' : '0'); }catch(e){} gestured = true; bgmSync(); };
 function fmt(sec){ sec = Math.max(0, Math.floor(sec)); return String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0'); }
 function errCode(e){ const m = (e && (e.message || e.details)) || ''; return (m.match(/[A-Z_]{4,}/)||[''])[0]; }
@@ -303,11 +303,19 @@ $('briefText').innerHTML = [
 ].map(p => `<p>${p}</p>`).join('');
 
 /* ---------- 입소 (조/캐릭터 선택) ---------- */
-function typeLine(el, line, speed = 55){
+function typeLine(el, line, speed = 55, sound = false){
   if(!el) return; clearTimeout(el._t); let i = 0;
-  (function step(){ el.textContent = line.slice(0, i); if(i++ <= line.length) el._t = setTimeout(step, speed); })();
+  (function step(){
+    el.textContent = line.slice(0, i);
+    if(sound && i > 0 && line[i - 1] !== ' ' && i % 2 === 0) sfx.tick();   // 타자 소리
+    if(i++ <= line.length) el._t = setTimeout(step, line[i - 2] === '…' || line[i - 2] === '.' ? speed * 6 : speed);
+  })();
 }
-typeLine($('gmLine'), '어서 와라. 휴온스 플랜에 온 걸 환영한다… 과연 너희는 탈출할 수 있을까?');
+// 게임 마스터 환영 대사: 입장 버튼을 누른 뒤 화면이 열리면 타이핑 시작
+const GM_WELCOME = '어서 와라. 휴온스 플랜에 온 걸 환영한다… 과연 너희는 탈출할 수 있을까?';
+let gmStarted = false;
+function startGmWelcome(){ if(gmStarted) return; gmStarted = true; $('gmLine').textContent = ''; setTimeout(() => typeLine($('gmLine'), GM_WELCOME, 60, true), 700); }
+if(!$('splash')) startGmWelcome();
 
 // 탈출 성공 화면의 게임 마스터 (첫 화면 그림을 id만 바꿔 복제)
 function showGmDone(team){
