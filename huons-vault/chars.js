@@ -63,8 +63,10 @@
 
   function outfit(c, id){
     const top = shade(c.coat, .12), bot = shade(c.coat, -.22), line = shade(c.coat, -.35);
-    let s = `<defs><linearGradient id="co${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${top}"/><stop offset="1" stop-color="${bot}"/></linearGradient></defs>
-      <path d="M10 132 Q10 100 30 93 Q40 89 50 89 Q60 89 70 93 Q90 100 90 132Z" fill="url(#co${id})" ${c.lab ? 'stroke="#d6dce8" stroke-width="1.2"' : ''}/>`;
+    let s = `<defs><radialGradient id="co${id}" cx="40%" cy="10%" r="95%"><stop offset="0" stop-color="${shade(c.coat, .22)}"/><stop offset=".55" stop-color="${c.coat}"/><stop offset="1" stop-color="${bot}"/></radialGradient></defs>
+      <path d="M10 132 Q10 100 30 93 Q40 89 50 89 Q60 89 70 93 Q90 100 90 132Z" fill="url(#co${id})" ${c.lab ? 'stroke="#d6dce8" stroke-width="1.2"' : ''}/>
+      <path d="M14 116 Q16 100 30 94" stroke="rgba(255,255,255,.35)" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <path d="M86 116 Q84 100 70 94" stroke="rgba(0,0,0,.25)" stroke-width="2.2" fill="none" stroke-linecap="round"/>`;
     if(c.hoodie){
       s += `<path d="M30 93 Q50 106 70 93 Q64 100 50 102 Q36 100 30 93Z" fill="${line}"/><path d="M44 102 L43 116 M56 102 L57 116" stroke="#e5e7eb" stroke-width="1.8" stroke-linecap="round"/>`;
     }else if(c.knit){
@@ -82,30 +84,63 @@
 
   function avatar(i, cls){
     const c = C[((i % C.length) + C.length) % C.length], sk = SKIN[c.skin], id = ++uid;
-    const gH = 'h' + id, gS = 's' + id;
-    const lash = c.f ? `<path d="M36.5 52.5 L34 50.5 M37.5 50.8 L35.6 48.3 M63.5 52.5 L66 50.5 M62.5 50.8 L64.4 48.3" stroke="#1f1612" stroke-width="1.3" stroke-linecap="round"/>` : '';
-    const eye = x => `<ellipse cx="${x}" cy="55" rx="4.6" ry="5.4" fill="#fff"/><ellipse cx="${x}" cy="55.6" rx="3.5" ry="4.3" fill="${c.eye}"/><ellipse cx="${x}" cy="56.2" rx="1.9" ry="2.4" fill="#120c08"/><circle cx="${x + 1.3}" cy="53.4" r="1.4" fill="#fff"/><circle cx="${x - 1.2}" cy="57.6" r=".7" fill="#fff" opacity=".8"/><path d="M${x - 4.8} 52.2 Q${x} 48.6 ${x + 4.8} 52.2" stroke="#1f1612" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
+    const gH = 'h' + id, gS = 's' + id, fB = 'b' + id, fB2 = 'bb' + id, cF = 'cf' + id, gI = 'ir' + id, gE = 'ea' + id, gHs = 'hs' + id;
+    const FACE = 'M26 52 Q25 26 50 25 Q75 26 74 52 Q74 70 62 78 Q56 82 50 82 Q44 82 38 78 Q26 70 26 52Z';
+    const lash = c.f ? `<path d="M36 52.6 L33.4 50.6 M37 50.6 L35.2 48 M64 52.6 L66.6 50.6 M63 50.6 L64.8 48" stroke="#1a110c" stroke-width="1.3" stroke-linecap="round"/>` : '';
+    // 유리알 같은 눈: 흰자 음영 + 그라데이션 홍채 + 윗눈꺼풀 그림자 + 큰 반사광
+    const eye = x => `<ellipse cx="${x}" cy="55" rx="4.9" ry="5.8" fill="#fff"/>
+      <ellipse cx="${x}" cy="53.2" rx="4.9" ry="3" fill="${sk[2]}" opacity=".35" clip-path="url(#ec${id}${x})"/>
+      <clipPath id="ec${id}${x}"><ellipse cx="${x}" cy="55" rx="4.9" ry="5.8"/></clipPath>
+      <ellipse cx="${x}" cy="55.9" rx="3.8" ry="4.6" fill="url(#${gI})"/>
+      <ellipse cx="${x}" cy="56.4" rx="2" ry="2.5" fill="#0d0805"/>
+      <ellipse cx="${x + 1.4}" cy="53.6" rx="1.7" ry="1.5" fill="#fff"/><circle cx="${x - 1.4}" cy="58.2" r=".8" fill="#fff" opacity=".85"/>
+      <path d="M${x - 5.2} 52.4 Q${x} 48.2 ${x + 5.2} 52.4" stroke="#1a110c" stroke-width="1.8" fill="none" stroke-linecap="round"/>`;
     return `<svg class="${cls || 'avatar'}" viewBox="0 0 100 130" xmlns="http://www.w3.org/2000/svg" aria-label="${c.name}">
       <defs>
-        <linearGradient id="${gH}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(c.hc, .3)}"/><stop offset="1" stop-color="${c.hc}"/></linearGradient>
-        <radialGradient id="${gS}" cx="45%" cy="40%" r="65%"><stop offset="0" stop-color="${sk[0]}"/><stop offset=".7" stop-color="${sk[1]}"/><stop offset="1" stop-color="${sk[2]}"/></radialGradient>
+        <radialGradient id="${gH}" cx="35%" cy="20%" r="85%"><stop offset="0" stop-color="${shade(c.hc, .45)}"/><stop offset=".45" stop-color="${shade(c.hc, .08)}"/><stop offset="1" stop-color="${shade(c.hc, -.35)}"/></radialGradient>
+        <radialGradient id="${gS}" cx="38%" cy="34%" r="78%"><stop offset="0" stop-color="${shade(sk[0], .25)}"/><stop offset=".45" stop-color="${sk[0]}"/><stop offset=".8" stop-color="${sk[1]}"/><stop offset="1" stop-color="${sk[2]}"/></radialGradient>
+        <radialGradient id="${gE}" cx="40%" cy="40%" r="70%"><stop offset="0" stop-color="${sk[0]}"/><stop offset="1" stop-color="${sk[2]}"/></radialGradient>
+        <radialGradient id="${gI}" cx="50%" cy="72%" r="70%"><stop offset="0" stop-color="${shade(c.eye, .55)}"/><stop offset=".6" stop-color="${c.eye}"/><stop offset="1" stop-color="${shade(c.eye, -.5)}"/></radialGradient>
+        <linearGradient id="${gHs}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".75"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+        <filter id="${fB}" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.8"/></filter>
+        <filter id="${fB2}" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3.2"/></filter>
+        <clipPath id="${cF}"><path d="${FACE}"/></clipPath>
       </defs>
       ${hairBack(c, gH)}
       ${outfit(c, id)}
+      <!-- 목 + 턱 그림자 -->
+      <clipPath id="nk${id}"><path d="M43 72 L57 72 L57 88 Q50 93 43 88Z"/></clipPath>
       <path d="M43 72 L57 72 L57 88 Q50 93 43 88Z" fill="${sk[1]}"/>
-      <path d="M43 80 Q50 86 57 80 L57 74 L43 74Z" fill="${sk[2]}" opacity=".6"/>
-      <ellipse cx="25.5" cy="57" rx="4.6" ry="6" fill="${sk[1]}"/><ellipse cx="74.5" cy="57" rx="4.6" ry="6" fill="${sk[1]}"/>
-      <ellipse cx="26" cy="57" rx="2" ry="3" fill="${sk[2]}" opacity=".6"/><ellipse cx="74" cy="57" rx="2" ry="3" fill="${sk[2]}" opacity=".6"/>
-      <path d="M26 52 Q25 26 50 25 Q75 26 74 52 Q74 70 62 78 Q56 82 50 82 Q44 82 38 78 Q26 70 26 52Z" fill="url(#${gS})"/>
+      <g clip-path="url(#nk${id})"><ellipse cx="50" cy="78" rx="10" ry="6" fill="${shade(sk[2], -.12)}" opacity=".9" filter="url(#${fB})"/></g>
+      <ellipse cx="50" cy="94" rx="16" ry="4" fill="#000" opacity=".25" filter="url(#${fB})"/>
+      <!-- 귀 -->
+      <ellipse cx="25.5" cy="57" rx="4.8" ry="6.2" fill="url(#${gE})"/><ellipse cx="74.5" cy="57" rx="4.8" ry="6.2" fill="url(#${gE})"/>
+      <ellipse cx="26.2" cy="57.5" rx="1.8" ry="3" fill="${sk[2]}" opacity=".7"/><ellipse cx="73.8" cy="57.5" rx="1.8" ry="3" fill="${sk[2]}" opacity=".7"/>
+      <!-- 얼굴 (입체 음영) -->
+      <path d="${FACE}" fill="url(#${gS})"/>
+      <g clip-path="url(#${cF})">
+        <ellipse cx="50" cy="31" rx="27" ry="9" fill="${shade(sk[2], -.25)}" opacity=".55" filter="url(#${fB2})"/>
+        <ellipse cx="70" cy="62" rx="6" ry="16" fill="${sk[2]}" opacity=".45" filter="url(#${fB2})"/>
+        <ellipse cx="40" cy="42" rx="9" ry="5" fill="#fff" opacity=".28" filter="url(#${fB})"/>
+      </g>
       ${hairFront(c, gH)}
-      <path d="M36 45.5 Q41 43 46 45" stroke="${shade(c.hc, -.1)}" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-      <path d="M54 45 Q59 43 64 45.5" stroke="${shade(c.hc, -.1)}" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <path d="M33 30 Q46 22 62 25" stroke="url(#${gHs})" stroke-width="3.4" fill="none" stroke-linecap="round" filter="url(#${fB})" opacity="${c.hat ? 0 : .9}"/>
+      <!-- 눈썹 -->
+      <path d="M35.5 45.6 Q41 42.4 46.4 44.8" stroke="${shade(c.hc, -.15)}" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+      <path d="M53.6 44.8 Q59 42.4 64.5 45.6" stroke="${shade(c.hc, -.15)}" stroke-width="2.4" fill="none" stroke-linecap="round"/>
       ${eye(41)}${eye(59)}${lash}
-      <path d="M49 61 Q50 64 51.5 63.5" stroke="${sk[2]}" stroke-width="1.4" fill="none" stroke-linecap="round"/>
-      <ellipse cx="34.5" cy="65" rx="5" ry="3" fill="#ff8f8f" opacity=".38"/><ellipse cx="65.5" cy="65" rx="5" ry="3" fill="#ff8f8f" opacity=".38"/>
-      <path d="M44.5 68 Q50 74.5 55.5 68 Q50 70.2 44.5 68Z" fill="#b84a4f"/><path d="M47 71.2 Q50 72.6 53 71.2" stroke="#ff9aa0" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-      ${c.glasses ? `<g fill="rgba(255,255,255,.12)" stroke="${c.glasses}" stroke-width="1.8"><rect x="34" y="49" width="14" height="12" rx="5"/><rect x="52" y="49" width="14" height="12" rx="5"/></g><path d="M48 54 Q50 52.5 52 54 M34 53 L27 51 M66 53 L73 51" stroke="${c.glasses}" stroke-width="1.6" fill="none"/>` : ''}
-      ${c.phones ? `<path d="M22 56 Q20 16 50 16 Q80 16 78 56" stroke="#1d1d22" stroke-width="5" fill="none"/><rect x="16" y="49" width="11" height="17" rx="5" fill="#ef4444"/><rect x="73" y="49" width="11" height="17" rx="5" fill="#ef4444"/><rect x="18" y="52" width="3" height="10" rx="1.5" fill="rgba(255,255,255,.35)"/>` : ''}
+      <!-- 코: 하이라이트 + 그림자 -->
+      <ellipse cx="51.6" cy="63.4" rx="2.6" ry="1.6" fill="${sk[2]}" opacity=".8" filter="url(#${fB})"/>
+      <ellipse cx="49.6" cy="60.2" rx="1.1" ry="2" fill="#fff" opacity=".55"/>
+      <!-- 볼터치 -->
+      <ellipse cx="33.5" cy="65.5" rx="5.6" ry="3.4" fill="#ff7f86" opacity=".42" filter="url(#${fB})"/>
+      <ellipse cx="66.5" cy="65.5" rx="5.6" ry="3.4" fill="#ff7f86" opacity=".42" filter="url(#${fB})"/>
+      <!-- 입 -->
+      <path d="M44 68 Q50 76 56 68 Q50 70.4 44 68Z" fill="#a83b44"/>
+      <path d="M46.4 71.6 Q50 74.6 53.6 71.6 Q50 72.6 46.4 71.6Z" fill="#ff8a93"/>
+      <path d="M44 68 Q50 70.4 56 68" stroke="#7a2730" stroke-width=".8" fill="none"/>
+      ${c.glasses ? `<g fill="rgba(200,225,255,.14)" stroke="${c.glasses}" stroke-width="1.9"><rect x="33.6" y="48.6" width="14.6" height="12.6" rx="5.4"/><rect x="51.8" y="48.6" width="14.6" height="12.6" rx="5.4"/></g><path d="M36 51 L40 50 M54 51 L58 50" stroke="#fff" stroke-width="1.2" stroke-linecap="round" opacity=".7"/><path d="M48.2 54 Q50 52.4 51.8 54 M33.6 53 L27 51 M66.4 53 L73 51" stroke="${c.glasses}" stroke-width="1.7" fill="none"/>` : ''}
+      ${c.phones ? `<path d="M22 56 Q20 16 50 16 Q80 16 78 56" stroke="#1d1d22" stroke-width="5" fill="none"/><path d="M26 30 Q36 18 50 17" stroke="rgba(255,255,255,.35)" stroke-width="1.4" fill="none"/><rect x="16" y="49" width="11" height="17" rx="5" fill="#ef4444"/><rect x="73" y="49" width="11" height="17" rx="5" fill="#ef4444"/><rect x="18" y="51.5" width="3" height="11" rx="1.5" fill="rgba(255,255,255,.45)"/><rect x="75" y="51.5" width="3" height="11" rx="1.5" fill="rgba(255,255,255,.3)"/>` : ''}
       ${hat(c)}
     </svg>`;
   }
