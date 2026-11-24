@@ -451,3 +451,15 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .lockout{background:rgba(60,0,0,.92)}
 .brand .mute{margin-left:6px}
 .brand .mute.off{opacity:.35;text-decoration:line-through}
+
+/* 첫 화면 게임 마스터 */
+.gm-hero{position:relative;margin:-22px -18px 16px;border-radius:6px 6px 0 0;overflow:hidden;border-bottom:1px solid #2d2d33}
+.gm-svg{display:block;width:100%;height:auto;aspect-ratio:360/210}
+.gm-head{animation:gmsway 6s ease-in-out infinite;transform-origin:180px 150px}
+@keyframes gmsway{0%,100%{transform:rotate(-1.2deg)}50%{transform:rotate(1.2deg)}}
+.gm-eyes{animation:gmeye 4s infinite}
+@keyframes gmeye{0%,92%,100%{opacity:1}94%{opacity:.1}96%{opacity:1}97%{opacity:.2}}
+.gm-say{position:relative;margin:-26px 12px 12px;background:rgba(0,0,0,.85);border:1px solid rgba(227,19,44,.55);border-radius:8px;
+  padding:8px 12px;font-size:13.5px;line-height:1.5;color:#f3f3f3;min-height:52px;backdrop-filter:blur(2px)}
+.gm-say b{display:block;font-size:10px;letter-spacing:3px;color:#ff5566}
+.gm-say span::after{content:'▌';color:#ff2a40;animation:blink 1s infinite;margin-left:2px}

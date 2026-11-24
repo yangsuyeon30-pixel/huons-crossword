@@ -23,6 +23,39 @@
 
   <!-- 1. 조 / 캐릭터 선택 -->
   <section id="v-join" class="card hidden">
+    <div class="gm-hero">
+      <svg class="gm-svg" viewBox="0 0 360 210" preserveAspectRatio="xMidYMid slice" aria-label="게임 마스터">
+        <defs>
+          <radialGradient id="gmGlow" cx="50%" cy="38%" r="62%"><stop offset="0" stop-color="#b3122a"/><stop offset=".45" stop-color="#4a0610"/><stop offset="1" stop-color="#070707"/></radialGradient>
+          <linearGradient id="gmLeather" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2a2a33"/><stop offset=".5" stop-color="#0e0e13"/><stop offset="1" stop-color="#1c1c24"/></linearGradient>
+          <filter id="gmBlur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3"/></filter>
+        </defs>
+        <rect width="360" height="210" fill="url(#gmGlow)"/>
+        <g opacity=".25" stroke="#000" stroke-width="7">
+          <line x1="24" y1="0" x2="20" y2="210"/><line x1="70" y1="0" x2="74" y2="210"/><line x1="290" y1="0" x2="286" y2="210"/><line x1="336" y1="0" x2="340" y2="210"/>
+        </g>
+        <!-- 어깨 / 가죽 재킷 -->
+        <path d="M18 210 Q34 140 120 128 Q180 120 240 128 Q326 140 342 210Z" fill="url(#gmLeather)"/>
+        <path d="M120 128 Q150 160 180 168 Q210 160 240 128" fill="none" stroke="#3a3a46" stroke-width="3"/>
+        <path d="M70 160 Q90 146 116 142 M290 160 Q270 146 244 142" stroke="rgba(255,255,255,.18)" stroke-width="3" fill="none"/>
+        <g transform="translate(180 160) rotate(45)"><rect x="-9" y="-9" width="18" height="18" fill="#0b0b0d" stroke="#ff2a40" stroke-width="2"/></g>
+        <text x="180" y="165" text-anchor="middle" font-family="Black Han Sans,Noto Sans KR,sans-serif" font-size="12" fill="#fff">H</text>
+        <!-- 후드 -->
+        <g class="gm-head">
+          <path d="M118 150 Q104 52 180 30 Q256 52 242 150 Q214 128 180 126 Q146 128 118 150Z" fill="#101016"/>
+          <path d="M132 120 Q130 62 180 48 Q230 62 228 120" fill="none" stroke="#24242e" stroke-width="5"/>
+          <ellipse cx="180" cy="96" rx="40" ry="46" fill="#000"/>
+          <!-- 가면: 붉은 슬릿 눈 + 가는 미소 -->
+          <g class="gm-eyes">
+            <g filter="url(#gmBlur)" opacity=".9"><path d="M152 84 L176 94 L154 98Z" fill="#ff2a40"/><path d="M208 84 L184 94 L206 98Z" fill="#ff2a40"/></g>
+            <path d="M152 84 L176 94 L154 98Z" fill="#ffd0d5"/><path d="M208 84 L184 94 L206 98Z" fill="#ffd0d5"/>
+          </g>
+          <g filter="url(#gmBlur)" opacity=".8"><path d="M160 118 Q180 132 200 118" stroke="#ff2a40" stroke-width="4" fill="none"/></g>
+          <path d="M160 118 Q180 132 200 118" stroke="#ffd0d5" stroke-width="2" fill="none" stroke-linecap="round"/>
+        </g>
+      </svg>
+      <div class="gm-say"><b>GAME MASTER</b><span id="gmLine"></span></div>
+    </div>
     <p class="lead center" style="margin-top:0">휴온스 금고를 노리다 <b>붙잡혔다!</b><br>감옥에 갇힐 조와 캐릭터를 고르세요.</p>
     <h3 class="pick-title"><span>1</span> 우리 조 선택</h3>
     <div class="team-pick" id="teamPick"></div>
@@ -203,6 +236,11 @@ $('briefText').innerHTML = [
 ].map(p => `<p>${p}</p>`).join('');
 
 /* ---------- 입소 (조/캐릭터 선택) ---------- */
+(function gmType(){
+  const line = '어서 와라. 휴온스 플랜에 온 걸 환영한다… 과연 너희는 탈출할 수 있을까?';
+  let i = 0; const el = $('gmLine');
+  (function step(){ if(!el) return; el.textContent = line.slice(0, i); if(i++ <= line.length) setTimeout(step, 55); })();
+})();
 async function loadLobby(){
   try{
     const { data: g } = await sb.from('vault_game').select('round,team_count').eq('id', 1).single();
