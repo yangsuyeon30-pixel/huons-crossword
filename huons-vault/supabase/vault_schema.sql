@@ -210,3 +210,46 @@ grant execute on function public.vault_now(), public.vault_join(text), public.va
   public.vault_admin_questions(text), public.vault_admin_save_questions(text, jsonb),
   public.vault_admin_start(text, int), public.vault_admin_stop(text), public.vault_admin_reset(text)
   to anon, authenticated;
+
+-- ===== 방탈출 자물쇠 종류: 숫자 정답 → 다이얼, 그 외 → 글자 타일 (vault_state 재정의) =====
+create or replace function public.vault_lock_info(p_team uuid, p_answer text) returns json
+language plpgsql stable security definer set search_path = public as $$
+declare v_clean text := upper(regexp_replace(coalesce(p_answer,''), '\s', '', 'g'));
+        v_kind text; v_tiles json := null; v_seed text;
+        v_pool text := '휴온스메딕리즈바이오제약톡신필러엘라비에생명건강글로벌주사백신연구미래';
+begin
+  v_seed := md5(p_team::text || v_clean);
+  v_kind := case when v_clean ~ '^[0-9]+$' then 'digits' else 'letters' end;
+  if v_kind = 'letters' then
+    with ans as (select c, ord from regexp_split_to_table(v_clean, '') with ordinality as x(c, ord)),
+    dec as (select distinct c from regexp_split_to_table(v_pool, '') as y(c) where position(c in v_clean) = 0),
+    dec_pick as (select c from dec order by md5(v_seed || 'pick' || c) limit greatest(4, 12 - char_length(v_clean))),
+    allc as (select c, 'a' || ord || c as k from ans union all select c, 'd' || c from dec_pick)
+    select json_agg(c order by md5(v_seed || 'ord' || k)) into v_tiles from allc;
+  end if;
+  return json_build_object('kind', v_kind, 'len', char_length(v_clean), 'tiles', v_tiles);
+end $$;
+
+create or replace function public.vault_state(p_team uuid, p_token uuid) returns json
+language plpgsql security definer set search_path = public as $$
+declare t vault_teams; g vault_game; q vault_questions; v_q json := null; v_keys json;
+begin
+  if not vault_auth(p_team, p_token) then raise exception 'NO_TEAM'; end if;
+  select * into t from vault_teams where id = p_team;
+  select * into g from vault_game where id = 1;
+  if g.status <> 'waiting' and t.stage < 4 then
+    select * into q from vault_questions where id = t.stage + 1;
+    v_q := json_build_object('no', q.id, 'text', q.question,
+      'hint', case when (t.stage + 1) = any(t.hint_stages) then q.hint else null end,
+      'lock', vault_lock_info(p_team, q.answer));
+  end if;
+  select coalesce(json_agg(regexp_replace(answer, '\s', '', 'g') order by id), '[]'::json) into v_keys
+    from vault_questions where id <= t.stage;
+  return json_build_object(
+    'team', json_build_object('id', t.id, 'name', t.name, 'stage', t.stage, 'wrong_total', t.wrong_total,
+       'hints_used', t.hints_used, 'finished_at', t.finished_at, 'elapsed_sec', t.elapsed_sec),
+    'game', json_build_object('status', g.status, 'started_at', g.started_at, 'duration_sec', g.duration_sec,
+       'round', g.round, 'server_now', now()),
+    'question', v_q,
+    'keys', v_keys);
+end $$;

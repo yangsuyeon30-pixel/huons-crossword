@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#0a1224">
 <title>휴온스 금고를 열어라</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap">
@@ -13,36 +13,40 @@
 
   <header class="brand">
     <div class="brand-icon">🔐</div>
-    <div>
+    <div style="flex:1">
       <div class="brand-sub">HUONS GROUP 입문교육</div>
       <h1>휴온스 금고를 열어라</h1>
     </div>
+    <button id="btnMute" class="mute" aria-label="소리 켜기/끄기">🔊</button>
   </header>
 
   <!-- 1. 팀 등록 -->
   <section id="v-join" class="card hidden">
-    <div class="vault-door">
-      <div class="dial"><span></span></div>
-    </div>
-    <p class="lead">자물쇠 <b>4개</b>를 순서대로 풀고<br>휴온스 금고를 가장 먼저 열어 보세요!</p>
+    <div class="vault-door small"><div class="dial"><span></span></div></div>
+    <p class="lead center">자물쇠 <b>4개</b>를 풀고<br>휴온스 금고를 가장 먼저 열어라!</p>
     <ul class="rules">
       <li>팀당 휴대폰 1대로 참여해요</li>
-      <li>앞 자물쇠를 풀어야 다음 문제가 열려요</li>
-      <li>힌트는 팀당 총 <b>3회</b>까지 쓸 수 있어요</li>
-      <li>제한 시간은 <b>30분</b>이에요</li>
+      <li>자물쇠를 풀 때마다 <b>열쇠 조각</b>을 얻어요</li>
+      <li>힌트는 팀당 총 <b>3회</b>, 제한 시간은 <b>30분</b></li>
     </ul>
     <label class="lbl" for="teamName">팀 이름</label>
     <input id="teamName" class="inp" type="text" maxlength="20" placeholder="예: A팀" autocomplete="off">
-    <button id="btnJoin" class="btn btn-gold">금고 도전 시작</button>
+    <button id="btnJoin" class="btn btn-gold">요원 등록</button>
     <p id="joinMsg" class="msg"></p>
   </section>
 
-  <!-- 2. 대기 -->
-  <section id="v-wait" class="card hidden center">
-    <div class="big-lock pulse"><svg viewBox="0 0 120 140"><use href="#lockSvg"/></svg></div>
-    <h2 class="team-title"><span class="tn"></span> 등록 완료!</h2>
-    <p class="lead">진행자가 게임을 시작하면<br>첫 번째 자물쇠가 나타나요.</p>
-    <div class="dots"><i></i><i></i><i></i></div>
+  <!-- 2. 대기 / 미션 브리핑 -->
+  <section id="v-wait" class="card hidden">
+    <div class="brief-head">
+      <span class="rec">● CLASSIFIED</span>
+      <span class="agent">요원 <b class="tn"></b></span>
+    </div>
+    <h2 class="brief-title">미션 브리핑</h2>
+    <div class="brief" id="briefText"></div>
+    <div class="brief-wait">
+      <div class="dots"><i></i><i></i><i></i></div>
+      <p>진행자가 작전을 개시하면<br>첫 번째 자물쇠가 나타납니다.</p>
+    </div>
   </section>
 
   <!-- 3. 게임 -->
@@ -51,33 +55,50 @@
       <div class="tb-team"><span class="tn"></span></div>
       <div class="tb-timer" id="timer">30:00</div>
     </div>
-    <div class="locks-row" id="locksRow"></div>
 
-    <div class="card" id="playCard">
-      <div class="stage-badge">자물쇠 <b id="stageNo">1</b>/4</div>
-      <div class="big-lock" id="bigLock">
-        <svg viewBox="0 0 120 140" aria-hidden="true">
-          <path class="shackle" d="M34 62 V40 a26 26 0 0 1 52 0 V62" fill="none" stroke="currentColor" stroke-width="12" stroke-linecap="round"/>
-          <rect class="body" x="16" y="60" width="88" height="70" rx="14"/>
-          <circle cx="60" cy="90" r="9" class="hole"/>
-          <rect x="56" y="94" width="8" height="18" rx="3" class="hole"/>
-        </svg>
-      </div>
+    <div class="keys" id="keysRow"></div>
+
+    <div class="card lockcard" id="playCard">
+      <div class="stage-badge"><span id="lockName">다이얼 자물쇠</span> · <b id="stageNo">1</b>/4</div>
       <p class="question" id="question"></p>
       <div id="hintBox" class="hint hidden"><b>💡 힌트</b><span id="hintText"></span></div>
-      <input id="answer" class="inp inp-answer" type="text" placeholder="정답 입력" autocomplete="off" autocapitalize="off" enterkeyhint="done">
-      <button id="btnSubmit" class="btn btn-gold">확인</button>
+
+      <div class="padlock" id="padlock">
+        <div class="shackle"></div>
+        <div class="lbody">
+          <div id="lockWidget"></div>
+          <div class="screw l"></div><div class="screw r"></div>
+        </div>
+      </div>
+
+      <div id="flash" class="flash"></div>
       <p id="feedback" class="feedback"></p>
+      <button id="btnSubmit" class="btn btn-gold">🔑 자물쇠 열기</button>
       <button id="btnHint" class="btn btn-ghost">💡 힌트 보기 <span id="hintLeft">(3/3 남음)</span></button>
+
+      <!-- 해제 성공 오버레이 -->
+      <div id="unlocked" class="unlocked hidden">
+        <div class="u-lock">🔓</div>
+        <div class="u-title">자물쇠 해제!</div>
+        <div class="u-key"><span>🗝️ 열쇠 조각 획득</span><b id="uKey"></b></div>
+        <button id="btnNext" class="btn btn-gold">다음 자물쇠로 →</button>
+      </div>
     </div>
   </section>
 
-  <!-- 4. 완료 -->
+  <!-- 4. 금고 오픈 -->
   <section id="v-done" class="card hidden center">
     <div class="confetti" id="confetti"></div>
-    <div class="vault-open">💰</div>
+    <div class="vault-stage">
+      <div class="vault-inside">💰<span>✨</span></div>
+      <div class="vault-door big" id="bigDoor">
+        <div class="bolts"><i></i><i></i><i></i><i></i></div>
+        <div class="wheel"><i></i><i></i><i></i></div>
+      </div>
+    </div>
     <h2 class="done-title">금고 오픈! 🎉</h2>
     <p class="team-title"><span class="tn"></span></p>
+    <div class="keys final" id="finalKeys"></div>
     <div class="stat-big" id="doneTime">00:00</div>
     <p class="muted">걸린 시간</p>
     <div class="stats">
@@ -89,23 +110,15 @@
 
   <!-- 5. 시간 종료 -->
   <section id="v-over" class="card hidden center">
-    <div class="vault-open">⏰</div>
-    <h2 class="done-title">시간 종료!</h2>
+    <div class="vault-open">🚨</div>
+    <h2 class="done-title">작전 종료!</h2>
     <p class="team-title"><span class="tn"></span></p>
     <p class="lead">자물쇠 <b id="overStage">0</b>/4 개를 풀었어요.<br>수고하셨습니다!</p>
+    <div class="keys final" id="overKeys"></div>
   </section>
 
   <p id="netMsg" class="net hidden">연결을 확인하는 중…</p>
 </div>
-
-<svg width="0" height="0" style="position:absolute">
-  <symbol id="lockSvg" viewBox="0 0 120 140">
-    <path d="M34 62 V40 a26 26 0 0 1 52 0 V62" fill="none" stroke="#d4af37" stroke-width="12" stroke-linecap="round"/>
-    <rect x="16" y="60" width="88" height="70" rx="14" fill="#d4af37"/>
-    <circle cx="60" cy="90" r="9" fill="#0a1224"/>
-    <rect x="56" y="94" width="8" height="18" rx="3" fill="#0a1224"/>
-  </symbol>
-</svg>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="config.js"></script>
@@ -115,41 +128,64 @@ const LS_KEY = 'huons_vault_team';
 const $ = id => document.getElementById(id);
 const views = ['v-join','v-wait','v-play','v-done','v-over'];
 
-let me = null;            // {team_id, token, round}
-let state = null;         // 서버 상태
-let clockOffset = 0;      // 서버시간 - 로컬시간
-let busy = false;
-let animating = false;
+let me = null, state = null, clockOffset = 0, busy = false, pendingNext = null;
+let lockInput = null;   // {get():string, reset()}
+let lastQKey = null;
 
+/* ---------- 사운드 ---------- */
+let actx = null, muted = false;
+try{ muted = localStorage.getItem('vault_muted') === '1'; }catch(e){}
+$('btnMute').textContent = muted ? '🔇' : '🔊';
+function ac(){ if(!actx){ try{ actx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(actx && actx.state === 'suspended') actx.resume(); return actx; }
+function tone(freq, dur, type='square', vol=.08, when=0, slide=0){
+  if(muted) return; const a = ac(); if(!a) return;
+  const t = a.currentTime + when, o = a.createOscillator(), g = a.createGain();
+  o.type = type; o.frequency.setValueAtTime(freq, t);
+  if(slide) o.frequency.exponentialRampToValueAtTime(slide, t + dur);
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t + dur + .02);
+}
+const sfx = {
+  tick(){ tone(1800, .03, 'square', .04); },
+  tap(){ tone(900, .05, 'triangle', .07); },
+  wrong(){ tone(160, .18, 'sawtooth', .12); tone(140, .25, 'sawtooth', .12, .2); },
+  open(){ tone(420, .06, 'square', .1); tone(300, .08, 'square', .1, .07); [660, 880, 1320].forEach((f,i) => tone(f, .25, 'triangle', .1, .2 + i*.11)); },
+  vault(){ tone(60, 1.2, 'sawtooth', .12, 0, 40); [523, 659, 784, 1047].forEach((f,i) => tone(f, .5, 'triangle', .1, 1.1 + i*.15)); },
+};
+$('btnMute').onclick = () => { muted = !muted; $('btnMute').textContent = muted ? '🔇' : '🔊'; try{ localStorage.setItem('vault_muted', muted ? '1' : '0'); }catch(e){} if(!muted) sfx.tap(); };
+function buzz(p){ if(navigator.vibrate) try{ navigator.vibrate(p); }catch(e){} }
+
+/* ---------- 공통 ---------- */
 function loadMe(){ try{ me = JSON.parse(localStorage.getItem(LS_KEY)); }catch(e){ me = null; } }
 function saveMe(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(me)); }catch(e){} }
-function clearMe(){ me = null; state = null; try{ localStorage.removeItem(LS_KEY); }catch(e){} }
-
+function clearMe(){ me = null; state = null; lastQKey = null; try{ localStorage.removeItem(LS_KEY); }catch(e){} }
 function show(v){ views.forEach(x => $(x).classList.toggle('hidden', x !== v)); }
-function fmt(sec){ sec = Math.max(0, Math.floor(sec)); const m = Math.floor(sec/60), s = sec%60; return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0'); }
+function fmt(sec){ sec = Math.max(0, Math.floor(sec)); return String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0'); }
 function errCode(e){ const m = (e && (e.message || e.details)) || ''; return (m.match(/[A-Z_]{4,}/)||[''])[0]; }
-
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+async function rpc(fn, args){ const { data, error } = await sb.rpc(fn, args); if(error) throw error; return data; }
 function remainingSec(){
   const g = state && state.game; if(!g || !g.started_at) return g ? g.duration_sec : 1800;
-  const end = new Date(g.started_at).getTime() + g.duration_sec*1000;
-  return (end - (Date.now() + clockOffset))/1000;
+  return (new Date(g.started_at).getTime() + g.duration_sec*1000 - (Date.now() + clockOffset))/1000;
 }
 
-async function rpc(fn, args){
-  const { data, error } = await sb.rpc(fn, args);
-  if(error) throw error;
-  return data;
-}
+$('briefText').innerHTML = [
+  '1965년부터 이어진 <b>휴온스그룹 60년의 비밀</b>이 본사 금고 깊숙이 잠들어 있다.',
+  '금고는 <b>자물쇠 4개</b>로 봉인되어 있으며, 각 자물쇠는 휴온스에 대한 질문에 답해야만 열린다.',
+  '자물쇠를 풀 때마다 <b>열쇠 조각</b>을 획득한다. 4개의 조각을 모두 모으면 금고가 열린다.',
+  '제한 시간은 <b>30분</b>. 오답은 모두 기록되니 신중하게! 행운을 빈다, 요원.'
+].map(p => `<p>${p}</p>`).join('');
 
+/* ---------- 상태 ---------- */
 async function refresh(){
-  if(!me) { show('v-join'); return; }
+  if(!me){ show('v-join'); return; }
   try{
     const s = await rpc('vault_state', { p_team: me.team_id, p_token: me.token });
     $('netMsg').classList.add('hidden');
     applyState(s);
   }catch(e){
     if(errCode(e) === 'NO_TEAM'){ clearMe(); show('v-join'); }
-    else { $('netMsg').classList.remove('hidden'); }
+    else $('netMsg').classList.remove('hidden');
   }
 }
 
@@ -158,121 +194,195 @@ function applyState(s){
   clockOffset = new Date(s.game.server_now).getTime() - Date.now();
   if(me.round !== s.game.round){ me.round = s.game.round; saveMe(); }
   document.querySelectorAll('.tn').forEach(el => el.textContent = s.team.name);
-  if(animating) return;
+  if(pendingNext) return;                      // 해제 연출 중에는 화면 유지
   const t = s.team, g = s.game;
-  if(t.stage >= 4){ return showDone(); }
+  if(t.stage >= 4) return showDone();
   if(g.status === 'waiting') return show('v-wait');
-  if(g.status === 'ended' || remainingSec() <= 0){ $('overStage').textContent = t.stage; return show('v-over'); }
+  if(g.status === 'ended' || remainingSec() <= 0) return showOver();
   renderPlay();
 }
 
-function renderLocks(stage){
+function renderKeys(el, keys, stage, cur){
   let h = '';
-  for(let i=0;i<4;i++){
-    const cls = i < stage ? 'open' : (i === stage ? 'cur' : '');
-    h += `<div class="mini ${cls}">${i < stage ? '🔓' : '🔒'}<small>${i+1}</small></div>`;
+  for(let i = 0; i < 4; i++){
+    const k = keys[i];
+    h += k ? `<div class="key got"><span>🗝️</span><b>${esc(k)}</b></div>`
+           : `<div class="key ${i === cur ? 'cur' : ''}"><span>🔒</span><b>${i+1}</b></div>`;
   }
-  $('locksRow').innerHTML = h;
+  el.innerHTML = h;
 }
 
-let lastQNo = null;
 function renderPlay(){
   show('v-play');
   const t = state.team, q = state.question;
-  renderLocks(t.stage);
+  renderKeys($('keysRow'), state.keys || [], t.stage, t.stage);
   $('stageNo').textContent = t.stage + 1;
   $('question').textContent = q ? q.text : '';
-  if(q && q.hint){ $('hintText').textContent = q.hint; $('hintBox').classList.remove('hidden'); }
-  else $('hintBox').classList.add('hidden');
+  if(q && q.hint){ $('hintText').textContent = q.hint; $('hintBox').classList.remove('hidden'); $('btnHint').classList.add('hidden'); }
+  else { $('hintBox').classList.add('hidden'); $('btnHint').classList.remove('hidden'); }
   const left = 3 - t.hints_used;
-  const hasHint = q && q.hint;
   $('hintLeft').textContent = `(${left}/3 남음)`;
-  $('btnHint').disabled = !hasHint && left <= 0;
-  $('btnHint').classList.toggle('hidden', !!hasHint);
-  if(q && q.no !== lastQNo){
-    lastQNo = q.no;
-    $('answer').value = '';
+  $('btnHint').disabled = left <= 0;
+  const key = q ? (state.game.round + ':' + q.no + ':' + JSON.stringify(q.lock)) : null;
+  if(q && key !== lastQKey){
+    lastQKey = key;
+    buildLock(q.lock);
     $('feedback').textContent = ''; $('feedback').className = 'feedback';
-    $('bigLock').classList.remove('open');
+    $('padlock').classList.remove('open');
   }
   tick();
 }
 
+/* ---------- 자물쇠 위젯 ---------- */
+function buildLock(lock){
+  const w = $('lockWidget');
+  if(lock.kind === 'digits'){
+    $('lockName').textContent = '다이얼 자물쇠';
+    const vals = Array(lock.len).fill(0);
+    w.className = 'dials';
+    w.innerHTML = vals.map((_, i) => `
+      <div class="wheel-col" data-i="${i}">
+        <button class="arr up" aria-label="올리기">▲</button>
+        <div class="drum"><span class="pv"></span><span class="cv"></span><span class="nv"></span></div>
+        <button class="arr dn" aria-label="내리기">▼</button>
+      </div>`).join('');
+    const paint = i => {
+      const col = w.children[i], v = vals[i];
+      col.querySelector('.pv').textContent = (v + 9) % 10;
+      col.querySelector('.cv').textContent = v;
+      col.querySelector('.nv').textContent = (v + 1) % 10;
+    };
+    const step = (i, d) => {
+      vals[i] = (vals[i] + d + 10) % 10; paint(i); sfx.tick(); buzz(8);
+      const drum = w.children[i].querySelector('.drum');
+      drum.classList.remove('roll-up','roll-dn'); void drum.offsetWidth; drum.classList.add(d > 0 ? 'roll-up' : 'roll-dn');
+    };
+    [...w.children].forEach((col, i) => {
+      paint(i);
+      col.querySelector('.up').onclick = () => step(i, 1);
+      col.querySelector('.dn').onclick = () => step(i, -1);
+      const drum = col.querySelector('.drum'); let y0 = null, acc = 0;
+      drum.addEventListener('touchstart', e => { y0 = e.touches[0].clientY; acc = 0; }, { passive: true });
+      drum.addEventListener('touchmove', e => {
+        if(y0 === null) return; e.preventDefault();
+        const dy = e.touches[0].clientY - y0;
+        if(Math.abs(dy - acc) >= 22){ const d = dy - acc > 0 ? -1 : 1; acc += d > 0 ? -22 : 22; step(i, d); }
+      }, { passive: false });
+      drum.addEventListener('touchend', () => { y0 = null; });
+      drum.addEventListener('wheel', e => { e.preventDefault(); step(i, e.deltaY > 0 ? -1 : 1); }, { passive: false });
+    });
+    lockInput = { get: () => vals.join(''), reset(){} };
+  }else{
+    $('lockName').textContent = '글자 자물쇠';
+    const slots = Array(lock.len).fill(null);   // tile index
+    w.className = 'letters';
+    w.innerHTML = `<div class="slots">${slots.map((_, i) => `<button class="slot" data-i="${i}"></button>`).join('')}</div>
+      <div class="tiles">${(lock.tiles||[]).map((c, i) => `<button class="tile" data-i="${i}">${esc(c)}</button>`).join('')}</div>
+      <button class="clear">↺ 다시 고르기</button>`;
+    const tiles = [...w.querySelectorAll('.tile')], sl = [...w.querySelectorAll('.slot')];
+    const paint = () => {
+      sl.forEach((s, i) => { s.textContent = slots[i] === null ? '' : lock.tiles[slots[i]]; s.classList.toggle('filled', slots[i] !== null); });
+      tiles.forEach((t, i) => t.classList.toggle('used', slots.includes(i)));
+    };
+    tiles.forEach((t, i) => t.onclick = () => {
+      if(slots.includes(i)) return;
+      const e = slots.indexOf(null); if(e < 0) return;
+      slots[e] = i; sfx.tap(); buzz(10); paint();
+    });
+    sl.forEach((s, i) => s.onclick = () => { if(slots[i] !== null){ slots[i] = null; sfx.tick(); paint(); } });
+    w.querySelector('.clear').onclick = () => { slots.fill(null); sfx.tick(); paint(); };
+    paint();
+    lockInput = { get: () => slots.map(x => x === null ? '' : lock.tiles[x]).join(''), full: () => !slots.includes(null), reset(){ slots.fill(null); paint(); } };
+  }
+}
+
+/* ---------- 완료 / 종료 ---------- */
 async function showDone(){
+  const first = $('v-done').classList.contains('hidden');
   show('v-done');
   const t = state.team;
+  renderKeys($('finalKeys'), state.keys || [], 4, -1);
   $('doneTime').textContent = fmt(t.elapsed_sec || 0);
   $('doneWrong').textContent = t.wrong_total;
   $('doneHints').textContent = t.hints_used;
+  if(first){
+    $('bigDoor').classList.remove('swing'); void $('bigDoor').offsetWidth; $('bigDoor').classList.add('swing');
+    sfx.vault(); buzz([60, 80, 60, 80, 300]);
+    if(!$('confetti').dataset.done){ $('confetti').dataset.done = 1; setTimeout(burst, 1400); }
+  }
   try{
     const { data } = await sb.from('vault_teams').select('id,finished_at').eq('round', state.game.round).not('finished_at','is',null).order('finished_at');
     const idx = (data||[]).findIndex(r => r.id === t.id);
     $('doneRank').textContent = idx >= 0 ? (idx+1)+'등' : '-';
   }catch(e){}
-  if(!$('confetti').dataset.done){ $('confetti').dataset.done = 1; burst(); }
 }
-
+function showOver(){
+  $('overStage').textContent = state.team.stage;
+  renderKeys($('overKeys'), state.keys || [], state.team.stage, -1);
+  show('v-over');
+}
 function burst(){
-  const box = $('confetti'); const colors = ['#d4af37','#f5d77a','#ffffff','#7fa7ff'];
-  for(let i=0;i<60;i++){
+  const box = $('confetti'), colors = ['#d4af37','#f5d77a','#ffffff','#7fa7ff'];
+  for(let i = 0; i < 70; i++){
     const p = document.createElement('i');
-    p.style.left = Math.random()*100+'%';
-    p.style.background = colors[i%colors.length];
-    p.style.animationDelay = (Math.random()*0.8)+'s';
-    p.style.animationDuration = (1.8+Math.random()*1.5)+'s';
-    p.style.transform = `rotate(${Math.random()*360}deg)`;
+    p.style.left = Math.random()*100 + '%';
+    p.style.background = colors[i % colors.length];
+    p.style.animationDelay = (Math.random()*.8) + 's';
+    p.style.animationDuration = (1.8 + Math.random()*1.5) + 's';
     box.appendChild(p);
   }
 }
 
 function tick(){
-  if(!state) return;
-  const g = state.game;
-  if(g.status === 'running'){
-    const r = remainingSec();
-    $('timer').textContent = fmt(r);
-    $('timer').classList.toggle('warn', r <= 300);
-    if(r <= 0 && state.team.stage < 4 && !$('v-play').classList.contains('hidden')){
-      $('overStage').textContent = state.team.stage; show('v-over');
-    }
-  }
+  if(!state || state.game.status !== 'running') return;
+  const r = remainingSec();
+  $('timer').textContent = fmt(r);
+  $('timer').classList.toggle('warn', r <= 300);
+  if(r <= 0 && state.team.stage < 4 && !$('v-play').classList.contains('hidden') && !pendingNext) showOver();
 }
 setInterval(tick, 500);
 
-// ---- 이벤트 ----
+/* ---------- 이벤트 ---------- */
 $('btnJoin').onclick = async () => {
-  const name = $('teamName').value.trim();
-  const msg = $('joinMsg');
+  ac();
+  const name = $('teamName').value.trim(), msg = $('joinMsg');
   if(!name){ msg.textContent = '팀 이름을 입력해 주세요.'; return; }
   if(busy) return; busy = true; $('btnJoin').disabled = true; msg.textContent = '';
   try{
     const r = await rpc('vault_join', { p_name: name });
     me = { team_id: r.team_id, token: r.token, round: r.round }; saveMe();
-    await refresh();
+    sfx.tap(); await refresh();
   }catch(e){
-    const c = errCode(e);
-    msg.textContent = c === 'TEAM_EXISTS' ? '이미 등록된 팀 이름이에요. 다른 이름을 써 주세요.' : '등록에 실패했어요. 다시 시도해 주세요.';
+    msg.textContent = errCode(e) === 'TEAM_EXISTS' ? '이미 등록된 팀 이름이에요. 다른 이름을 써 주세요.' : '등록에 실패했어요. 다시 시도해 주세요.';
   }finally{ busy = false; $('btnJoin').disabled = false; }
 };
 $('teamName').addEventListener('keydown', e => { if(e.key === 'Enter') $('btnJoin').click(); });
 
+function wrongFx(text){
+  $('feedback').textContent = text; $('feedback').className = 'feedback bad';
+  const c = $('playCard'); c.classList.remove('shake'); void c.offsetWidth; c.classList.add('shake');
+  const f = $('flash'); f.classList.remove('on'); void f.offsetWidth; f.classList.add('on');
+  sfx.wrong(); buzz([200, 80, 200]);
+}
+
 $('btnSubmit').onclick = async () => {
-  const ans = $('answer').value;
-  if(!ans.trim()){ $('answer').focus(); return; }
-  if(busy || animating) return; busy = true; $('btnSubmit').disabled = true;
+  ac();
+  if(!lockInput || busy || pendingNext) return;
+  if(lockInput.full && !lockInput.full()){ wrongFx('글자 칸을 모두 채워 주세요.'); return; }
+  busy = true; $('btnSubmit').disabled = true;
   try{
-    const r = await rpc('vault_submit', { p_team: me.team_id, p_token: me.token, p_answer: ans });
+    const r = await rpc('vault_submit', { p_team: me.team_id, p_token: me.token, p_answer: lockInput.get() });
     if(r.correct){
-      animating = true;
-      $('feedback').textContent = '찰칵! 자물쇠가 열렸어요 🔓'; $('feedback').className = 'feedback ok';
-      $('bigLock').classList.add('open');
-      if(navigator.vibrate) navigator.vibrate([40,40,80]);
-      setTimeout(() => { animating = false; applyState(r.state); }, 1500);
+      pendingNext = r.state;
+      $('feedback').textContent = ''; $('feedback').className = 'feedback';
+      $('padlock').classList.add('open'); sfx.open(); buzz([40, 40, 120]);
+      const keys = r.state.keys || [];
+      $('uKey').textContent = keys[keys.length - 1] || '';
+      $('btnNext').textContent = r.state.team.stage >= 4 ? '💰 금고 열기 →' : '다음 자물쇠로 →';
+      setTimeout(() => { $('unlocked').classList.remove('hidden'); renderKeys($('keysRow'), keys, r.state.team.stage, -1); }, 700);
     }else{
-      $('feedback').textContent = '다시 시도!'; $('feedback').className = 'feedback bad';
-      const c = $('playCard'); c.classList.remove('shake'); void c.offsetWidth; c.classList.add('shake');
-      if(navigator.vibrate) navigator.vibrate(200);
-      $('answer').select();
+      wrongFx('다시 시도!');
+      if(lockInput.reset && lockInput.full) setTimeout(() => lockInput.reset(), 600);
       state = r.state;
     }
   }catch(e){
@@ -282,7 +392,13 @@ $('btnSubmit').onclick = async () => {
     else { $('feedback').textContent = '전송에 실패했어요. 다시 눌러 주세요.'; $('feedback').className = 'feedback bad'; }
   }finally{ busy = false; $('btnSubmit').disabled = false; }
 };
-$('answer').addEventListener('keydown', e => { if(e.key === 'Enter') $('btnSubmit').click(); });
+
+$('btnNext').onclick = () => {
+  const s = pendingNext; pendingNext = null;
+  $('unlocked').classList.add('hidden');
+  sfx.tap();
+  if(s) applyState(s); else refresh();
+};
 
 $('btnHint').onclick = async () => {
   if(!state || busy) return;
@@ -290,22 +406,24 @@ $('btnHint').onclick = async () => {
   if(left <= 0) return;
   if(!confirm(`힌트를 사용할까요?\n팀 전체 남은 힌트: ${left}회 → ${left-1}회`)) return;
   busy = true;
-  try{ applyState(await rpc('vault_hint', { p_team: me.team_id, p_token: me.token })); }
+  try{ applyState(await rpc('vault_hint', { p_team: me.team_id, p_token: me.token })); sfx.tap(); }
   catch(e){ if(errCode(e) === 'NO_HINTS') alert('힌트를 모두 사용했어요!'); else await refresh(); }
   finally{ busy = false; }
 };
 
-// ---- 실시간 ----
+/* ---------- 실시간 ---------- */
 sb.channel('vault-game')
   .on('postgres_changes', { event: '*', schema: 'public', table: 'vault_game' }, payload => {
     const g = payload.new || {};
-    if(me && g.round && me.round && g.round !== me.round){ clearMe(); show('v-join'); return; }
+    if(me && g.round && me.round && g.round !== me.round){ pendingNext = null; clearMe(); show('v-join'); return; }
+    if(g.status === 'running' && state && state.game.status === 'waiting'){ sfx.open(); buzz([100, 50, 100]); }
+    pendingNext = null; $('unlocked').classList.add('hidden');
     refresh();
   })
   .subscribe();
 
-document.addEventListener('visibilitychange', () => { if(!document.hidden) refresh(); });
-setInterval(() => { if(me && !busy && !animating) refresh(); }, 15000);  // 실시간 연결이 끊겨도 동기화
+document.addEventListener('visibilitychange', () => { if(!document.hidden && !pendingNext) refresh(); });
+setInterval(() => { if(me && !busy && !pendingNext) refresh(); }, 15000);
 
 loadMe();
 if(me) refresh(); else show('v-join');
