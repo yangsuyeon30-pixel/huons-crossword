@@ -9,6 +9,11 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div id="splash" class="splash">
+  <div class="huons-logo" role="img" aria-label="휴온스 플랜 탈출룸"></div>
+  <button id="btnEnter" class="btn btn-gold splash-btn">▶ 터치해서 입장</button>
+  <p class="splash-note">🔊 소리를 켜고 참여하세요</p>
+</div>
 <div class="wrap">
 
   <header class="brand logo-head">
@@ -253,7 +258,18 @@ function bgmSync(){
   if(v === 'v-play') lv = (state && state.game.status === 'running' && remainingSec() <= 300) ? 2 : 1;
   VaultBGM.setLevel(lv); VaultBGM.start();
 }
-document.addEventListener('pointerdown', () => { if(!gestured){ gestured = true; bgmSync(); } }, true);
+// 아이폰 무음 스위치가 켜져 있어도 소리가 나도록: 무음 오디오를 반복 재생해 '재생' 오디오 세션으로 전환
+let silentEl = null;
+function unlockAudio(){
+  try{
+    if(!silentEl){ silentEl = new Audio('data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA=='); silentEl.loop = true; silentEl.setAttribute('playsinline', ''); }
+    const pr = silentEl.play(); if(pr && pr.catch) pr.catch(() => {});
+  }catch(e){}
+  ac();   // 효과음 컨텍스트도 함께 깨우기
+}
+function onGesture(){ unlockAudio(); if(!gestured){ gestured = true; } bgmSync(); }
+['pointerdown', 'touchend', 'click', 'keydown'].forEach(ev => document.addEventListener(ev, () => { if(!gestured) onGesture(); }, true));
+$('btnEnter').onclick = () => { onGesture(); $('splash').classList.add('gone'); setTimeout(() => $('splash').remove(), 600); };
 $('btnBgm').onclick = () => { bgmOn = !bgmOn; try{ localStorage.setItem('vault_bgm', bgmOn ? '1' : '0'); }catch(e){} gestured = true; bgmSync(); };
 function fmt(sec){ sec = Math.max(0, Math.floor(sec)); return String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0'); }
 function errCode(e){ const m = (e && (e.message || e.details)) || ''; return (m.match(/[A-Z_]{4,}/)||[''])[0]; }
