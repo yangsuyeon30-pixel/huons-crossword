@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex">
 <title>탈옥 관제실</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Hahmlet:wght@600;800;900&family=Bebas+Neue&family=Noto+Sans+KR:wght@400;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;700;900&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
 .wrap{max-width:1400px;padding:20px clamp(16px,3vw,40px) 60px}
@@ -13,7 +13,7 @@
 .adm-head .brand{margin:0;flex:1;min-width:260px}
 .adm-head .brand h1{font-size:clamp(22px,2.6vw,34px)}
 .big-timer{font-size:clamp(40px,6vw,84px);font-weight:900;font-variant-numeric:tabular-nums;line-height:1;
-  background:#0b0a10;border:2px solid var(--line);border-radius:20px;padding:10px 26px}
+  background:#091127;border:2px solid var(--line);border-radius:20px;padding:10px 26px}
 .big-timer.warn{color:var(--bad);border-color:var(--bad)}
 .status-pill{display:inline-block;padding:6px 14px;border-radius:999px;font-weight:900;font-size:14px;margin-left:6px}
 .st-waiting{background:rgba(147,163,196,.15);color:var(--muted)}
@@ -27,41 +27,41 @@
 .sec-title{font-size:15px;letter-spacing:1px;color:var(--gold);font-weight:900;margin:0 0 12px}
 .teams{display:flex;flex-direction:column;gap:10px}
 .trow{display:grid;grid-template-columns:minmax(0,1.3fr) auto minmax(110px,.7fr);align-items:center;gap:16px;
-  background:#0b0a10;border:1.5px solid var(--line);border-radius:18px;padding:14px 20px}
-.trow.fin{border-color:rgba(124,77,255,.7);background:linear-gradient(90deg,rgba(124,77,255,.14),#0b0a10)}
+  background:#091127;border:1.5px solid var(--line);border-radius:18px;padding:14px 20px}
+.trow.fin{border-color:rgba(30,107,255,.7);background:linear-gradient(90deg,rgba(30,107,255,.14),#091127)}
 .trow .nm{font-size:clamp(20px,2.2vw,32px);font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .trow .lk{font-size:clamp(28px,3.2vw,48px);letter-spacing:4px;white-space:nowrap}
 .trow .lk .c{filter:grayscale(1);opacity:.28}
-.trow .lk .o{filter:drop-shadow(0 0 10px rgba(179,157,255,.6))}
+.trow .lk .o{filter:drop-shadow(0 0 10px rgba(90,162,255,.6))}
 .trow .meta{text-align:right;font-size:14px;color:var(--muted);line-height:1.5}
 .trow .meta b{color:var(--gold2);font-size:clamp(18px,1.8vw,26px)}
 .empty{color:var(--muted);text-align:center;padding:30px;border:1.5px dashed var(--line);border-radius:18px}
 .podium{display:flex;flex-direction:column;gap:10px}
-.pd{display:flex;align-items:center;gap:14px;background:#0b0a10;border:1.5px solid var(--line);border-radius:18px;padding:14px 18px}
+.pd{display:flex;align-items:center;gap:14px;background:#091127;border:1.5px solid var(--line);border-radius:18px;padding:14px 18px}
 .pd .md{font-size:40px}
 .pd .pn{flex:1;font-size:22px;font-weight:900}
 .pd .pt{font-size:26px;font-weight:900;color:var(--gold2);font-variant-numeric:tabular-nums}
-.pd.r1{border-color:var(--gold);box-shadow:0 0 30px rgba(124,77,255,.2)}
+.pd.r1{border-color:var(--gold);box-shadow:0 0 30px rgba(30,107,255,.2)}
 .pd.ph{opacity:.4}
 .qr-box{text-align:center}
 .qr-box img{width:100%;max-width:260px;background:#fff;border-radius:16px;padding:12px}
 .qr-box .url{font-weight:900;color:var(--gold2);word-break:break-all;margin-top:8px;font-size:15px}
 .qedit{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
-.qcard{background:#0b0a10;border:1px solid var(--line);border-radius:16px;padding:14px}
+.qcard{background:#091127;border:1px solid var(--line);border-radius:16px;padding:14px}
 .qcard h4{margin:0 0 8px;color:var(--gold2)}
 .qcard label{display:block;font-size:12px;color:var(--muted);margin:8px 0 4px;font-weight:700}
-.qcard textarea,.qcard input{width:100%;background:#09080d;border:1px solid var(--line);border-radius:10px;color:var(--ink);
+.qcard textarea,.qcard input{width:100%;background:#060d20;border:1px solid var(--line);border-radius:10px;color:var(--ink);
   padding:10px;font-size:14px;font-family:inherit;resize:vertical}
 .login{max-width:380px;margin:12vh auto 0}
-.tc-set{display:flex;align-items:center;gap:6px;margin-left:auto;background:#0b0a10;border:1px solid var(--line);border-radius:14px;padding:6px 8px}
+.tc-set{display:flex;align-items:center;gap:6px;margin-left:auto;background:#091127;border:1px solid var(--line);border-radius:14px;padding:6px 8px}
 .tc-set label{font-weight:900;color:var(--gold2);font-size:14px;margin:0 4px}
-.tc-set input{width:56px;text-align:center;font-size:20px;font-weight:900;background:#09080d;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:6px 0;font-family:inherit}
-.tc-b{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:#15121d;color:var(--ink);font-size:20px;cursor:pointer}
+.tc-set input{width:56px;text-align:center;font-size:20px;font-weight:900;background:#060d20;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:6px 0;font-family:inherit}
+.tc-b{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:#0f1832;color:var(--ink);font-size:20px;cursor:pointer}
 .tc-set .btn{padding:8px 14px!important}
-.av{position:relative;width:64px;height:64px;border-radius:14px;overflow:hidden;background:#14111b;flex:none}
+.av{position:relative;width:64px;height:64px;border-radius:14px;overflow:hidden;background:#0f1730;flex:none}
 .av svg{position:absolute;left:4px;bottom:-4px;width:56px;height:auto}
 .av.jail::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 9px,rgba(203,213,225,.85) 9px 13px)}
-.av.free{background:radial-gradient(circle at 50% 30%,rgba(179,157,255,.5),#14111b 70%)}
+.av.free{background:radial-gradient(circle at 50% 30%,rgba(90,162,255,.5),#0f1730 70%)}
 .av.none{display:grid;place-items:center;color:var(--muted);font-size:26px}
 .trow{grid-template-columns:auto minmax(0,1fr) auto minmax(110px,.6fr)!important}
 .trow.wait{opacity:.45;border-style:dashed}
@@ -84,12 +84,12 @@
     </div>
 
     <div class="ctrls">
-      <button id="btnStart" class="btn btn-gold">게임 시작 · 30분</button>
-      <button id="btnStop" class="btn btn-ghost">게임 종료</button>
-      <button id="btnBgm" class="btn btn-ghost">배경음악 켜기</button>
-      <button id="btnQr" class="btn btn-ghost">QR 보기/숨기기</button>
-      <button id="btnEdit" class="btn btn-ghost">문제 편집</button>
-      <button id="btnReset" class="btn btn-danger">전체 초기화</button>
+      <button id="btnStart" class="btn btn-gold">▶ 게임 시작 (30분)</button>
+      <button id="btnStop" class="btn btn-ghost">■ 게임 종료</button>
+      <button id="btnBgm" class="btn btn-ghost">🎵 배경음악 켜기</button>
+      <button id="btnQr" class="btn btn-ghost">📱 QR 보기/숨기기</button>
+      <button id="btnEdit" class="btn btn-ghost">✏️ 문제 편집</button>
+      <button id="btnReset" class="btn btn-danger">↺ 전체 초기화</button>
       <div class="tc-set"><label for="teamCount2">조 개수</label>
         <button id="tcMinus" class="tc-b">−</button><input id="teamCount2" type="number" min="1" max="30" value="8"><button id="tcPlus" class="tc-b">+</button>
         <button id="btnTc" class="btn btn-ghost">적용</button></div>
@@ -112,7 +112,7 @@
       </section>
       <div style="display:flex;flex-direction:column;gap:20px">
         <section class="card">
-          <h3 class="sec-title">탈출 순위</h3>
+          <h3 class="sec-title">🏆 탈출 순위</h3>
           <div class="podium" id="podium"></div>
         </section>
         <section class="card qr-box" id="qrPanel">
@@ -182,7 +182,7 @@ function renderStatus(){
   const pill = $('statusPill');
   pill.className = 'status-pill st-' + s;
   pill.textContent = { waiting:'대기 중', running:'진행 중', ended:'종료' }[s];
-  $('btnStart').textContent = s === 'waiting' ? '게임 시작 · 30분' : '다시 시작 · 30분';
+  $('btnStart').textContent = s === 'waiting' ? '▶ 게임 시작 (30분)' : '▶ 다시 시작 (30분)';
   tick();
 }
 function tick(){
@@ -199,7 +199,7 @@ setInterval(tick, 500);
 /* 배경음악 (큰 스크린 스피커용) */
 let bgmOn = false;
 function bgmSync(){
-  $('btnBgm').textContent = bgmOn ? '배경음악 끄기' : '배경음악 켜기';
+  $('btnBgm').textContent = bgmOn ? '🎵 배경음악 끄기' : '🎵 배경음악 켜기';
   $('btnBgm').classList.toggle('btn-gold', bgmOn); $('btnBgm').classList.toggle('btn-ghost', !bgmOn);
   const st = effStatus();
   if(!bgmOn || st === 'ended'){ VaultBGM.stop(1.5); return; }
@@ -226,22 +226,22 @@ function renderTeams(){
     <div class="trow ${t.finished_at ? 'fin' : ''}">
       ${avHTML(t)}
       <div class="nm">${esc(t.name)} <small class="muted" style="font-size:14px">${esc(VAULT_CHARS.name(t.character))}</small></div>
-      <div class="lk pips">${[0,1,2,3].map(i => `<i class="${i < t.stage ? 'on' : ''}"></i>`).join('')}</div>
-      <div class="meta">${t.finished_at ? `<b>ESCAPED ${fmt(t.elapsed_sec)}</b><br>` : `<b>${t.stage}/4</b><br>`}오답 ${t.wrong_total} · 힌트 ${t.hints_used}/3</div>
+      <div class="lk">${[0,1,2,3].map(i => i < t.stage ? '<span class="o">🔓</span>' : '<span class="c">🔒</span>').join('')}</div>
+      <div class="meta">${t.finished_at ? `<b>🏃 ${fmt(t.elapsed_sec)}</b><br>` : `<b>${t.stage}/4</b><br>`}오답 ${t.wrong_total} · 힌트 ${t.hints_used}/3</div>
     </div>` : `
     <div class="trow wait">${avHTML(null)}<div class="nm">${n}조</div><div class="lk"></div><div class="meta">미입장</div></div>`;
   }
   const extra = teams.filter(t => !t.team_no || t.team_no > count);
-  extra.forEach(t => { rows += `<div class="trow">${avHTML(t)}<div class="nm">${esc(t.name)}</div><div class="lk"></div><div class="meta">${t.stage}/4</div></div>`; });
+  extra.forEach(t => { rows += `<div class="trow">${avHTML(t)}<div class="nm">${esc(t.name)}</div><div class="lk">${'🔓'.repeat(t.stage)}</div><div class="meta">${t.stage}/4</div></div>`; });
   $('teams').innerHTML = rows;
 
   const fin = teams.filter(t => t.finished_at).sort((a,b) => new Date(a.finished_at) - new Date(b.finished_at));
-  const medals = ['1ST','2ND','3RD'];
+  const medals = ['🥇','🥈','🥉'];
   let h = '';
   for(let i=0;i<3;i++){
     const t = fin[i];
     h += t ? `<div class="pd r${i+1}"><div class="md">${medals[i]}</div>${avHTML(t)}<div class="pn">${esc(t.name)}</div><div class="pt">${fmt(t.elapsed_sec)}</div></div>`
-           : `<div class="pd ph"><div class="md">${medals[i]}</div><div class="pn">대기 중</div><div class="pt">--:--</div></div>`;
+           : `<div class="pd ph"><div class="md">${medals[i]}</div><div class="pn">${i+1}등</div><div class="pt">--:--</div></div>`;
   }
   fin.slice(3).forEach((t,i) => { h += `<div class="pd"><div class="md" style="font-size:22px;width:40px;text-align:center">${i+4}</div>${avHTML(t)}<div class="pn">${esc(t.name)}</div><div class="pt">${fmt(t.elapsed_sec)}</div></div>`; });
   $('podium').innerHTML = h;
@@ -284,7 +284,7 @@ $('btnEdit').onclick = async () => {
     const qs = await rpc('vault_admin_questions', { p_pw: pw });
     $('qedit').innerHTML = qs.map(q => `
       <div class="qcard" data-id="${q.id}">
-        <h4>자물쇠 ${q.id}</h4>
+        <h4>🔒 자물쇠 ${q.id}</h4>
         <label>문제</label><textarea rows="3" data-f="question">${esc(q.question)}</textarea>
         <label>정답</label><input data-f="answer" value="${esc(q.answer)}">
         <label>힌트</label><textarea rows="2" data-f="hint">${esc(q.hint)}</textarea>
