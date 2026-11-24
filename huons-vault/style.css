@@ -649,3 +649,13 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
+
+/* 첫 입장 화면: '탈출룸'을 정중앙에, 양옆 장식선은 대칭 */
+.splash .huons-logo{text-align:center}
+.splash .lg-title{white-space:nowrap}
+.splash .lg-sub{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;width:100%}
+.splash .lg-sub .lf{justify-self:end}
+.splash .lg-sub .lf.flip{justify-self:start}
+.splash .lg-sub span{padding-left:6px}
+.splash .lf.flip{transform-origin:50% 50%}
+.splash .lf{transform-origin:50% 50%}
