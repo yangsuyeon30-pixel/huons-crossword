@@ -197,7 +197,8 @@
     <div class="cell big" id="overCell"></div>
     <h2 class="done-title">탈옥 실패…</h2>
     <p class="team-title"><span class="tn"></span></p>
-    <p class="lead">시간이 다 됐어요.<br>자물쇠 <b id="overStage">0</b>/4 개를 풀었어요. 수고하셨습니다!</p>
+    <p class="lead">제한 시간 안에 탈출하지 못했어요.<br>자물쇠 <b id="overStage">0</b>/4 개를 풀었어요. 수고하셨습니다!</p>
+    <div class="gm-hero gm-done" id="gmOver"></div>
     <div class="keys final" id="overKeys"></div>
   </section>
 
@@ -241,7 +242,8 @@ const sfx = {
   tick(){ tone(1800, .03, 'square', .04); },
   tap(){ tone(900, .05, 'triangle', .07); },
   clang(){ tone(220, .4, 'square', .1, 0, 90); tone(330, .3, 'triangle', .08, .05); },
-  wrong(){ tone(160, .18, 'sawtooth', .12); tone(140, .25, 'sawtooth', .12, .2); },
+  wrong(){ tone(440, .12, 'square', .16); tone(330, .22, 'square', .16, .13); tone(90, .3, 'sawtooth', .14, 0, 60); },   // 삐-빅! (휴대폰에서도 잘 들리게)
+  fail(){ [392, 370, 349, 311].forEach((f, i) => tone(f, i === 3 ? .9 : .32, 'sawtooth', .13, i * .36, i === 3 ? 240 : 0)); },   // 빠밤빠밤~ (탈출 실패)
   open(){ tone(420, .06, 'square', .1); tone(300, .08, 'square', .1, .07); [660, 880, 1320].forEach((f,i) => tone(f, .25, 'triangle', .1, .2 + i*.11)); },
   escape(){ tone(80, 1, 'sawtooth', .1, 0, 300); [523, 659, 784, 1047, 1319].forEach((f,i) => tone(f, .4, 'triangle', .1, 1 + i*.13)); },
 };
@@ -323,6 +325,16 @@ function startGmWelcome(){ if(gmStarted) return; gmStarted = true; $('gmLine').t
 if(!$('splash')) startGmWelcome();
 
 // 탈출 성공 화면의 게임 마스터 (첫 화면 그림을 id만 바꿔 복제)
+function cloneGm(box, lineId){
+  if(!box || box.innerHTML) return;
+  const src = document.querySelector('#v-join .gm-svg');
+  if(src) box.innerHTML = src.outerHTML.replace(/id="(g[A-Za-z]+)"/g, 'id="$1' + lineId + '"').replace(/url\(#(g[A-Za-z]+)\)/g, 'url(#$1' + lineId + ')')
+    + `<div class="gm-say"><b>GAME MASTER</b><span id="${lineId}"></span></div>`;
+}
+function showGmOver(team){
+  cloneGm($('gmOver'), 'gmLineOver');
+  setTimeout(() => typeLine($('gmLineOver'), `…시간이 다 됐군. 아쉽지만 ${team}의 탈옥은 여기까지다. 다음엔 꼭 탈출해 봐라.`, 60, true), 1200);
+}
 function showGmDone(team){
   const box = $('gmDone'); if(!box) return;
   if(!box.innerHTML){
@@ -690,6 +702,8 @@ async function showDone(){
   }catch(e){}
 }
 function showOver(){
+  const first = $('v-over').classList.contains('hidden');
+  if(first){ sfx.fail(); buzz([300, 120, 300, 120, 600]); showGmOver(state.team.name); }
   $('overStage').textContent = state.team.stage;
   renderCell($('overCell'), state.team.character, state.team.stage);
   renderKeys($('overKeys'), state.keys || [], -1);

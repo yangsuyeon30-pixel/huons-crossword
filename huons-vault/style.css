@@ -673,3 +673,19 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .howto[open] summary::before{content:'▾ ';}
 .howto ol{margin:6px 0 2px;padding-left:20px;font-size:13.5px;line-height:1.65;color:#dfe5f2}
 .howto b{color:var(--gold2)}
+
+/* 번호 자물쇠: 스마트폰 화면에 맞게 작게 */
+.padlock{max-width:300px;margin-top:46px}
+.padlock .shackle{top:-44px;height:66px;border-width:13px}
+.lbody{padding:16px 12px 14px}
+.wheel-col{flex:0 1 54px;gap:4px}
+.drum{height:90px}
+.drum .cv{font-size:34px}
+.drum .pv,.drum .nv{font-size:14px;padding:2px 0}
+.arr{padding:4px 0;font-size:12px}
+@media (max-width:360px){
+  .padlock{max-width:270px}
+  .wheel-col{flex-basis:48px}
+  .drum{height:80px}
+  .drum .cv{font-size:30px}
+}
