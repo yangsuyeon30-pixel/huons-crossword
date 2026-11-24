@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-<meta name="theme-color" content="#040816">
+<meta name="theme-color" content="#07060a">
 <title>휴온스 플랜</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Hahmlet:wght@600;800;900&family=Bebas+Neue&family=Noto+Sans+KR:wght@400;700;900&display=swap">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div id="splash" class="splash">
   <div class="huons-logo" role="img" aria-label="휴온스 플랜 탈출룸"></div>
-  <button id="btnEnter" class="btn btn-gold splash-btn">▶ 터치해서 입장</button>
-  <p class="splash-note">🔊 소리를 켜고 참여하세요</p>
+  <button id="btnEnter" class="btn btn-gold splash-btn">입장하기</button>
+  <p class="splash-note">소리를 켜고 참여하세요</p>
 </div>
 <div class="wrap">
 
@@ -20,8 +20,8 @@
     <div class="lh-top">
       <div class="brand-sub">HUONS GROUP 입문교육</div>
       <div class="lh-btns">
-        <button id="btnBgm" class="mute" aria-label="배경음악 켜기/끄기">🎵</button>
-        <button id="btnMute" class="mute" aria-label="효과음 켜기/끄기">🔊</button>
+        <button id="btnBgm" class="mute" aria-label="배경음악 켜기/끄기"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l11-2v13" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="6.5" cy="18" r="2.6" fill="currentColor"/><circle cx="17.5" cy="16" r="2.6" fill="currentColor"/></svg></button>
+        <button id="btnMute" class="mute" aria-label="효과음 켜기/끄기"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
       </div>
     </div>
     <div class="huons-logo" role="img" aria-label="휴온스 플랜 탈출룸"></div>
@@ -32,12 +32,12 @@
     <div class="gm-hero">
       <svg class="gm-svg" viewBox="0 0 360 210" preserveAspectRatio="xMidYMid slice" aria-label="게임 마스터">
         <defs>
-          <radialGradient id="gBg" cx="50%" cy="35%" r="70%"><stop offset="0" stop-color="#1550c2"/><stop offset=".35" stop-color="#0a2560"/><stop offset=".75" stop-color="#030a1a"/><stop offset="1" stop-color="#040816"/></radialGradient>
+          <radialGradient id="gBg" cx="50%" cy="35%" r="70%"><stop offset="0" stop-color="#4a1f9e"/><stop offset=".35" stop-color="#1e0d45"/><stop offset=".75" stop-color="#050308"/><stop offset="1" stop-color="#07060a"/></radialGradient>
           <linearGradient id="gCurt" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".55"/><stop offset=".5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".55"/></linearGradient>
           <linearGradient id="gChair" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a1d14"/><stop offset="1" stop-color="#120806"/></linearGradient>
           <linearGradient id="gJacket" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#34343f"/><stop offset=".35" stop-color="#121218"/><stop offset=".7" stop-color="#1c1c25"/><stop offset="1" stop-color="#09090c"/></linearGradient>
           <linearGradient id="gHood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22222c"/><stop offset="1" stop-color="#0a0a0e"/></linearGradient>
-          <radialGradient id="gFace" cx="50%" cy="45%" r="55%"><stop offset="0" stop-color="#040816"/><stop offset="1" stop-color="#000"/></radialGradient>
+          <radialGradient id="gFace" cx="50%" cy="45%" r="55%"><stop offset="0" stop-color="#07060a"/><stop offset="1" stop-color="#000"/></radialGradient>
           <filter id="gGlow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="2.6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
           <filter id="gHaze"><feGaussianBlur stdDeviation="10"/></filter>
           <filter id="gSoft"><feGaussianBlur stdDeviation="1.2"/></filter>
@@ -50,8 +50,8 @@
         </g>
         <rect width="360" height="210" fill="url(#gCurt)"/>
         <!-- 안개 -->
-        <ellipse cx="180" cy="60" rx="120" ry="50" fill="#3a8bff" opacity=".18" filter="url(#gHaze)"/>
-        <ellipse cx="90" cy="170" rx="90" ry="26" fill="#7bb8ff" opacity=".08" filter="url(#gHaze)"/>
+        <ellipse cx="180" cy="60" rx="120" ry="50" fill="#8f6bff" opacity=".18" filter="url(#gHaze)"/>
+        <ellipse cx="90" cy="170" rx="90" ry="26" fill="#bfb0ff" opacity=".08" filter="url(#gHaze)"/>
         <!-- 가죽 소파 -->
         <path d="M44 210 L44 120 Q44 92 80 88 Q180 70 280 88 Q316 92 316 120 L316 210Z" fill="url(#gChair)"/>
         <g stroke="#000" stroke-opacity=".45" stroke-width="1.2" fill="#000" fill-opacity=".35">
@@ -69,7 +69,7 @@
         <path d="M240 140 Q276 146 304 152 Q320 156 326 166 L318 172 Q294 164 264 162 Q242 160 230 156Z" fill="url(#gJacket)"/>
         <ellipse cx="38" cy="170" rx="9" ry="6" fill="#c99b7c"/><ellipse cx="322" cy="170" rx="9" ry="6" fill="#c99b7c"/>
         <!-- 가죽 하이라이트 (림 라이트) -->
-        <g stroke="#6fb0ff" stroke-linecap="round" fill="none" filter="url(#gSoft)">
+        <g stroke="#c2b0ff" stroke-linecap="round" fill="none" filter="url(#gSoft)">
           <path d="M122 136 Q100 142 70 150" stroke-width="2.2" stroke-opacity=".7"/>
           <path d="M238 136 Q260 142 290 150" stroke-width="2.2" stroke-opacity=".7"/>
           <path d="M96 176 Q112 150 132 140" stroke-width="1.6" stroke-opacity=".45"/>
@@ -79,26 +79,26 @@
           <path d="M150 150 Q146 175 150 210" stroke-width="1.5"/><path d="M210 150 Q214 175 210 210" stroke-width="1.5"/>
           <path d="M163 132 L172 168 L166 210" stroke-width="1"/><path d="M197 132 L188 168 L194 210" stroke-width="1"/>
         </g>
-        <path d="M170 132 L180 150 L190 132" fill="#040816"/>
+        <path d="M170 132 L180 150 L190 132" fill="#07060a"/>
         <!-- 엠블럼 -->
-        <g transform="translate(180 176) rotate(45)"><rect x="-8" y="-8" width="16" height="16" fill="#091127" stroke="#3d8bff" stroke-width="1.6" filter="url(#gGlow)"/></g>
+        <g transform="translate(180 176) rotate(45)"><rect x="-8" y="-8" width="16" height="16" fill="#0b0a10" stroke="#9b7bff" stroke-width="1.6" filter="url(#gGlow)"/></g>
         <text x="180" y="180.5" text-anchor="middle" font-family="Black Han Sans,Noto Sans KR,sans-serif" font-size="10" fill="#fff">H</text>
         <!-- 후드 -->
         <g class="gm-head">
           <path d="M122 140 Q108 60 180 26 Q252 60 238 140 Q214 124 180 122 Q146 124 122 140Z" fill="url(#gHood)"/>
-          <path d="M122 140 Q112 70 180 30" stroke="#6fb0ff" stroke-opacity=".55" stroke-width="2" fill="none" filter="url(#gSoft)"/>
-          <path d="M238 140 Q248 70 180 30" stroke="#6fb0ff" stroke-opacity=".35" stroke-width="1.6" fill="none" filter="url(#gSoft)"/>
+          <path d="M122 140 Q112 70 180 30" stroke="#c2b0ff" stroke-opacity=".55" stroke-width="2" fill="none" filter="url(#gSoft)"/>
+          <path d="M238 140 Q248 70 180 30" stroke="#c2b0ff" stroke-opacity=".35" stroke-width="1.6" fill="none" filter="url(#gSoft)"/>
           <path d="M136 118 Q132 62 180 44 Q228 62 224 118" fill="none" stroke="#2c2c38" stroke-width="4"/>
           <ellipse cx="180" cy="90" rx="37" ry="43" fill="url(#gFace)"/>
           <g class="gm-eyes" filter="url(#gGlow)">
-            <path d="M154 80 Q166 84 176 90 Q164 92 156 90Z" fill="#3d8bff"/>
-            <path d="M206 80 Q194 84 184 90 Q196 92 204 90Z" fill="#3d8bff"/>
-            <path d="M157 83 Q166 86 172 89 Q164 90 158 88Z" fill="#d6e8ff"/>
-            <path d="M203 83 Q194 86 188 89 Q196 90 202 88Z" fill="#d6e8ff"/>
+            <path d="M154 80 Q166 84 176 90 Q164 92 156 90Z" fill="#9b7bff"/>
+            <path d="M206 80 Q194 84 184 90 Q196 92 204 90Z" fill="#9b7bff"/>
+            <path d="M157 83 Q166 86 172 89 Q164 90 158 88Z" fill="#efe8ff"/>
+            <path d="M203 83 Q194 86 188 89 Q196 90 202 88Z" fill="#efe8ff"/>
           </g>
           <g filter="url(#gGlow)">
-            <path d="M161 112 Q180 126 199 112" stroke="#3d8bff" stroke-width="2.6" fill="none" stroke-linecap="round"/>
-            <path d="M163 112.5 Q180 124 197 112.5" stroke="#d6e8ff" stroke-width="1" fill="none" stroke-linecap="round"/>
+            <path d="M161 112 Q180 126 199 112" stroke="#9b7bff" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+            <path d="M163 112.5 Q180 124 197 112.5" stroke="#efe8ff" stroke-width="1" fill="none" stroke-linecap="round"/>
           </g>
         </g>
         <!-- 비네팅 -->
@@ -111,7 +111,7 @@
     <div class="team-pick" id="teamPick"></div>
     <h3 class="pick-title"><span>2</span> 캐릭터 선택</h3>
     <div class="char-pick" id="charPick"></div>
-    <button id="btnJoin" class="btn btn-gold" disabled>🔒 감옥 입소</button>
+    <button id="btnJoin" class="btn btn-gold" disabled>감옥 입소</button>
     <p id="joinMsg" class="msg"></p>
   </section>
 
@@ -140,7 +140,7 @@
     <div class="card lockcard" id="playCard">
       <div class="stage-badge"><span id="lockName">다이얼 자물쇠</span> · <b id="stageNo">1</b>/4</div>
       <p class="question" id="question"></p>
-      <div id="hintBox" class="hint hidden"><b>💡 힌트</b><span id="hintText"></span></div>
+      <div id="hintBox" class="hint hidden"><b>HINT</b><span id="hintText"></span></div>
       <div id="puzzle" class="puzzle"></div>
 
       <div class="padlock" id="padlock">
@@ -153,18 +153,18 @@
 
       <div id="flash" class="flash"></div>
       <p id="feedback" class="feedback"></p>
-      <button id="btnSubmit" class="btn btn-gold">🔑 자물쇠 열기</button>
-      <button id="btnHint" class="btn btn-ghost">💡 힌트 보기 <span id="hintLeft">(3/3 남음)</span></button>
+      <button id="btnSubmit" class="btn btn-gold">자물쇠 열기</button>
+      <button id="btnHint" class="btn btn-ghost">힌트 보기 <span id="hintLeft">(3/3 남음)</span></button>
     </div>
 
     <!-- 간수 경보 (사다리 함정) -->
-    <div id="lockout" class="lockout hidden"><div class="lo-siren">🚨</div><div class="lo-t">간수에게 들켰다!</div><div class="lo-n" id="loN">5</div><div class="lo-s">잠시 숨어 있어야 해요…</div></div>
+    <div id="lockout" class="lockout hidden"><div class="lo-siren">!</div><div class="lo-t">간수에게 들켰다!</div><div class="lo-n" id="loN">5</div><div class="lo-s">잠시 숨어 있어야 해요…</div></div>
 
     <!-- 해제 성공 오버레이 -->
     <div id="unlocked" class="unlocked hidden">
-      <div class="u-lock">🔓</div>
+      <div class="u-lock"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 11V8a5 5 0 0 1 9.6-2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4.5" y="11" width="15" height="10" rx="2" fill="currentColor"/></svg></div>
       <div class="u-title" id="uTitle">자물쇠 해제!</div>
-      <div class="u-key"><span>🗝️ 열쇠 조각 획득</span><b id="uKey"></b></div>
+      <div class="u-key"><span>열쇠 조각 획득</span><b id="uKey"></b></div>
       <div class="keys final" id="uKeys"></div>
       <button id="btnNext" class="btn btn-gold">다음 자물쇠로 →</button>
     </div>
@@ -174,7 +174,7 @@
   <section id="v-done" class="card hidden center">
     <div class="confetti" id="confetti"></div>
     <div class="cell big escape-scene" id="doneCell"></div>
-    <h2 class="done-title">탈옥 성공! 🎉</h2>
+    <h2 class="done-title">탈옥 성공</h2>
     <div class="gm-hero gm-done" id="gmDone"></div>
     <p class="team-title"><span class="tn"></span></p>
     <div class="keys final" id="finalKeys"></div>
@@ -199,6 +199,7 @@
   <p id="netMsg" class="net hidden">연결을 확인하는 중…</p>
 </div>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="plg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6e2a4"/><stop offset=".5" stop-color="#c9a24a"/><stop offset="1" stop-color="#7d5f1e"/></linearGradient></defs></svg>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="config.js"></script>
 <script src="chars.js"></script>
@@ -218,7 +219,7 @@ let pick = { no: null, ch: null }, lobby = { count: 8, round: 1, teams: [] };
 /* ---------- 사운드 ---------- */
 let actx = null, muted = false;
 try{ muted = localStorage.getItem('vault_muted') === '1'; }catch(e){}
-$('btnMute').textContent = muted ? '🔇' : '🔊';
+$('btnMute').classList.toggle('off', muted);
 function ac(){ if(!actx){ try{ actx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(actx && actx.state === 'suspended') actx.resume(); return actx; }
 function tone(freq, dur, type='square', vol=.08, when=0, slide=0){
   if(muted) return; const a = ac(); if(!a) return;
@@ -236,7 +237,7 @@ const sfx = {
   open(){ tone(420, .06, 'square', .1); tone(300, .08, 'square', .1, .07); [660, 880, 1320].forEach((f,i) => tone(f, .25, 'triangle', .1, .2 + i*.11)); },
   escape(){ tone(80, 1, 'sawtooth', .1, 0, 300); [523, 659, 784, 1047, 1319].forEach((f,i) => tone(f, .4, 'triangle', .1, 1 + i*.13)); },
 };
-$('btnMute').onclick = () => { muted = !muted; $('btnMute').textContent = muted ? '🔇' : '🔊'; try{ localStorage.setItem('vault_muted', muted ? '1' : '0'); }catch(e){} if(!muted) sfx.tap(); };
+$('btnMute').onclick = () => { muted = !muted; $('btnMute').classList.toggle('off', muted); try{ localStorage.setItem('vault_muted', muted ? '1' : '0'); }catch(e){} if(!muted) sfx.tap(); };
 function buzz(p){ if(navigator.vibrate) try{ navigator.vibrate(p); }catch(e){} }
 
 /* ---------- 공통 ---------- */
@@ -282,9 +283,11 @@ function remainingSec(){
 }
 
 /* ---------- 감옥 장면 ---------- */
+const PL_LOCK = '<svg viewBox="0 0 24 28" class="plk"><path d="M7 12V8a5 5 0 0 1 10 0v4" fill="none" stroke="#b9bcc6" stroke-width="2.4"/><rect x="3" y="12" width="18" height="14" rx="3" fill="url(#plg)"/><circle cx="12" cy="18" r="2" fill="#2a1d05"/></svg>';
+const PL_OPEN = '<svg viewBox="0 0 24 28" class="plk"><path d="M7 12V8a5 5 0 0 1 9.6-2" fill="none" stroke="#b9bcc6" stroke-width="2.4"/><rect x="3" y="12" width="18" height="14" rx="3" fill="url(#plg)"/><circle cx="12" cy="18" r="2" fill="#2a1d05"/></svg>';
 function cellHTML(ch, stage){
   let locks = '';
-  for(let i = 0; i < 4; i++) locks += `<span class="plock ${i < stage ? 'off' : ''}">${i < stage ? '🔓' : '🔒'}</span>`;
+  for(let i = 0; i < 4; i++) locks += `<span class="plock ${i < stage ? 'off' : ''}">${i < stage ? PL_OPEN : PL_LOCK}</span>`;
   return `<div class="wall"></div><div class="exit">EXIT ➜</div>
     <div class="inmate"><div class="bob">${CH.avatar(ch ?? 0)}</div></div>
     <div class="bars">${'<i></i>'.repeat(7)}<div class="crossbar">${locks}</div></div>`;
@@ -338,11 +341,11 @@ function renderLobby(){
   $('teamPick').querySelectorAll('.tp').forEach(b => b.onclick = () => { pick.no = +b.dataset.no; sfx.tap(); renderLobby(); });
   $('charPick').innerHTML = CH.list.map((c, i) => {
     const tk = takenCh.has(i);
-    return `<button class="cp ${tk ? 'taken' : ''} ${pick.ch === i ? 'sel' : ''}" data-ch="${i}" ${tk ? 'disabled' : ''}>${CH.avatar(i)}<span>${c.name}</span>${tk ? `<small>${chOwner[i]}조 선택</small>` : ''}</button>`;
+    return `<button class="cp ${tk ? 'taken' : ''} ${pick.ch === i ? 'sel' : ''}" data-ch="${i}" data-no="${String(i + 1).padStart(2, '0')}" ${tk ? 'disabled' : ''}>${CH.avatar(i)}<span>${c.name}</span>${tk ? `<small>${chOwner[i]}조 선택</small>` : ''}</button>`;
   }).join('');
   $('charPick').querySelectorAll('.cp').forEach(b => b.onclick = () => { pick.ch = +b.dataset.ch; sfx.tap(); renderLobby(); });
   $('btnJoin').disabled = !(pick.no && pick.ch !== null);
-  $('btnJoin').textContent = pick.no && pick.ch !== null ? `🔒 ${pick.no}조 · ${CH.name(pick.ch)} 감옥 입소` : '🔒 조와 캐릭터를 골라주세요';
+  $('btnJoin').textContent = pick.no && pick.ch !== null ? `${pick.no}조 · ${CH.name(pick.ch)} 감옥 입소` : '조와 캐릭터를 골라주세요';
 }
 
 /* ---------- 상태 ---------- */
@@ -381,8 +384,8 @@ function renderKeys(el, keys, cur){
   let h = '';
   for(let i = 0; i < 4; i++){
     const k = keys[i];
-    h += k ? `<div class="key got"><span>🗝️</span><b>${esc(k)}</b></div>`
-           : `<div class="key ${i === cur ? 'cur' : ''}"><span>🔒</span><b>${i+1}</b></div>`;
+    h += k ? `<div class="key got"><span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="7.5" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M11.5 12H21M17 12v3.5M20 12v2.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><b>${esc(k)}</b></div>`
+           : `<div class="key ${i === cur ? 'cur' : ''}"><span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 11V8a5 5 0 0 1 10 0v3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4.5" y="11" width="15" height="10" rx="2" fill="currentColor"/></svg></span><b>${i+1}</b></div>`;
   }
   el.innerHTML = h;
 }
@@ -508,7 +511,7 @@ function puzzleHidden(P, q, pz){
   const digits = shuffleR(ans.concat(dec), r);
   const n = digits.length;
   const spots = digits.map((d, i) => ({ d, e: objs[i % objs.length], x: 10 + i * (80 / Math.max(1, n - 1)), y: i % 2 ? 58 + r()*14 : 10 + r()*14, rot: Math.round(r()*50 - 25) }));
-  P.innerHTML = `<div class="pz-title">🔍 감방 벽 낙서 — 숨은 숫자를 찾아라</div>
+  P.innerHTML = `<div class="pz-title"><em>PUZZLE 01</em>감방 벽 낙서 · 숨은 숫자를 찾아라</div>
     <div class="scene" id="scene">${spots.map((s, i) => `<button class="spot" data-i="${i}" style="left:${s.x}%;top:${s.y}%"><span class="obj">${s.e}</span><span class="dg" style="transform:rotate(${s.rot}deg)">${s.d}</span></button>`).join('')}</div>
     <div class="tray"><span>찾은 숫자</span><div id="trayD"></div></div>
     <p class="pz-note">벽 곳곳에 숫자가 숨어 있다. 터치해서 찾아낸 뒤, <b>휴온스가 태어난 해</b>를 번호 자물쇠에 맞춰라.</p>`;
@@ -529,7 +532,7 @@ function puzzleCards(P, q){
     { t:'간수의 쪽지', b:'"내 생일은 0815…<br>비밀번호일지도?"<br><small>…믿지 마라.</small>' },
   ];
   const order = shuffleR([0,1,2,3], rng(me.team_id + 'c'));
-  P.innerHTML = `<div class="pz-title">🃏 단서 카드 — 카드를 뒤집어 조합하라</div>
+  P.innerHTML = `<div class="pz-title"><em>PUZZLE 02</em>단서 카드 · 뒤집어서 조합하라</div>
     <div class="cards">${order.map(k => `<button class="card3d" data-k="${k}"><div class="inner"><div class="face back"><span>?</span><small>터치해서 뒤집기</small></div>
       <div class="face front"><em>${cards[k].t}</em><p>${cards[k].b}</p></div></div></button>`).join('')}</div>`;
   P.querySelectorAll('.card3d').forEach(b => b.onclick = () => { if(!b.classList.contains('flip')){ b.classList.add('flip'); sfx.tap(); buzz(12); } });
@@ -552,7 +555,7 @@ function composeJamo(seq){
 }
 function puzzleJamo(P, q, pz){
   $('lockName').textContent = '조각 자물쇠';
-  P.innerHTML = `<div class="pz-title">🧩 찢어진 쪽지 — 자음·모음 조각을 맞춰라</div>
+  P.innerHTML = `<div class="pz-title"><em>PUZZLE 03</em>찢어진 쪽지 · 자음·모음 조각을 맞춰라</div>
     <p class="pz-note">바닥에 떨어진 조각들… 조각을 <b>순서대로</b> 눌러 ○○에 들어갈 두 글자를 완성하세요.</p>`;
   const w = $('lockWidget'), pieces = pz.jamo, seq = [];
   w.className = 'jamo';
@@ -579,19 +582,19 @@ function puzzleLadder(P, q, pz){
   for(let l = 0; l < LV; l++){ const a = Math.floor(r() * (COLS - 1)); rungs.push(r() < .85 ? a : -1); }
   const walk = c => { const pts = [[c, -0.5]]; for(let l = 0; l < LV; l++){ pts.push([c, l]); if(rungs[l] === c){ c++; pts.push([c, l]); } else if(rungs[l] === c - 1){ c--; pts.push([c, l]); } } pts.push([c, LV - 0.5]); return { end: c, pts }; };
   const goalEnd = walk(goal).end;
-  const traps = shuffleR(['🚨 간수실', '🧱 막다른 길', '🔒 독방'], r);
+  const traps = shuffleR(['간수실', '막다른 길', '독방'], r);
   const bottoms = []; let ti = 0; for(let c = 0; c < COLS; c++) bottoms.push(c === goalEnd ? 'GOAL' : traps[ti++]);
   const X = c => 12.5 + c * 25, Y = l => 8 + (l + .5) * (84 / LV);
   let svg = `<svg viewBox="0 0 100 100" preserveAspectRatio="none" class="ladder-svg">`;
   for(let c = 0; c < COLS; c++) svg += `<line x1="${X(c)}" y1="2" x2="${X(c)}" y2="98" class="lrail"/>`;
   rungs.forEach((a, l) => { if(a >= 0) svg += `<line x1="${X(a)}" y1="${Y(l)}" x2="${X(a+1)}" y2="${Y(l)}" class="lrung"/>`; });
   svg += `<polyline id="lpath" class="lpath" points=""/></svg>`;
-  P.innerHTML = `<div class="pz-title">🪜 탈출 사다리 — 필러 제품에서 출발하라</div>
+  P.innerHTML = `<div class="pz-title"><em>PUZZLE 04</em>탈출 사다리 · 필러 제품에서 출발하라</div>
     <p class="pz-note">제품을 골라 사다리를 타세요. 잘못 고르면 <b>간수에게 들킵니다!</b></p>
     <div class="ladder"><div class="l-tops">${tops.map((t, i) => `<button class="l-top" data-i="${i}">${esc(t)}</button>`).join('')}</div>
       <div class="l-board">${svg}</div>
       <div class="l-bots">${bottoms.map((b, i) => `<div class="l-bot" data-i="${i}">?</div>`).join('')}</div></div>
-    <div class="l-prize hidden" id="lPrize"><span>🗝️ 비밀 통로에서 발견한 글자 조각</span><b>${(pz.scramble || []).map(esc).join(' · ')}</b><small>올바른 순서로 맞춰 자물쇠를 여세요</small></div>`;
+    <div class="l-prize hidden" id="lPrize"><span>비밀 통로에서 발견한 글자 조각</span><b>${(pz.scramble || []).map(esc).join(' · ')}</b><small>올바른 순서로 맞춰 자물쇠를 여세요</small></div>`;
   setPadlock(false);
   let running = false;
   P.querySelectorAll('.l-top').forEach(b => b.onclick = () => {
@@ -604,7 +607,7 @@ function puzzleLadder(P, q, pz){
     setTimeout(() => {
       const bot = P.querySelector(`.l-bot[data-i="${w.end}"]`);
       if(bottoms[w.end] === 'GOAL'){
-        bot.textContent = '🚪 비밀 통로'; bot.classList.add('win');
+        bot.textContent = '비밀 통로'; bot.classList.add('win');
         $('lPrize').classList.remove('hidden'); setPadlock(true); sfx.open(); buzz([40, 40, 120]);
         $('lPrize').scrollIntoView({ behavior: 'smooth', block: 'center' });
       }else{
@@ -652,7 +655,7 @@ function showOver(){
   show('v-over');
 }
 function burst(){
-  const box = $('confetti'), colors = ['#1e6bff','#5aa2ff','#ffffff','#ffffff'];
+  const box = $('confetti'), colors = ['#7c4dff','#b39dff','#ffffff','#ffffff'];
   for(let i = 0; i < 70; i++){
     const p = document.createElement('i');
     p.style.left = Math.random()*100 + '%';
@@ -714,7 +717,7 @@ $('btnSubmit').onclick = async () => {
       $('uKey').textContent = keys[keys.length - 1] || '';
       $('uTitle').textContent = done ? '마지막 자물쇠 해제!' : `감옥 자물쇠 ${keys.length}/4 해제!`;
       renderKeys($('uKeys'), keys, -1);
-      $('btnNext').textContent = done ? '🏃 감옥 탈출하기 →' : '다음 자물쇠로 →';
+      $('btnNext').textContent = done ? '감옥 탈출하기' : '다음 자물쇠로';
       setTimeout(() => {
         $('unlocked').classList.remove('hidden');
         renderCell($('playCell'), r.state.team.character, r.state.team.stage); $('playCell').dataset.stage = r.state.team.stage;
