@@ -286,7 +286,6 @@ $('btnStop').onclick = async () => {
 };
 $('btnReset').onclick = async () => {
   if(!confirm('전체 초기화할까요?\n등록된 모든 팀과 기록이 삭제되고 참가자 화면은 팀 등록으로 돌아갑니다.')) return;
-  if(prompt('확인을 위해 "초기화"를 입력하세요.') !== '초기화') return;
   try{ await rpc('vault_admin_reset', { p_pw: pw }); toast('초기화 완료'); loadAll(); }catch(e){ alert('실패: ' + e.message); }
 };
 $('codeInp').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4); });
