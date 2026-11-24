@@ -279,6 +279,14 @@ function renderPlay(){
 }
 
 /* ---------- 자물쇠 위젯 ---------- */
+function eraseRow(back, clear, clearLabel){
+  return `<div class="erase-row">${back ? '<button class="erase" data-act="back">⌫ 한 글자 지우기</button>' : ''}<button class="erase" data-act="clear">${clearLabel || '↺ 전부 지우기'}</button></div>`;
+}
+function bindErase(w, onBack, onClear){
+  const b = w.querySelector('.erase[data-act="back"]'), c = w.querySelector('.erase[data-act="clear"]');
+  if(b) b.onclick = () => { onBack(); sfx.tick(); buzz(8); $('feedback').textContent = ''; };
+  if(c) c.onclick = () => { onClear(); sfx.tick(); buzz(8); $('feedback').textContent = ''; };
+}
 function buildLock(lock){
   const w = $('lockWidget');
   if(lock.kind === 'digits'){
@@ -290,19 +298,21 @@ function buildLock(lock){
         <button class="arr up" aria-label="올리기">▲</button>
         <div class="drum"><span class="pv"></span><span class="cv"></span><span class="nv"></span></div>
         <button class="arr dn" aria-label="내리기">▼</button>
-      </div>`).join('');
+      </div>`).join('') + eraseRow(false, null, '↺ 전부 0으로 되돌리기');
     const paint = i => {
-      const col = w.children[i], v = vals[i];
+      const col = w.querySelectorAll('.wheel-col')[i], v = vals[i];
       col.querySelector('.pv').textContent = (v + 9) % 10;
       col.querySelector('.cv').textContent = v;
       col.querySelector('.nv').textContent = (v + 1) % 10;
     };
     const step = (i, d) => {
       vals[i] = (vals[i] + d + 10) % 10; paint(i); sfx.tick(); buzz(8);
-      const drum = w.children[i].querySelector('.drum');
+      const drum = w.querySelectorAll('.wheel-col')[i].querySelector('.drum');
       drum.classList.remove('roll-up','roll-dn'); void drum.offsetWidth; drum.classList.add(d > 0 ? 'roll-up' : 'roll-dn');
     };
-    [...w.children].forEach((col, i) => {
+    const cols = [...w.querySelectorAll('.wheel-col')];
+    bindErase(w, null, () => { vals.fill(0); cols.forEach((_, i) => paint(i)); });
+    cols.forEach((col, i) => {
       paint(i);
       col.querySelector('.up').onclick = () => step(i, 1);
       col.querySelector('.dn').onclick = () => step(i, -1);
@@ -316,14 +326,14 @@ function buildLock(lock){
       drum.addEventListener('touchend', () => { y0 = null; });
       drum.addEventListener('wheel', e => { e.preventDefault(); step(i, e.deltaY > 0 ? -1 : 1); }, { passive: false });
     });
-    lockInput = { get: () => vals.join(''), reset(){} };
+    lockInput = { get: () => vals.join('') };
   }else{
     $('lockName').textContent = '글자 자물쇠';
     const slots = Array(lock.len).fill(null);
     w.className = 'letters';
     w.innerHTML = `<div class="slots">${slots.map((_, i) => `<button class="slot" data-i="${i}"></button>`).join('')}</div>
       <div class="tiles">${(lock.tiles||[]).map((c, i) => `<button class="tile" data-i="${i}">${esc(c)}</button>`).join('')}</div>
-      <button class="clear">↺ 다시 고르기</button>`;
+      ` + eraseRow(true);
     const tiles = [...w.querySelectorAll('.tile')], sl = [...w.querySelectorAll('.slot')];
     const paint = () => {
       sl.forEach((s, i) => { s.textContent = slots[i] === null ? '' : lock.tiles[slots[i]]; s.classList.toggle('filled', slots[i] !== null); });
@@ -335,7 +345,8 @@ function buildLock(lock){
       slots[e] = i; sfx.tap(); buzz(10); paint();
     });
     sl.forEach((s, i) => s.onclick = () => { if(slots[i] !== null){ slots[i] = null; sfx.tick(); paint(); } });
-    w.querySelector('.clear').onclick = () => { slots.fill(null); sfx.tick(); paint(); };
+    bindErase(w, () => { for(let i = slots.length - 1; i >= 0; i--) if(slots[i] !== null){ slots[i] = null; break; } paint(); },
+                 () => { slots.fill(null); paint(); });
     paint();
     lockInput = { get: () => slots.map(x => x === null ? '' : lock.tiles[x]).join(''), full: () => !slots.includes(null), reset(){ slots.fill(null); paint(); } };
   }
@@ -414,7 +425,7 @@ function puzzleJamo(P, q, pz){
   const w = $('lockWidget'), pieces = pz.jamo, seq = [];
   w.className = 'jamo';
   w.innerHTML = `<div class="jm-out" id="jmOut"></div><div class="jm-pieces">${pieces.map((p, i) => `<button class="jm" data-i="${i}">${esc(p)}</button>`).join('')}</div>
-    <div class="jm-ctl"><button class="clear" id="jmBack">⌫ 하나 지우기</button><button class="clear" id="jmClr">↺ 처음부터</button></div>`;
+    ` + eraseRow(true);
   const used = [];
   const paint = () => {
     const txt = composeJamo(seq);
@@ -422,8 +433,7 @@ function puzzleJamo(P, q, pz){
     w.querySelectorAll('.jm').forEach((b, i) => b.classList.toggle('used', used.includes(i)));
   };
   w.querySelectorAll('.jm').forEach((b, i) => b.onclick = () => { if(used.includes(i)) return; used.push(i); seq.push(pieces[i]); sfx.tap(); buzz(10); paint(); });
-  $('jmBack').onclick = () => { if(used.length){ used.pop(); seq.pop(); sfx.tick(); paint(); } };
-  $('jmClr').onclick = () => { used.length = 0; seq.length = 0; sfx.tick(); paint(); };
+  bindErase(w, () => { if(used.length){ used.pop(); seq.pop(); paint(); } }, () => { used.length = 0; seq.length = 0; paint(); });
   paint();
   lockInput = { get: () => composeJamo(seq), full: () => seq.length > 0, reset(){ used.length = 0; seq.length = 0; paint(); } };
 }
@@ -577,7 +587,6 @@ $('btnSubmit').onclick = async () => {
       }, 700);
     }else{
       wrongFx('다시 시도!');
-      if(lockInput.reset && lockInput.full) setTimeout(() => lockInput.reset(), 600);
       state = r.state;
     }
   }catch(e){
