@@ -31,6 +31,8 @@
 .trow.fin{border-color:rgba(212,175,55,.7);background:linear-gradient(90deg,rgba(212,175,55,.14),#0a1430)}
 .trow .nm{font-size:clamp(20px,2.2vw,32px);font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .trow .lk{font-size:clamp(28px,3.2vw,48px);letter-spacing:4px;white-space:nowrap}
+.trow .lk .c{filter:grayscale(1);opacity:.28}
+.trow .lk .o{filter:drop-shadow(0 0 10px rgba(245,215,122,.6))}
 .trow .meta{text-align:right;font-size:14px;color:var(--muted);line-height:1.5}
 .trow .meta b{color:var(--gold2);font-size:clamp(18px,1.8vw,26px)}
 .empty{color:var(--muted);text-align:center;padding:30px;border:1.5px dashed var(--line);border-radius:18px}
@@ -202,7 +204,7 @@ function renderTeams(){
   $('teams').innerHTML = sorted.length ? sorted.map(t => `
     <div class="trow ${t.finished_at ? 'fin' : ''}">
       <div class="nm">${esc(t.name)}</div>
-      <div class="lk">${'🔓'.repeat(t.stage)}${'🔒'.repeat(4 - t.stage)}</div>
+      <div class="lk">${[0,1,2,3].map(i => i < t.stage ? '<span class="o">🔓</span>' : '<span class="c">🔒</span>').join('')}</div>
       <div class="meta">${t.finished_at ? `<b>${fmt(t.elapsed_sec)}</b><br>` : `<b>${t.stage}/4</b><br>`}오답 ${t.wrong_total} · 힌트 ${t.hints_used}/3</div>
     </div>`).join('') : '<div class="empty">아직 등록한 팀이 없어요.<br>QR 코드로 접속해 팀 이름을 입력해 주세요.</div>';
 
