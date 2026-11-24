@@ -11,14 +11,15 @@
 <body>
 <div class="wrap">
 
-  <header class="brand">
-    <div class="brand-icon"><span>H</span></div>
-    <div style="flex:1">
+  <header class="brand logo-head">
+    <div class="lh-top">
       <div class="brand-sub">HUONS GROUP 입문교육</div>
-      <h1>휴온스 플랜</h1>
+      <div class="lh-btns">
+        <button id="btnBgm" class="mute" aria-label="배경음악 켜기/끄기">🎵</button>
+        <button id="btnMute" class="mute" aria-label="효과음 켜기/끄기">🔊</button>
+      </div>
     </div>
-    <button id="btnBgm" class="mute" aria-label="배경음악 켜기/끄기">🎵</button>
-    <button id="btnMute" class="mute" aria-label="효과음 켜기/끄기">🔊</button>
+    <div class="huons-logo" role="img" aria-label="휴온스 플랜 탈출룸"></div>
   </header>
 
   <!-- 1. 조 / 캐릭터 선택 -->
@@ -152,6 +153,7 @@
 <script src="config.js"></script>
 <script src="chars.js"></script>
 <script src="bgm.js"></script>
+<script src="logo.js"></script>
 <script>
 const sb = supabase.createClient(VAULT_CFG.url, VAULT_CFG.key);
 const LS_KEY = 'huons_vault_team';

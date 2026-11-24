@@ -463,3 +463,37 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   padding:8px 12px;font-size:13.5px;line-height:1.5;color:#f3f3f3;min-height:52px;backdrop-filter:blur(2px)}
 .gm-say b{display:block;font-size:10px;letter-spacing:3px;color:#ff5566}
 .gm-say span::after{content:'▌';color:#ff2a40;animation:blink 1s infinite;margin-left:2px}
+
+/* ===== 타이틀 로고: 금속 광택 + 보라 주사위 ===== */
+.logo-head{display:block;margin:4px 0 14px}
+.lh-top{display:flex;align-items:center;justify-content:space-between}
+.lh-top .brand-sub{font-size:10.5px}
+.lh-btns{display:flex;gap:6px}
+.huons-logo{position:relative;text-align:center;padding:14px 0 6px;user-select:none}
+.lg-ring{position:absolute;left:12%;right:12%;top:12px;height:46%;border-radius:50%;
+  border:7px solid #3b1f6e;box-shadow:inset 0 0 18px rgba(0,0,0,.8),0 0 22px rgba(122,61,240,.35);transform:perspective(300px) rotateX(55deg);opacity:.9}
+.lg-title{position:relative;font-family:'Black Han Sans','Noto Sans KR',sans-serif;font-size:clamp(46px,14vw,66px);line-height:1.05;letter-spacing:3px;
+  background:linear-gradient(180deg,#fffbe8 0%,#f1dea0 22%,#b99445 45%,#6e4f17 52%,#e9d28f 62%,#fff3c4 78%,#8a6a28 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-stroke:1.2px #2a1c05;
+  filter:drop-shadow(0 2px 0 #1a1203) drop-shadow(0 6px 10px rgba(0,0,0,.85)) drop-shadow(0 0 18px rgba(227,19,44,.25))}
+.lg-title::after{content:attr(data-t);position:absolute;inset:0;color:transparent;-webkit-text-stroke:0;
+  background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.85) 48%,transparent 60%) 0 0/250% 100% no-repeat;
+  -webkit-background-clip:text;background-clip:text;animation:shine 4.5s ease-in-out infinite}
+@keyframes shine{0%,40%{background-position:120% 0}70%,100%{background-position:-120% 0}}
+.lg-sub{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:2px}
+.lg-sub span{font-family:'Black Han Sans','Noto Sans KR',sans-serif;font-size:22px;letter-spacing:6px;
+  background:linear-gradient(180deg,#ffffff,#c4c8d0 45%,#6f7480 55%,#e6e9ee);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.9))}
+.lf{width:70px;height:16px}
+.lf.flip{transform:scaleX(-1)}
+.ld{position:absolute;filter:drop-shadow(0 6px 10px rgba(0,0,0,.7)) drop-shadow(0 0 12px rgba(138,76,245,.55))}
+.ld.d1{width:58px;right:3%;top:26px;transform:rotate(18deg);animation:dfloat 5s ease-in-out infinite}
+.ld.d2{width:40px;left:5%;bottom:10px;transform:rotate(-24deg);animation:dfloat 6s 1s ease-in-out infinite}
+@keyframes dfloat{0%,100%{translate:0 0}50%{translate:0 -6px}}
+.huons-logo.admin{text-align:left;padding:6px 60px 0 0}
+.huons-logo.admin .lg-title{font-size:68px}
+.huons-logo.admin .lg-ring{left:-4%;right:30%}
+.huons-logo.admin .lg-sub{justify-content:flex-start;padding-left:40px}
+.huons-logo.admin .lg-sub span{font-size:26px}
+.huons-logo.admin .ld.d1{width:62px;right:0;top:0}
+.huons-logo.admin .ld.d2{display:none}
