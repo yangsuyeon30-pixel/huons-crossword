@@ -298,6 +298,7 @@ async function loadLobby(){
 }
 function renderLobby(){
   const takenNo = new Set(lobby.teams.map(t => t.team_no)), takenCh = new Set(lobby.teams.map(t => t.character));
+  const chOwner = {}; lobby.teams.forEach(t => { chOwner[t.character] = t.team_no; });
   if(pick.no && (takenNo.has(pick.no) || pick.no > lobby.count)) pick.no = null;
   if(pick.ch !== null && takenCh.has(pick.ch)) pick.ch = null;
   let h = '';
@@ -309,7 +310,7 @@ function renderLobby(){
   $('teamPick').querySelectorAll('.tp').forEach(b => b.onclick = () => { pick.no = +b.dataset.no; sfx.tap(); renderLobby(); });
   $('charPick').innerHTML = CH.list.map((c, i) => {
     const tk = takenCh.has(i);
-    return `<button class="cp ${tk ? 'taken' : ''} ${pick.ch === i ? 'sel' : ''}" data-ch="${i}" ${tk ? 'disabled' : ''}>${CH.avatar(i)}<span>${c.name}</span>${tk ? '<small>선택됨</small>' : ''}</button>`;
+    return `<button class="cp ${tk ? 'taken' : ''} ${pick.ch === i ? 'sel' : ''}" data-ch="${i}" ${tk ? 'disabled' : ''}>${CH.avatar(i)}<span>${c.name}</span>${tk ? `<small>${chOwner[i]}조 선택</small>` : ''}</button>`;
   }).join('');
   $('charPick').querySelectorAll('.cp').forEach(b => b.onclick = () => { pick.ch = +b.dataset.ch; sfx.tap(); renderLobby(); });
   $('btnJoin').disabled = !(pick.no && pick.ch !== null);
@@ -656,7 +657,7 @@ $('btnJoin').onclick = async () => {
   }catch(e){
     const c = errCode(e);
     msg.textContent = c === 'TEAM_EXISTS' ? '이미 입소한 조예요. 다른 조를 골라 주세요.'
-      : c === 'CHAR_TAKEN' ? '다른 조가 먼저 고른 캐릭터예요. 다른 캐릭터를 골라 주세요.'
+      : c === 'CHAR_TAKEN' ? '방금 다른 조가 고른 캐릭터예요. 다른 캐릭터를 골라 주세요.'
       : c === 'BAD_TEAM' ? '조 번호가 바뀌었어요. 다시 골라 주세요.' : '입소에 실패했어요. 다시 시도해 주세요.';
     await loadLobby();
   }finally{ busy = false; if(!me) renderLobby(); }

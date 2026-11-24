@@ -204,7 +204,7 @@ function bgmSync(){
   const st = effStatus();
   if(!bgmOn || st === 'ended'){ VaultBGM.stop(1.5); return; }
   VaultBGM.setLevel(st === 'waiting' ? 0 : remaining() <= 300 ? 2 : 1);
-  VaultBGM.setVolume(.45);
+  VaultBGM.setVolume(.7);
   VaultBGM.start();
 }
 $('btnBgm').onclick = () => { bgmOn = !bgmOn; bgmSync(); };

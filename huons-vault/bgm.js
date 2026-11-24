@@ -2,11 +2,16 @@
 // level 0: 대기(저음 드론 + 심장박동) / 1: 게임 중(베이스·초침·고음 추가) / 2: 막판(템포 업)
 window.VaultBGM = (function(){
   let ctx = null, master = null, noiseBuf = null, drone = null, timer = null;
-  let next = 0, step = 0, level = 0, playing = false, vol = .32, mode = 'tense';
+  let next = 0, step = 0, level = 0, playing = false, vol = .6, mode = 'tense';
 
   const hz = m => 440 * Math.pow(2, (m - 69) / 12);
   // A단조 베이스 패턴 (16스텝, 0 = 쉼)
   const BASS = [33,0,33,36, 33,0,40,39, 33,0,33,36, 31,0,32,0];
+  // 긴장감 아르페지오 (16분음표, Am – F – G – E 진행, 휴대폰 스피커가 잘 내는 중음역)
+  const ARP = [
+    [57,60,64,69, 72,69,64,60], [53,57,60,65, 69,65,60,57],
+    [55,59,62,67, 71,67,62,59], [52,56,59,64, 68,64,59,56]];
+  const ROOT = [45, 41, 43, 40];
   const PAD  = [76, 77, 76, 72];   // E5 F5 E5 C5 — 반음 충돌로 불안감
   // 승리 음악: C장조 I–V–vi–IV, 8분음표 32스텝 (0 = 쉼)
   const WIN_BASS = [36,36,48,36, 43,43,55,43, 45,45,57,45, 41,41,53,43];
@@ -26,12 +31,12 @@ window.VaultBGM = (function(){
 
   function startDrone(){
     if(drone) return;
-    const g = ctx.createGain(); g.gain.value = .07;
+    const g = ctx.createGain(); g.gain.value = .035;
     const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 170; lp.Q.value = 6;
     const lfo = ctx.createOscillator(), lfoG = ctx.createGain(); lfo.frequency.value = .07; lfoG.gain.value = 90;
     lfo.connect(lfoG).connect(lp.frequency);
     const o1 = ctx.createOscillator(), o2 = ctx.createOscillator();
-    o1.type = o2.type = 'sawtooth'; o1.frequency.value = 55; o2.frequency.value = 55.35;
+    o1.type = o2.type = 'sawtooth'; o1.frequency.value = 110; o2.frequency.value = 110.6;
     o1.connect(lp); o2.connect(lp); lp.connect(g).connect(master);
     [o1, o2, lfo].forEach(o => o.start());
     drone = { stop(t){ [o1, o2, lfo].forEach(o => { try{ o.stop(t); }catch(e){} }); } };
@@ -93,26 +98,39 @@ window.VaultBGM = (function(){
     const m = WIN_LEAD[s % 32]; if(m) lead(t, m, dur * .9);
   }
 
+  function pluck(t, m, len, v){
+    const o = ctx.createOscillator(), lp = ctx.createBiquadFilter(), g = ctx.createGain();
+    o.type = 'sawtooth'; o.frequency.value = hz(m);
+    lp.type = 'lowpass'; lp.Q.value = 4; lp.frequency.setValueAtTime(3200, t); lp.frequency.exponentialRampToValueAtTime(500, t + len);
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + .005); g.gain.exponentialRampToValueAtTime(.001, t + len);
+    o.connect(lp).connect(g).connect(master); o.start(t); o.stop(t + len + .02);
+  }
+  function punch(t, v){ kick(t, v); tick(t, v * .25); }   // 쿵 + 딱 (작은 스피커에서도 들리게)
+
   function play(s, t, dur){
     if(mode === 'win') return playWin(s, t, dur);
-    // 심장 박동 (쿵-쿵)
-    if(s % 8 === 0) kick(t, level >= 2 ? .55 : .42);
-    if(s % 8 === 1) kick(t, level >= 2 ? .35 : .25);
+    const bar = Math.floor(s / 16) % 4, i = s % 16;
+    // 킥: 대기 중엔 심장박동, 게임 중엔 4박
+    if(level < 1){ if(i === 0) punch(t, .6); if(i === 2) punch(t, .4); }
+    else { if(i % 4 === 0) punch(t, level >= 2 ? .75 : .6); if(level >= 2 && i === 14) punch(t, .45); }
+    // 아르페지오 (대기 중엔 작게, 게임 중엔 또렷하게)
+    const m = ARP[bar][i % 8];
+    pluck(t, m + (level >= 2 && i >= 8 ? 12 : 0), dur * 1.4, level < 1 ? .05 : .09);
     if(level < 1) return;
+    // 중음역 베이스 (110Hz대 — 휴대폰에서도 들림)
+    if(i % 2 === 0) bass(t, ROOT[bar], dur * 1.8);
     // 초침
-    tick(t, s % 2 === 0 ? .05 : .025);
-    if(level >= 2) tick(t + dur / 2, .03);
-    // 베이스
-    const m = BASS[s % 16];
-    if(m) bass(t, m, dur * 1.6);
-    if(m && level >= 2) bass(t, m + 12, dur * .8);
+    tick(t, i % 2 === 0 ? .09 : .05);
+    if(level >= 2) tick(t + dur / 2, .05);
+    // 마디 첫 박 스트링 스탭
+    if(i === 0) [ROOT[bar] + 24, ROOT[bar] + 31].forEach(n => pluck(t, n, dur * 6, .05));
     // 섬뜩한 고음
-    if(s % 16 === 0) pad(t, PAD[(s / 16) % PAD.length], dur * 14);
+    if(i === 8 && bar % 2 === 1) pad(t, PAD[bar], dur * 10);
   }
 
   function scheduler(){
-    const bpm = mode === 'win' ? 150 : level >= 2 ? 132 : level >= 1 ? 104 : 72;
-    const dur = 60 / bpm / 2;   // 8분음표
+    const bpm = mode === 'win' ? 150 : level >= 2 ? 138 : level >= 1 ? 116 : 90;
+    const dur = mode === 'win' ? 60 / bpm / 2 : 60 / bpm / 4;   // 승리=8분음표, 긴장=16분음표
     while(next < ctx.currentTime + .15){
       play(step, next, dur);
       next += dur; step = (step + 1) % 64;

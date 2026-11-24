@@ -1,17 +1,17 @@
-// 사람 캐릭터 10종 (인라인 SVG) — 참가자/관리자 화면 공용
+// 사람 캐릭터 10종 (이름: 데블스 플랜 시즌3 출연자) (인라인 SVG) — 참가자/관리자 화면 공용
 (function(){
   const SKIN = ['#f6d3b3', '#eec19b', '#e0a982', '#c98d65'];
   const C = [
-    { name:'신입사원', skin:0, hair:'short',   hc:'#1d1d22', coat:'#24324f', shirt:'#ffffff', tie:'#d4af37' },
-    { name:'연구원',   skin:1, hair:'pony',    hc:'#3a2516', coat:'#f4f6fb', shirt:'#5b8def', glasses:true },
-    { name:'의사',     skin:2, hair:'short',   hc:'#5a3a22', coat:'#f4f6fb', shirt:'#7fd1c2', steth:true },
-    { name:'약사',     skin:0, hair:'long',    hc:'#24180f', coat:'#2fa58f', shirt:'#d7f5ee' },
-    { name:'영업왕',   skin:2, hair:'slick',   hc:'#141414', coat:'#6b7280', shirt:'#ffffff', tie:'#dc2626' },
-    { name:'디자이너', skin:1, hair:'bob',     hc:'#7a3b1d', coat:'#f2b705', shirt:'#2b2b2b', hat:'beret', hatc:'#c2185b' },
-    { name:'개발자',   skin:3, hair:'messy',   hc:'#2a1a10', coat:'#3d4b63', shirt:'#3d4b63', phones:true },
-    { name:'마케터',   skin:0, hair:'wavy',    hc:'#a4572a', coat:'#e86a92', shirt:'#ffffff' },
-    { name:'팀장',     skin:1, hair:'bald',    hc:'#9aa0a6', coat:'#6b4a2e', shirt:'#ffffff', tie:'#1e3a8a', glasses:true, stache:true },
-    { name:'탐정',     skin:2, hair:'short',   hc:'#2b2b2b', coat:'#b08d57', shirt:'#f1e4c8', hat:'fedora', hatc:'#3b3024' },
+    { name:'장동민', skin:0, hair:'short',   hc:'#1d1d22', coat:'#24324f', shirt:'#ffffff', tie:'#d4af37' },
+    { name:'홍진호',   skin:1, hair:'short',    hc:'#3a2516', coat:'#f4f6fb', shirt:'#5b8def', glasses:true },
+    { name:'하석진',     skin:2, hair:'short',   hc:'#5a3a22', coat:'#f4f6fb', shirt:'#7fd1c2', steth:true },
+    { name:'유리사',     skin:0, hair:'long',    hc:'#24180f', coat:'#2fa58f', shirt:'#d7f5ee' },
+    { name:'오현민',   skin:2, hair:'slick',   hc:'#141414', coat:'#6b7280', shirt:'#ffffff', tie:'#dc2626' },
+    { name:'스텔라장', skin:1, hair:'bob',     hc:'#7a3b1d', coat:'#f2b705', shirt:'#2b2b2b', hat:'beret', hatc:'#c2185b' },
+    { name:'정현규',   skin:3, hair:'messy',   hc:'#2a1a10', coat:'#3d4b63', shirt:'#3d4b63', phones:true },
+    { name:'재재',   skin:0, hair:'wavy',    hc:'#a4572a', coat:'#e86a92', shirt:'#ffffff' },
+    { name:'존박',     skin:1, hair:'slick',   hc:'#2a1c12', coat:'#6b4a2e', shirt:'#ffffff', tie:'#1e3a8a', glasses:true },
+    { name:'넉살',     skin:2, hair:'short',   hc:'#2b2b2b', coat:'#b08d57', shirt:'#f1e4c8', hat:'fedora', hatc:'#3b3024' },
   ];
 
   function hairBack(c){
