@@ -575,3 +575,77 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .logo-head .lg-sub .lf{justify-self:end}
 .logo-head .lg-sub .lf.flip{justify-self:start}
 .logo-head .lg-sub span{padding-left:6px}   /* 마지막 글자 뒤 자간만큼 보정해 시각적 정중앙 */
+
+/* =====================================================================
+   디자인 리프레시 v4 — "금고" 톤 통일
+   네이비 강철 바탕 + 로고와 같은 황동(브라스) 골드를 주요 행동 색으로.
+   파랑은 정보/상태 표시에만, 이모지 아이콘은 SVG(.ico)로 교체.
+   ===================================================================== */
+:root{
+  --brass:#e9c46a; --brass2:#f6dc95; --brass-deep:#b8862b; --brass-ink:#241a06;
+  --steel:#0c1430; --steel2:#111b3d; --steel-line:rgba(173,196,255,.14);
+  --info:#5aa2ff; --ink-2:#c7d0e4;
+}
+.ico{width:1.15em;height:1.15em;flex:none;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round;vertical-align:-.18em}
+
+/* 카드: 하나의 규칙으로 */
+.card{background:linear-gradient(180deg,var(--steel2),var(--steel));border:1px solid var(--steel-line);
+  border-top:1px solid rgba(233,196,106,.35);border-radius:18px;
+  box-shadow:0 18px 40px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.04)}
+.lead{color:var(--ink-2)}
+.lead b{color:var(--brass2)}
+.muted{color:#a3aec6}
+
+/* 버튼 */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;min-height:52px;border-radius:14px;
+  letter-spacing:-.2px;transition:transform .12s ease,box-shadow .2s ease,filter .2s ease,opacity .2s ease}
+.btn-gold{background:linear-gradient(180deg,var(--brass2) 0%,var(--brass) 45%,var(--brass-deep) 100%);
+  color:var(--brass-ink);border:1px solid #f9e7b4;
+  box-shadow:0 8px 22px rgba(233,196,106,.22),inset 0 1px 0 rgba(255,255,255,.6),inset 0 -2px 0 rgba(0,0,0,.18)}
+.btn-gold:active{transform:translateY(1px) scale(.99);filter:brightness(.96)}
+.btn-gold:disabled{opacity:1;filter:none;background:#1a2446;color:#7d8aa8;border-color:var(--steel-line);box-shadow:none}
+.btn-ghost{background:rgba(255,255,255,.03);color:var(--ink-2);border:1px solid var(--steel-line);margin-top:10px}
+.btn-ghost:hover,.btn-ghost:active{border-color:rgba(233,196,106,.5);color:#fff}
+.btn-ghost #hintLeft{color:#8e9ab6;font-weight:700;font-size:.85em}
+.btn:focus-visible,.tp:focus-visible,.cp:focus-visible,.mute:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.splash-btn{border-radius:999px}
+
+/* 상단 소리 버튼 */
+.brand .mute{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;color:var(--ink-2);
+  background:rgba(255,255,255,.04);border:1px solid var(--steel-line)}
+.brand .mute .ico{width:20px;height:20px}
+.brand .mute.off{opacity:.5;text-decoration:none}
+.brand-sub{color:#8fa6d6;letter-spacing:2.5px;font-size:11px}
+
+/* 조/캐릭터 선택 */
+.pick-title{color:#fff;font-size:15px}
+.pick-title span{background:var(--brass);color:var(--brass-ink);border-radius:6px;box-shadow:none}
+.tp,.cp{background:rgba(255,255,255,.03);border:1px solid var(--steel-line);border-radius:12px;
+  transition:border-color .15s ease,background .15s ease,transform .12s ease}
+.tp:active,.cp:active{transform:scale(.97)}
+.tp.sel{background:linear-gradient(180deg,var(--brass2),var(--brass));color:var(--brass-ink);border-color:#f9e7b4;
+  box-shadow:0 6px 16px rgba(233,196,106,.25)}
+.tp.sel small{color:#5a4413}
+.cp.sel{background:rgba(233,196,106,.1);border-color:var(--brass);box-shadow:0 0 0 2px rgba(233,196,106,.35)}
+.cp.sel span{color:var(--brass2)}
+.cp span{color:var(--ink-2)}
+
+/* 플레이 화면 */
+.tb-timer{font-family:'Black Han Sans','Noto Sans KR',sans-serif;font-weight:400;letter-spacing:1px;
+  color:var(--brass2);background:rgba(0,0,0,.35);border:1px solid rgba(233,196,106,.45);border-radius:12px;box-shadow:none}
+.tb-team{color:#fff}
+.stage-badge{background:rgba(233,196,106,.08);border:1px solid rgba(233,196,106,.4);color:var(--ink-2);border-radius:999px;padding:6px 14px}
+.stage-badge b{color:var(--brass2)}
+.hint{background:rgba(90,162,255,.06);border:1px solid rgba(90,162,255,.28);border-radius:12px}
+.hint b{color:var(--info)}
+.cell{border:1px solid var(--steel-line);border-radius:16px}
+
+/* 결과 화면 */
+.done-title{background:linear-gradient(180deg,#fff 10%,var(--brass) 90%);-webkit-background-clip:text;background-clip:text;
+  color:transparent;filter:drop-shadow(0 2px 10px rgba(233,196,106,.25))}
+.stat-big{color:var(--brass2)}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
