@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>금고 관제실</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+.wrap{max-width:1400px;padding:20px clamp(16px,3vw,40px) 60px}
+.adm-head{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.adm-head .brand{margin:0;flex:1;min-width:260px}
+.adm-head .brand h1{font-size:clamp(22px,2.6vw,34px)}
+.big-timer{font-size:clamp(40px,6vw,84px);font-weight:900;font-variant-numeric:tabular-nums;line-height:1;
+  background:#0a1430;border:2px solid var(--line);border-radius:20px;padding:10px 26px}
+.big-timer.warn{color:var(--bad);border-color:var(--bad)}
+.status-pill{display:inline-block;padding:6px 14px;border-radius:999px;font-weight:900;font-size:14px;margin-left:6px}
+.st-waiting{background:rgba(147,163,196,.15);color:var(--muted)}
+.st-running{background:rgba(74,222,128,.15);color:var(--ok)}
+.st-ended{background:rgba(248,113,113,.15);color:var(--bad)}
+.ctrls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px}
+.ctrls .btn{width:auto;margin:0;padding:12px 18px;font-size:15px}
+.btn-danger{background:transparent;color:var(--bad);border:1.5px solid rgba(248,113,113,.5)}
+.grid2{display:grid;grid-template-columns:minmax(0,2fr) minmax(300px,1fr);gap:20px}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+.sec-title{font-size:15px;letter-spacing:1px;color:var(--gold);font-weight:900;margin:0 0 12px}
+.teams{display:flex;flex-direction:column;gap:10px}
+.trow{display:grid;grid-template-columns:minmax(0,1.3fr) auto minmax(110px,.7fr);align-items:center;gap:16px;
+  background:#0a1430;border:1.5px solid var(--line);border-radius:18px;padding:14px 20px}
+.trow.fin{border-color:rgba(212,175,55,.7);background:linear-gradient(90deg,rgba(212,175,55,.14),#0a1430)}
+.trow .nm{font-size:clamp(20px,2.2vw,32px);font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.trow .lk{font-size:clamp(28px,3.2vw,48px);letter-spacing:4px;white-space:nowrap}
+.trow .meta{text-align:right;font-size:14px;color:var(--muted);line-height:1.5}
+.trow .meta b{color:var(--gold2);font-size:clamp(18px,1.8vw,26px)}
+.empty{color:var(--muted);text-align:center;padding:30px;border:1.5px dashed var(--line);border-radius:18px}
+.podium{display:flex;flex-direction:column;gap:10px}
+.pd{display:flex;align-items:center;gap:14px;background:#0a1430;border:1.5px solid var(--line);border-radius:18px;padding:14px 18px}
+.pd .md{font-size:40px}
+.pd .pn{flex:1;font-size:22px;font-weight:900}
+.pd .pt{font-size:26px;font-weight:900;color:var(--gold2);font-variant-numeric:tabular-nums}
+.pd.r1{border-color:var(--gold);box-shadow:0 0 30px rgba(212,175,55,.2)}
+.pd.ph{opacity:.4}
+.qr-box{text-align:center}
+.qr-box img{width:100%;max-width:260px;background:#fff;border-radius:16px;padding:12px}
+.qr-box .url{font-weight:900;color:var(--gold2);word-break:break-all;margin-top:8px;font-size:15px}
+.qedit{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.qcard{background:#0a1430;border:1px solid var(--line);border-radius:16px;padding:14px}
+.qcard h4{margin:0 0 8px;color:var(--gold2)}
+.qcard label{display:block;font-size:12px;color:var(--muted);margin:8px 0 4px;font-weight:700}
+.qcard textarea,.qcard input{width:100%;background:#071026;border:1px solid var(--line);border-radius:10px;color:var(--ink);
+  padding:10px;font-size:14px;font-family:inherit;resize:vertical}
+.login{max-width:380px;margin:12vh auto 0}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--gold);color:#1a1405;font-weight:900;
+  padding:12px 20px;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <section id="v-login" class="card login hidden">
+    <div class="brand"><div class="brand-icon">🛡️</div><div><div class="brand-sub">ADMIN</div><h1>금고 관제실</h1></div></div>
+    <label class="lbl" for="pw">관리자 비밀번호</label>
+    <input id="pw" class="inp" type="password" autocomplete="current-password">
+    <button id="btnLogin" class="btn btn-gold">입장</button>
+    <p id="loginMsg" class="msg"></p>
+  </section>
+
+  <section id="v-dash" class="hidden">
+    <div class="adm-head">
+      <header class="brand">
+        <div class="brand-icon">🔐</div>
+        <div>
+          <div class="brand-sub">HUONS GROUP 입문교육 · 관제실 <span id="statusPill" class="status-pill st-waiting">대기 중</span></div>
+          <h1>휴온스 금고를 열어라</h1>
+        </div>
+      </header>
+      <div class="big-timer" id="bigTimer">30:00</div>
+    </div>
+
+    <div class="ctrls">
+      <button id="btnStart" class="btn btn-gold">▶ 게임 시작 (30분)</button>
+      <button id="btnStop" class="btn btn-ghost">■ 게임 종료</button>
+      <button id="btnQr" class="btn btn-ghost">📱 QR 보기/숨기기</button>
+      <button id="btnEdit" class="btn btn-ghost">✏️ 문제 편집</button>
+      <button id="btnReset" class="btn btn-danger">↺ 전체 초기화</button>
+    </div>
+
+    <section id="editPanel" class="card hidden" style="margin-bottom:20px">
+      <h3 class="sec-title">문제 / 정답 / 힌트 편집</h3>
+      <p class="muted" style="margin-bottom:12px">정답은 공백·대소문자를 무시하고 비교합니다. 저장 즉시 참가자 화면에 반영됩니다.</p>
+      <div class="qedit" id="qedit"></div>
+      <div style="display:flex;gap:10px;margin-top:14px">
+        <button id="btnSaveQ" class="btn btn-gold" style="width:auto;margin:0;padding:12px 24px">저장</button>
+        <button id="btnCloseQ" class="btn btn-ghost" style="width:auto;margin:0;padding:12px 24px">닫기</button>
+      </div>
+    </section>
+
+    <div class="grid2">
+      <section class="card">
+        <h3 class="sec-title">팀별 진행 현황 <span id="teamCount" class="muted"></span></h3>
+        <div class="teams" id="teams"></div>
+      </section>
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <section class="card">
+          <h3 class="sec-title">🏆 금고 오픈 순위</h3>
+          <div class="podium" id="podium"></div>
+        </section>
+        <section class="card qr-box" id="qrPanel">
+          <h3 class="sec-title">참가자 접속</h3>
+          <img src="qr.png" alt="참가자 접속 QR 코드">
+          <div class="url" id="joinUrl"></div>
+        </section>
+      </div>
+    </div>
+  </section>
+</div>
+<div id="toast" class="toast hidden"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script>
+const sb = supabase.createClient(VAULT_CFG.url, VAULT_CFG.key);
+const $ = id => document.getElementById(id);
+const PW_KEY = 'huons_vault_admin_pw';
+let pw = null, game = null, teams = [], clockOffset = 0;
+
+function ss(k, v){ try{ if(v === undefined) return sessionStorage.getItem(k); if(v === null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); }catch(e){ return null; } }
+function fmt(sec){ sec = Math.max(0, Math.floor(sec)); return String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0'); }
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function toast(t){ const el = $('toast'); el.textContent = t; el.classList.remove('hidden'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.add('hidden'), 2200); }
+async function rpc(fn, args){ const { data, error } = await sb.rpc(fn, args); if(error) throw error; return data; }
+
+$('joinUrl').textContent = location.origin.replace(/^https?:\/\//,'');
+
+async function login(p){
+  try{
+    const ok = await rpc('vault_admin_login', { p_pw: p });
+    if(!ok) throw new Error('bad');
+    pw = p; ss(PW_KEY, p);
+    $('v-login').classList.add('hidden'); $('v-dash').classList.remove('hidden');
+    startLive(); loadAll();
+  }catch(e){ ss(PW_KEY, null); $('v-login').classList.remove('hidden'); $('loginMsg').textContent = p ? '비밀번호가 올바르지 않아요.' : ''; }
+}
+$('btnLogin').onclick = () => login($('pw').value);
+$('pw').addEventListener('keydown', e => { if(e.key === 'Enter') $('btnLogin').click(); });
+
+async function loadGame(){
+  const { data } = await sb.from('vault_game').select('*').eq('id', 1).single();
+  if(data){ game = data; }
+  renderStatus();
+}
+async function loadTeams(){
+  const { data } = await sb.from('vault_teams').select('id,name,stage,wrong_total,hints_used,finished_at,elapsed_sec,created_at');
+  teams = data || []; renderTeams();
+}
+async function syncClock(){
+  // 서버 시간과 로컬 시계 차이를 보정
+  try{
+    const t0 = Date.now(); const now = await rpc('vault_now', {}); const t1 = Date.now();
+    clockOffset = new Date(now).getTime() - (t0 + t1)/2;
+  }catch(e){}
+}
+function loadAll(){ loadGame(); loadTeams(); syncClock(); }
+
+function remaining(){
+  if(!game || !game.started_at) return (game ? game.duration_sec : 1800);
+  return (new Date(game.started_at).getTime() + game.duration_sec*1000 - (Date.now()+clockOffset))/1000;
+}
+function effStatus(){
+  if(!game) return 'waiting';
+  if(game.status === 'running' && remaining() <= 0) return 'ended';
+  return game.status;
+}
+function renderStatus(){
+  const s = effStatus();
+  const pill = $('statusPill');
+  pill.className = 'status-pill st-' + s;
+  pill.textContent = { waiting:'대기 중', running:'진행 중', ended:'종료' }[s];
+  $('btnStart').textContent = s === 'waiting' ? '▶ 게임 시작 (30분)' : '▶ 다시 시작 (30분)';
+  tick();
+}
+function tick(){
+  if(!game) return;
+  const s = effStatus();
+  const t = $('bigTimer');
+  if(s === 'waiting'){ t.textContent = fmt(game.duration_sec); t.classList.remove('warn'); }
+  else if(s === 'running'){ const r = remaining(); t.textContent = fmt(r); t.classList.toggle('warn', r <= 300); }
+  else { t.textContent = '00:00'; t.classList.add('warn'); }
+  if(tick._last !== s){ tick._last = s; if(s === 'ended') renderStatus(); }
+}
+setInterval(tick, 500);
+
+function renderTeams(){
+  const sorted = [...teams].sort((a,b) => {
+    if(a.finished_at && b.finished_at) return new Date(a.finished_at) - new Date(b.finished_at);
+    if(a.finished_at) return -1; if(b.finished_at) return 1;
+    if(b.stage !== a.stage) return b.stage - a.stage;
+    return new Date(a.created_at) - new Date(b.created_at);
+  });
+  $('teamCount').textContent = teams.length ? `· ${teams.length}팀` : '';
+  $('teams').innerHTML = sorted.length ? sorted.map(t => `
+    <div class="trow ${t.finished_at ? 'fin' : ''}">
+      <div class="nm">${esc(t.name)}</div>
+      <div class="lk">${'🔓'.repeat(t.stage)}${'🔒'.repeat(4 - t.stage)}</div>
+      <div class="meta">${t.finished_at ? `<b>${fmt(t.elapsed_sec)}</b><br>` : `<b>${t.stage}/4</b><br>`}오답 ${t.wrong_total} · 힌트 ${t.hints_used}/3</div>
+    </div>`).join('') : '<div class="empty">아직 등록한 팀이 없어요.<br>QR 코드로 접속해 팀 이름을 입력해 주세요.</div>';
+
+  const fin = sorted.filter(t => t.finished_at);
+  const medals = ['🥇','🥈','🥉'];
+  let h = '';
+  for(let i=0;i<3;i++){
+    const t = fin[i];
+    h += t ? `<div class="pd r${i+1}"><div class="md">${medals[i]}</div><div class="pn">${esc(t.name)}</div><div class="pt">${fmt(t.elapsed_sec)}</div></div>`
+           : `<div class="pd ph"><div class="md">${medals[i]}</div><div class="pn">${i+1}등</div><div class="pt">--:--</div></div>`;
+  }
+  fin.slice(3).forEach((t,i) => { h += `<div class="pd"><div class="md" style="font-size:22px;width:40px;text-align:center">${i+4}</div><div class="pn">${esc(t.name)}</div><div class="pt">${fmt(t.elapsed_sec)}</div></div>`; });
+  $('podium').innerHTML = h;
+}
+
+function startLive(){
+  sb.channel('vault-admin')
+    .on('postgres_changes', { event:'*', schema:'public', table:'vault_teams' }, () => loadTeams())
+    .on('postgres_changes', { event:'*', schema:'public', table:'vault_game' }, p => { if(p.new && p.new.id){ game = p.new; renderStatus(); } else loadGame(); })
+    .subscribe();
+  setInterval(loadAll, 20000);
+}
+
+$('btnStart').onclick = async () => {
+  const again = effStatus() !== 'waiting';
+  if(!confirm(again ? '게임을 다시 시작할까요?\n모든 팀의 진행 상황이 0으로 돌아가고 30분 타이머가 새로 시작됩니다.' : '게임을 시작할까요?\n모든 참가자 화면에 첫 번째 자물쇠가 동시에 나타납니다.')) return;
+  try{ await syncClock(); await rpc('vault_admin_start', { p_pw: pw, p_duration_min: 30 }); toast('게임 시작!'); loadAll(); }catch(e){ alert('실패: ' + e.message); }
+};
+$('btnStop').onclick = async () => {
+  if(!confirm('게임을 지금 종료할까요? 참가자는 더 이상 정답을 입력할 수 없습니다.')) return;
+  try{ await rpc('vault_admin_stop', { p_pw: pw }); toast('게임 종료'); loadAll(); }catch(e){ alert('실패: ' + e.message); }
+};
+$('btnReset').onclick = async () => {
+  if(!confirm('전체 초기화할까요?\n등록된 모든 팀과 기록이 삭제되고 참가자 화면은 팀 등록으로 돌아갑니다.')) return;
+  if(prompt('확인을 위해 "초기화"를 입력하세요.') !== '초기화') return;
+  try{ await rpc('vault_admin_reset', { p_pw: pw }); toast('초기화 완료'); loadAll(); }catch(e){ alert('실패: ' + e.message); }
+};
+$('btnQr').onclick = () => $('qrPanel').classList.toggle('hidden');
+
+$('btnEdit').onclick = async () => {
+  try{
+    const qs = await rpc('vault_admin_questions', { p_pw: pw });
+    $('qedit').innerHTML = qs.map(q => `
+      <div class="qcard" data-id="${q.id}">
+        <h4>🔒 자물쇠 ${q.id}</h4>
+        <label>문제</label><textarea rows="3" data-f="question">${esc(q.question)}</textarea>
+        <label>정답</label><input data-f="answer" value="${esc(q.answer)}">
+        <label>힌트</label><textarea rows="2" data-f="hint">${esc(q.hint)}</textarea>
+      </div>`).join('');
+    $('editPanel').classList.remove('hidden');
+    $('editPanel').scrollIntoView({ behavior:'smooth' });
+  }catch(e){ alert('불러오기 실패: ' + e.message); }
+};
+$('btnCloseQ').onclick = () => $('editPanel').classList.add('hidden');
+$('btnSaveQ').onclick = async () => {
+  const items = [...document.querySelectorAll('.qcard')].map(c => {
+    const o = { id: +c.dataset.id };
+    c.querySelectorAll('[data-f]').forEach(el => o[el.dataset.f] = el.value.trim());
+    return o;
+  });
+  if(items.some(i => !i.question || !i.answer)){ alert('문제와 정답은 비워둘 수 없어요.'); return; }
+  try{ await rpc('vault_admin_save_questions', { p_pw: pw, p_items: items }); toast('저장했어요'); }catch(e){ alert('저장 실패: ' + e.message); }
+};
+
+const saved = ss(PW_KEY);
+if(saved) login(saved); else $('v-login').classList.remove('hidden');
+</script>
+</body>
+</html>

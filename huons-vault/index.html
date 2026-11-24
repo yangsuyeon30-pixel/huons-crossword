@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a1224">
+<title>휴온스 금고를 열어라</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header class="brand">
+    <div class="brand-icon">🔐</div>
+    <div>
+      <div class="brand-sub">HUONS GROUP 입문교육</div>
+      <h1>휴온스 금고를 열어라</h1>
+    </div>
+  </header>
+
+  <!-- 1. 팀 등록 -->
+  <section id="v-join" class="card hidden">
+    <div class="vault-door">
+      <div class="dial"><span></span></div>
+    </div>
+    <p class="lead">자물쇠 <b>4개</b>를 순서대로 풀고<br>휴온스 금고를 가장 먼저 열어 보세요!</p>
+    <ul class="rules">
+      <li>팀당 휴대폰 1대로 참여해요</li>
+      <li>앞 자물쇠를 풀어야 다음 문제가 열려요</li>
+      <li>힌트는 팀당 총 <b>3회</b>까지 쓸 수 있어요</li>
+      <li>제한 시간은 <b>30분</b>이에요</li>
+    </ul>
+    <label class="lbl" for="teamName">팀 이름</label>
+    <input id="teamName" class="inp" type="text" maxlength="20" placeholder="예: A팀" autocomplete="off">
+    <button id="btnJoin" class="btn btn-gold">금고 도전 시작</button>
+    <p id="joinMsg" class="msg"></p>
+  </section>
+
+  <!-- 2. 대기 -->
+  <section id="v-wait" class="card hidden center">
+    <div class="big-lock pulse"><svg viewBox="0 0 120 140"><use href="#lockSvg"/></svg></div>
+    <h2 class="team-title"><span class="tn"></span> 등록 완료!</h2>
+    <p class="lead">진행자가 게임을 시작하면<br>첫 번째 자물쇠가 나타나요.</p>
+    <div class="dots"><i></i><i></i><i></i></div>
+  </section>
+
+  <!-- 3. 게임 -->
+  <section id="v-play" class="hidden">
+    <div class="topbar">
+      <div class="tb-team"><span class="tn"></span></div>
+      <div class="tb-timer" id="timer">30:00</div>
+    </div>
+    <div class="locks-row" id="locksRow"></div>
+
+    <div class="card" id="playCard">
+      <div class="stage-badge">자물쇠 <b id="stageNo">1</b>/4</div>
+      <div class="big-lock" id="bigLock">
+        <svg viewBox="0 0 120 140" aria-hidden="true">
+          <path class="shackle" d="M34 62 V40 a26 26 0 0 1 52 0 V62" fill="none" stroke="currentColor" stroke-width="12" stroke-linecap="round"/>
+          <rect class="body" x="16" y="60" width="88" height="70" rx="14"/>
+          <circle cx="60" cy="90" r="9" class="hole"/>
+          <rect x="56" y="94" width="8" height="18" rx="3" class="hole"/>
+        </svg>
+      </div>
+      <p class="question" id="question"></p>
+      <div id="hintBox" class="hint hidden"><b>💡 힌트</b><span id="hintText"></span></div>
+      <input id="answer" class="inp inp-answer" type="text" placeholder="정답 입력" autocomplete="off" autocapitalize="off" enterkeyhint="done">
+      <button id="btnSubmit" class="btn btn-gold">확인</button>
+      <p id="feedback" class="feedback"></p>
+      <button id="btnHint" class="btn btn-ghost">💡 힌트 보기 <span id="hintLeft">(3/3 남음)</span></button>
+    </div>
+  </section>
+
+  <!-- 4. 완료 -->
+  <section id="v-done" class="card hidden center">
+    <div class="confetti" id="confetti"></div>
+    <div class="vault-open">💰</div>
+    <h2 class="done-title">금고 오픈! 🎉</h2>
+    <p class="team-title"><span class="tn"></span></p>
+    <div class="stat-big" id="doneTime">00:00</div>
+    <p class="muted">걸린 시간</p>
+    <div class="stats">
+      <div><b id="doneRank">-</b><span>순위</span></div>
+      <div><b id="doneWrong">0</b><span>오답</span></div>
+      <div><b id="doneHints">0</b><span>힌트 사용</span></div>
+    </div>
+  </section>
+
+  <!-- 5. 시간 종료 -->
+  <section id="v-over" class="card hidden center">
+    <div class="vault-open">⏰</div>
+    <h2 class="done-title">시간 종료!</h2>
+    <p class="team-title"><span class="tn"></span></p>
+    <p class="lead">자물쇠 <b id="overStage">0</b>/4 개를 풀었어요.<br>수고하셨습니다!</p>
+  </section>
+
+  <p id="netMsg" class="net hidden">연결을 확인하는 중…</p>
+</div>
+
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="lockSvg" viewBox="0 0 120 140">
+    <path d="M34 62 V40 a26 26 0 0 1 52 0 V62" fill="none" stroke="#d4af37" stroke-width="12" stroke-linecap="round"/>
+    <rect x="16" y="60" width="88" height="70" rx="14" fill="#d4af37"/>
+    <circle cx="60" cy="90" r="9" fill="#0a1224"/>
+    <rect x="56" y="94" width="8" height="18" rx="3" fill="#0a1224"/>
+  </symbol>
+</svg>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script>
+const sb = supabase.createClient(VAULT_CFG.url, VAULT_CFG.key);
+const LS_KEY = 'huons_vault_team';
+const $ = id => document.getElementById(id);
+const views = ['v-join','v-wait','v-play','v-done','v-over'];
+
+let me = null;            // {team_id, token, round}
+let state = null;         // 서버 상태
+let clockOffset = 0;      // 서버시간 - 로컬시간
+let busy = false;
+let animating = false;
+
+function loadMe(){ try{ me = JSON.parse(localStorage.getItem(LS_KEY)); }catch(e){ me = null; } }
+function saveMe(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(me)); }catch(e){} }
+function clearMe(){ me = null; state = null; try{ localStorage.removeItem(LS_KEY); }catch(e){} }
+
+function show(v){ views.forEach(x => $(x).classList.toggle('hidden', x !== v)); }
+function fmt(sec){ sec = Math.max(0, Math.floor(sec)); const m = Math.floor(sec/60), s = sec%60; return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0'); }
+function errCode(e){ const m = (e && (e.message || e.details)) || ''; return (m.match(/[A-Z_]{4,}/)||[''])[0]; }
+
+function remainingSec(){
+  const g = state && state.game; if(!g || !g.started_at) return g ? g.duration_sec : 1800;
+  const end = new Date(g.started_at).getTime() + g.duration_sec*1000;
+  return (end - (Date.now() + clockOffset))/1000;
+}
+
+async function rpc(fn, args){
+  const { data, error } = await sb.rpc(fn, args);
+  if(error) throw error;
+  return data;
+}
+
+async function refresh(){
+  if(!me) { show('v-join'); return; }
+  try{
+    const s = await rpc('vault_state', { p_team: me.team_id, p_token: me.token });
+    $('netMsg').classList.add('hidden');
+    applyState(s);
+  }catch(e){
+    if(errCode(e) === 'NO_TEAM'){ clearMe(); show('v-join'); }
+    else { $('netMsg').classList.remove('hidden'); }
+  }
+}
+
+function applyState(s){
+  state = s;
+  clockOffset = new Date(s.game.server_now).getTime() - Date.now();
+  if(me.round !== s.game.round){ me.round = s.game.round; saveMe(); }
+  document.querySelectorAll('.tn').forEach(el => el.textContent = s.team.name);
+  if(animating) return;
+  const t = s.team, g = s.game;
+  if(t.stage >= 4){ return showDone(); }
+  if(g.status === 'waiting') return show('v-wait');
+  if(g.status === 'ended' || remainingSec() <= 0){ $('overStage').textContent = t.stage; return show('v-over'); }
+  renderPlay();
+}
+
+function renderLocks(stage){
+  let h = '';
+  for(let i=0;i<4;i++){
+    const cls = i < stage ? 'open' : (i === stage ? 'cur' : '');
+    h += `<div class="mini ${cls}">${i < stage ? '🔓' : '🔒'}<small>${i+1}</small></div>`;
+  }
+  $('locksRow').innerHTML = h;
+}
+
+let lastQNo = null;
+function renderPlay(){
+  show('v-play');
+  const t = state.team, q = state.question;
+  renderLocks(t.stage);
+  $('stageNo').textContent = t.stage + 1;
+  $('question').textContent = q ? q.text : '';
+  if(q && q.hint){ $('hintText').textContent = q.hint; $('hintBox').classList.remove('hidden'); }
+  else $('hintBox').classList.add('hidden');
+  const left = 3 - t.hints_used;
+  const hasHint = q && q.hint;
+  $('hintLeft').textContent = `(${left}/3 남음)`;
+  $('btnHint').disabled = !hasHint && left <= 0;
+  $('btnHint').classList.toggle('hidden', !!hasHint);
+  if(q && q.no !== lastQNo){
+    lastQNo = q.no;
+    $('answer').value = '';
+    $('feedback').textContent = ''; $('feedback').className = 'feedback';
+    $('bigLock').classList.remove('open');
+  }
+  tick();
+}
+
+async function showDone(){
+  show('v-done');
+  const t = state.team;
+  $('doneTime').textContent = fmt(t.elapsed_sec || 0);
+  $('doneWrong').textContent = t.wrong_total;
+  $('doneHints').textContent = t.hints_used;
+  try{
+    const { data } = await sb.from('vault_teams').select('id,finished_at').not('finished_at','is',null).order('finished_at');
+    const idx = (data||[]).findIndex(r => r.id === t.id);
+    $('doneRank').textContent = idx >= 0 ? (idx+1)+'등' : '-';
+  }catch(e){}
+  if(!$('confetti').dataset.done){ $('confetti').dataset.done = 1; burst(); }
+}
+
+function burst(){
+  const box = $('confetti'); const colors = ['#d4af37','#f5d77a','#ffffff','#7fa7ff'];
+  for(let i=0;i<60;i++){
+    const p = document.createElement('i');
+    p.style.left = Math.random()*100+'%';
+    p.style.background = colors[i%colors.length];
+    p.style.animationDelay = (Math.random()*0.8)+'s';
+    p.style.animationDuration = (1.8+Math.random()*1.5)+'s';
+    p.style.transform = `rotate(${Math.random()*360}deg)`;
+    box.appendChild(p);
+  }
+}
+
+function tick(){
+  if(!state) return;
+  const g = state.game;
+  if(g.status === 'running'){
+    const r = remainingSec();
+    $('timer').textContent = fmt(r);
+    $('timer').classList.toggle('warn', r <= 300);
+    if(r <= 0 && state.team.stage < 4 && !$('v-play').classList.contains('hidden')){
+      $('overStage').textContent = state.team.stage; show('v-over');
+    }
+  }
+}
+setInterval(tick, 500);
+
+// ---- 이벤트 ----
+$('btnJoin').onclick = async () => {
+  const name = $('teamName').value.trim();
+  const msg = $('joinMsg');
+  if(!name){ msg.textContent = '팀 이름을 입력해 주세요.'; return; }
+  if(busy) return; busy = true; $('btnJoin').disabled = true; msg.textContent = '';
+  try{
+    const r = await rpc('vault_join', { p_name: name });
+    me = { team_id: r.team_id, token: r.token, round: r.round }; saveMe();
+    await refresh();
+  }catch(e){
+    const c = errCode(e);
+    msg.textContent = c === 'TEAM_EXISTS' ? '이미 등록된 팀 이름이에요. 다른 이름을 써 주세요.' : '등록에 실패했어요. 다시 시도해 주세요.';
+  }finally{ busy = false; $('btnJoin').disabled = false; }
+};
+$('teamName').addEventListener('keydown', e => { if(e.key === 'Enter') $('btnJoin').click(); });
+
+$('btnSubmit').onclick = async () => {
+  const ans = $('answer').value;
+  if(!ans.trim()){ $('answer').focus(); return; }
+  if(busy || animating) return; busy = true; $('btnSubmit').disabled = true;
+  try{
+    const r = await rpc('vault_submit', { p_team: me.team_id, p_token: me.token, p_answer: ans });
+    if(r.correct){
+      animating = true;
+      $('feedback').textContent = '찰칵! 자물쇠가 열렸어요 🔓'; $('feedback').className = 'feedback ok';
+      $('bigLock').classList.add('open');
+      if(navigator.vibrate) navigator.vibrate([40,40,80]);
+      setTimeout(() => { animating = false; applyState(r.state); }, 1500);
+    }else{
+      $('feedback').textContent = '다시 시도!'; $('feedback').className = 'feedback bad';
+      const c = $('playCard'); c.classList.remove('shake'); void c.offsetWidth; c.classList.add('shake');
+      if(navigator.vibrate) navigator.vibrate(200);
+      $('answer').select();
+      state = r.state;
+    }
+  }catch(e){
+    const c = errCode(e);
+    if(c === 'TIME_UP' || c === 'NOT_RUNNING') await refresh();
+    else if(c === 'NO_TEAM'){ clearMe(); show('v-join'); }
+    else { $('feedback').textContent = '전송에 실패했어요. 다시 눌러 주세요.'; $('feedback').className = 'feedback bad'; }
+  }finally{ busy = false; $('btnSubmit').disabled = false; }
+};
+$('answer').addEventListener('keydown', e => { if(e.key === 'Enter') $('btnSubmit').click(); });
+
+$('btnHint').onclick = async () => {
+  if(!state || busy) return;
+  const left = 3 - state.team.hints_used;
+  if(left <= 0) return;
+  if(!confirm(`힌트를 사용할까요?\n팀 전체 남은 힌트: ${left}회 → ${left-1}회`)) return;
+  busy = true;
+  try{ applyState(await rpc('vault_hint', { p_team: me.team_id, p_token: me.token })); }
+  catch(e){ if(errCode(e) === 'NO_HINTS') alert('힌트를 모두 사용했어요!'); else await refresh(); }
+  finally{ busy = false; }
+};
+
+// ---- 실시간 ----
+sb.channel('vault-game')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'vault_game' }, payload => {
+    const g = payload.new || {};
+    if(me && g.round && me.round && g.round !== me.round){ clearMe(); show('v-join'); return; }
+    refresh();
+  })
+  .subscribe();
+
+document.addEventListener('visibilitychange', () => { if(!document.hidden) refresh(); });
+setInterval(() => { if(me && !busy && !animating) refresh(); }, 15000);  // 실시간 연결이 끊겨도 동기화
+
+loadMe();
+if(me) refresh(); else show('v-join');
+</script>
+</body>
+</html>
