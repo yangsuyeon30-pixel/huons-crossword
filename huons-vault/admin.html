@@ -89,6 +89,7 @@
     <div class="ctrls">
       <button id="btnStart" class="btn btn-gold">▶ 게임 시작 (30분)</button>
       <button id="btnStop" class="btn btn-ghost">■ 게임 종료</button>
+      <button id="btnBgm" class="btn btn-ghost">🎵 배경음악 켜기</button>
       <button id="btnQr" class="btn btn-ghost">📱 QR 보기/숨기기</button>
       <button id="btnEdit" class="btn btn-ghost">✏️ 문제 편집</button>
       <button id="btnReset" class="btn btn-danger">↺ 전체 초기화</button>
@@ -131,6 +132,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="config.js"></script>
 <script src="chars.js"></script>
+<script src="bgm.js"></script>
 <script>
 const sb = supabase.createClient(VAULT_CFG.url, VAULT_CFG.key);
 const $ = id => document.getElementById(id);
@@ -191,6 +193,20 @@ function tick(){
   if(tick._last !== s){ tick._last = s; if(s === 'ended') renderStatus(); }
 }
 setInterval(tick, 500);
+
+/* 배경음악 (큰 스크린 스피커용) */
+let bgmOn = false;
+function bgmSync(){
+  $('btnBgm').textContent = bgmOn ? '🎵 배경음악 끄기' : '🎵 배경음악 켜기';
+  $('btnBgm').classList.toggle('btn-gold', bgmOn); $('btnBgm').classList.toggle('btn-ghost', !bgmOn);
+  const st = effStatus();
+  if(!bgmOn || st === 'ended'){ VaultBGM.stop(1.5); return; }
+  VaultBGM.setLevel(st === 'waiting' ? 0 : remaining() <= 300 ? 2 : 1);
+  VaultBGM.setVolume(.45);
+  VaultBGM.start();
+}
+$('btnBgm').onclick = () => { bgmOn = !bgmOn; bgmSync(); };
+setInterval(() => { if(bgmOn) bgmSync(); }, 1000);
 
 function avHTML(t){
   if(!t) return '<div class="av none">?</div>';

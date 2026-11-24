@@ -449,3 +449,5 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .l-prize{background:linear-gradient(180deg,rgba(227,19,44,.2),rgba(227,19,44,.04));border-color:#e3132c}
 .tray b{background:#e3132c;color:#fff}
 .lockout{background:rgba(60,0,0,.92)}
+.brand .mute{margin-left:6px}
+.brand .mute.off{opacity:.35;text-decoration:line-through}
