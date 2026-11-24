@@ -455,7 +455,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 /* 첫 화면 게임 마스터 */
 .gm-hero{position:relative;margin:-22px -18px 16px;border-radius:6px 6px 0 0;overflow:hidden;border-bottom:1px solid #2d2d33}
 .gm-svg{display:block;width:100%;height:auto;aspect-ratio:360/210}
-.gm-head{animation:gmsway 6s ease-in-out infinite;transform-origin:180px 150px}
+.gm-head{animation:gmsway 6s ease-in-out infinite;transform-origin:180px 140px}
 @keyframes gmsway{0%,100%{transform:rotate(-1.2deg)}50%{transform:rotate(1.2deg)}}
 .gm-eyes{animation:gmeye 4s infinite}
 @keyframes gmeye{0%,92%,100%{opacity:1}94%{opacity:.1}96%{opacity:1}97%{opacity:.2}}
@@ -497,3 +497,22 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .huons-logo.admin .lg-sub span{font-size:26px}
 .huons-logo.admin .ld.d1{width:62px;right:0;top:0}
 .huons-logo.admin .ld.d2{display:none}
+
+/* ===== 자물쇠는 원래 금빛(노란색)으로 ===== */
+.lbody{background:linear-gradient(160deg,#f7dc83 0%,#d4af37 45%,#a8861f 100%);border:0;
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.6),inset 0 -6px 0 rgba(0,0,0,.18),0 14px 30px rgba(0,0,0,.6),0 0 22px rgba(212,175,55,.25)}
+.lbody::before{display:none}
+.screw{background:#8a6d15}
+.padlock .shackle{border-color:#b8bec9}
+.arr{background:rgba(255,255,255,.35);color:#3b2d06}
+.arr:active{background:rgba(255,255,255,.6)}
+.drum{box-shadow:inset 0 0 0 2px #5c4810,inset 0 6px 10px rgba(0,0,0,.5),inset 0 -6px 10px rgba(0,0,0,.5)}
+.slot{border:2px dashed rgba(59,45,6,.55);background:rgba(255,255,255,.25);color:#1a1405}
+.slot.filled{border-style:solid;background:#fffbea;color:#1a1405;box-shadow:inset 0 -3px 0 rgba(0,0,0,.12)}
+.jm-out span{background:#fffbea;color:#1a1405;box-shadow:inset 0 -3px 0 rgba(0,0,0,.12)}
+.jm-out em{color:#3b2d06}
+.tile,.jm{background:#1a1a1f;border:0;color:#fff}
+.erase{background:rgba(20,20,24,.92)}
+.erase[data-act="back"]{background:#8e0e1d}
+.padlock.open{animation:glow 1.2s ease}
+@keyframes glow{0%{filter:drop-shadow(0 0 0 transparent)}40%{filter:drop-shadow(0 0 24px #f5d77a)}100%{filter:drop-shadow(0 0 6px rgba(245,215,122,.4))}}
