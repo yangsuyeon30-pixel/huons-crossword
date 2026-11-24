@@ -377,3 +377,18 @@ update public.vault_questions set hint = case id
   when 3 then '''리즈 시절''은 가장 빛나던 전성기를 뜻해요. 톡신 이름 ''리즈톡스''의 앞 두 글자! 조각을 ㄹ → ㅣ → ㅈ → ㅡ 순서로 눌러 보세요.'
   when 4 then '필러 제품 ''엘라비에''에서 출발해 사다리를 타세요. 얻은 글자 조각을 ''휴''로 시작하게 놓으면 네 글자 회사 이름이 돼요.'
 end where id between 1 and 4;
+
+-- ===== 캐릭터 12명 (현경렬·서출구 추가) =====
+create or replace function public.vault_enter(p_no int, p_char int) returns json
+language plpgsql security definer set search_path = public as $$
+declare g vault_game; v_id uuid; v_tok uuid;
+begin
+  select * into g from vault_game where id = 1 for update;
+  if p_no is null or p_no < 1 or p_no > g.team_count then raise exception 'BAD_TEAM'; end if;
+  if p_char is null or p_char < 0 or p_char > 11 then raise exception 'BAD_CHAR'; end if;
+  if exists(select 1 from vault_teams where round = g.round and team_no = p_no) then raise exception 'TEAM_EXISTS'; end if;
+  if exists(select 1 from vault_teams where round = g.round and character = p_char) then raise exception 'CHAR_TAKEN'; end if;
+  insert into vault_teams(round, name, team_no, character) values (g.round, p_no || '조', p_no, p_char) returning id into v_id;
+  insert into vault_team_tokens(team_id) values (v_id) returning token into v_tok;
+  return json_build_object('team_id', v_id, 'token', v_tok, 'round', g.round);
+end $$;
