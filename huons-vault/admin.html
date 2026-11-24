@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex">
-<title>금고 관제실</title>
+<title>탈옥 관제실</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
@@ -53,6 +53,19 @@
 .qcard textarea,.qcard input{width:100%;background:#071026;border:1px solid var(--line);border-radius:10px;color:var(--ink);
   padding:10px;font-size:14px;font-family:inherit;resize:vertical}
 .login{max-width:380px;margin:12vh auto 0}
+.tc-set{display:flex;align-items:center;gap:6px;margin-left:auto;background:#0a1430;border:1px solid var(--line);border-radius:14px;padding:6px 8px}
+.tc-set label{font-weight:900;color:var(--gold2);font-size:14px;margin:0 4px}
+.tc-set input{width:56px;text-align:center;font-size:20px;font-weight:900;background:#071026;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:6px 0;font-family:inherit}
+.tc-b{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:#13213f;color:var(--ink);font-size:20px;cursor:pointer}
+.tc-set .btn{padding:8px 14px!important}
+.av{position:relative;width:64px;height:64px;border-radius:14px;overflow:hidden;background:#1b2234;flex:none}
+.av svg{position:absolute;left:4px;bottom:-4px;width:56px;height:auto}
+.av.jail::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 9px,rgba(203,213,225,.85) 9px 13px)}
+.av.free{background:radial-gradient(circle at 50% 30%,rgba(245,215,122,.5),#1b2234 70%)}
+.av.none{display:grid;place-items:center;color:var(--muted);font-size:26px}
+.trow{grid-template-columns:auto minmax(0,1fr) auto minmax(110px,.6fr)!important}
+.trow.wait{opacity:.45;border-style:dashed}
+.pd .av{width:52px;height:52px}.pd .av svg{width:46px}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--gold);color:#1a1405;font-weight:900;
   padding:12px 20px;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
 </style>
@@ -60,20 +73,13 @@
 <body>
 <div class="wrap">
 
-  <section id="v-login" class="card login hidden">
-    <div class="brand"><div class="brand-icon">🛡️</div><div><div class="brand-sub">ADMIN</div><h1>금고 관제실</h1></div></div>
-    <label class="lbl" for="pw">관리자 비밀번호</label>
-    <input id="pw" class="inp" type="password" autocomplete="current-password">
-    <button id="btnLogin" class="btn btn-gold">입장</button>
-    <p id="loginMsg" class="msg"></p>
-  </section>
 
   <section id="v-dash" class="hidden">
     <div class="adm-head">
       <header class="brand">
         <div class="brand-icon">🔐</div>
         <div>
-          <div class="brand-sub">HUONS GROUP 입문교육 · 관제실 <span id="statusPill" class="status-pill st-waiting">대기 중</span></div>
+          <div class="brand-sub">HUONS GROUP 입문교육 · 탈옥 관제실 <span id="statusPill" class="status-pill st-waiting">대기 중</span></div>
           <h1>휴온스 금고를 열어라</h1>
         </div>
       </header>
@@ -86,6 +92,9 @@
       <button id="btnQr" class="btn btn-ghost">📱 QR 보기/숨기기</button>
       <button id="btnEdit" class="btn btn-ghost">✏️ 문제 편집</button>
       <button id="btnReset" class="btn btn-danger">↺ 전체 초기화</button>
+      <div class="tc-set"><label for="teamCount2">조 개수</label>
+        <button id="tcMinus" class="tc-b">−</button><input id="teamCount2" type="number" min="1" max="30" value="8"><button id="tcPlus" class="tc-b">+</button>
+        <button id="btnTc" class="btn btn-ghost">적용</button></div>
     </div>
 
     <section id="editPanel" class="card hidden" style="margin-bottom:20px">
@@ -105,7 +114,7 @@
       </section>
       <div style="display:flex;flex-direction:column;gap:20px">
         <section class="card">
-          <h3 class="sec-title">🏆 금고 오픈 순위</h3>
+          <h3 class="sec-title">🏆 탈출 순위</h3>
           <div class="podium" id="podium"></div>
         </section>
         <section class="card qr-box" id="qrPanel">
@@ -121,10 +130,10 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="config.js"></script>
+<script src="chars.js"></script>
 <script>
 const sb = supabase.createClient(VAULT_CFG.url, VAULT_CFG.key);
 const $ = id => document.getElementById(id);
-const PW_KEY = 'huons_vault_admin_pw';
 let pw = null, game = null, teams = [], clockOffset = 0;
 
 function ss(k, v){ try{ if(v === undefined) return sessionStorage.getItem(k); if(v === null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); }catch(e){ return null; } }
@@ -135,17 +144,6 @@ async function rpc(fn, args){ const { data, error } = await sb.rpc(fn, args); if
 
 $('joinUrl').textContent = location.origin.replace(/^https?:\/\//,'');
 
-async function login(p){
-  try{
-    const ok = await rpc('vault_admin_login', { p_pw: p });
-    if(!ok) throw new Error('bad');
-    pw = p; ss(PW_KEY, p);
-    $('v-login').classList.add('hidden'); $('v-dash').classList.remove('hidden');
-    startLive(); loadAll();
-  }catch(e){ ss(PW_KEY, null); $('v-login').classList.remove('hidden'); $('loginMsg').textContent = p ? '비밀번호가 올바르지 않아요.' : ''; }
-}
-$('btnLogin').onclick = () => login($('pw').value);
-$('pw').addEventListener('keydown', e => { if(e.key === 'Enter') $('btnLogin').click(); });
 
 async function loadGame(){
   const { data } = await sb.from('vault_game').select('*').eq('id', 1).single();
@@ -154,7 +152,7 @@ async function loadGame(){
 }
 async function loadTeams(){
   if(!game) return;
-  const { data } = await sb.from('vault_teams').select('id,name,stage,wrong_total,hints_used,finished_at,elapsed_sec,created_at').eq('round', game.round);
+  const { data } = await sb.from('vault_teams').select('id,name,team_no,character,stage,wrong_total,hints_used,finished_at,elapsed_sec,created_at').eq('round', game.round);
   teams = data || []; renderTeams();
 }
 async function syncClock(){
@@ -194,37 +192,55 @@ function tick(){
 }
 setInterval(tick, 500);
 
+function avHTML(t){
+  if(!t) return '<div class="av none">?</div>';
+  return `<div class="av ${t.finished_at ? 'free' : 'jail'}">${VAULT_CHARS.avatar(t.character ?? 0)}</div>`;
+}
 function renderTeams(){
-  const sorted = [...teams].sort((a,b) => {
-    if(a.finished_at && b.finished_at) return new Date(a.finished_at) - new Date(b.finished_at);
-    if(a.finished_at) return -1; if(b.finished_at) return 1;
-    if(b.stage !== a.stage) return b.stage - a.stage;
-    return new Date(a.created_at) - new Date(b.created_at);
-  });
-  $('teamCount').textContent = teams.length ? `· ${teams.length}팀` : '';
-  $('teams').innerHTML = sorted.length ? sorted.map(t => `
+  const count = game ? game.team_count : 8;
+  const byNo = {}; teams.forEach(t => { if(t.team_no) byNo[t.team_no] = t; });
+  if(document.activeElement !== $('teamCount2')) $('teamCount2').value = count;
+  $('teamCount').textContent = `· ${teams.length}/${count}조 입소`;
+  let rows = '';
+  for(let n = 1; n <= count; n++){
+    const t = byNo[n];
+    rows += t ? `
     <div class="trow ${t.finished_at ? 'fin' : ''}">
-      <div class="nm">${esc(t.name)}</div>
+      ${avHTML(t)}
+      <div class="nm">${esc(t.name)} <small class="muted" style="font-size:14px">${esc(VAULT_CHARS.name(t.character))}</small></div>
       <div class="lk">${[0,1,2,3].map(i => i < t.stage ? '<span class="o">🔓</span>' : '<span class="c">🔒</span>').join('')}</div>
-      <div class="meta">${t.finished_at ? `<b>${fmt(t.elapsed_sec)}</b><br>` : `<b>${t.stage}/4</b><br>`}오답 ${t.wrong_total} · 힌트 ${t.hints_used}/3</div>
-    </div>`).join('') : '<div class="empty">아직 등록한 팀이 없어요.<br>QR 코드로 접속해 팀 이름을 입력해 주세요.</div>';
+      <div class="meta">${t.finished_at ? `<b>🏃 ${fmt(t.elapsed_sec)}</b><br>` : `<b>${t.stage}/4</b><br>`}오답 ${t.wrong_total} · 힌트 ${t.hints_used}/3</div>
+    </div>` : `
+    <div class="trow wait">${avHTML(null)}<div class="nm">${n}조</div><div class="lk"></div><div class="meta">미입장</div></div>`;
+  }
+  const extra = teams.filter(t => !t.team_no || t.team_no > count);
+  extra.forEach(t => { rows += `<div class="trow">${avHTML(t)}<div class="nm">${esc(t.name)}</div><div class="lk">${'🔓'.repeat(t.stage)}</div><div class="meta">${t.stage}/4</div></div>`; });
+  $('teams').innerHTML = rows;
 
-  const fin = sorted.filter(t => t.finished_at);
+  const fin = teams.filter(t => t.finished_at).sort((a,b) => new Date(a.finished_at) - new Date(b.finished_at));
   const medals = ['🥇','🥈','🥉'];
   let h = '';
   for(let i=0;i<3;i++){
     const t = fin[i];
-    h += t ? `<div class="pd r${i+1}"><div class="md">${medals[i]}</div><div class="pn">${esc(t.name)}</div><div class="pt">${fmt(t.elapsed_sec)}</div></div>`
+    h += t ? `<div class="pd r${i+1}"><div class="md">${medals[i]}</div>${avHTML(t)}<div class="pn">${esc(t.name)}</div><div class="pt">${fmt(t.elapsed_sec)}</div></div>`
            : `<div class="pd ph"><div class="md">${medals[i]}</div><div class="pn">${i+1}등</div><div class="pt">--:--</div></div>`;
   }
-  fin.slice(3).forEach((t,i) => { h += `<div class="pd"><div class="md" style="font-size:22px;width:40px;text-align:center">${i+4}</div><div class="pn">${esc(t.name)}</div><div class="pt">${fmt(t.elapsed_sec)}</div></div>`; });
+  fin.slice(3).forEach((t,i) => { h += `<div class="pd"><div class="md" style="font-size:22px;width:40px;text-align:center">${i+4}</div>${avHTML(t)}<div class="pn">${esc(t.name)}</div><div class="pt">${fmt(t.elapsed_sec)}</div></div>`; });
   $('podium').innerHTML = h;
 }
+
+$('tcMinus').onclick = () => { $('teamCount2').value = Math.max(1, (+$('teamCount2').value || 1) - 1); };
+$('tcPlus').onclick = () => { $('teamCount2').value = Math.min(30, (+$('teamCount2').value || 0) + 1); };
+$('btnTc').onclick = async () => {
+  const n = +$('teamCount2').value;
+  if(!(n >= 1 && n <= 30)){ alert('조 개수는 1~30 사이로 입력해 주세요.'); return; }
+  try{ await rpc('vault_admin_set_teams', { p_pw: '', p_count: n }); toast(`조 개수를 ${n}개로 설정했어요`); loadAll(); }catch(e){ alert('실패: ' + e.message); }
+};
 
 function startLive(){
   sb.channel('vault-admin')
     .on('postgres_changes', { event:'*', schema:'public', table:'vault_teams' }, () => loadTeams())
-    .on('postgres_changes', { event:'*', schema:'public', table:'vault_game' }, p => { if(p.new && p.new.id){ const rc = !game || game.round !== p.new.round; game = p.new; renderStatus(); if(rc) loadTeams(); } else loadAll(); })
+    .on('postgres_changes', { event:'*', schema:'public', table:'vault_game' }, p => { if(p.new && p.new.id){ const rc = !game || game.round !== p.new.round; game = p.new; renderStatus(); if(rc) loadTeams(); else renderTeams(); } else loadAll(); })
     .subscribe();
   setInterval(loadAll, 20000);
 }
@@ -270,8 +286,10 @@ $('btnSaveQ').onclick = async () => {
   try{ await rpc('vault_admin_save_questions', { p_pw: pw, p_items: items }); toast('저장했어요'); }catch(e){ alert('저장 실패: ' + e.message); }
 };
 
-const saved = ss(PW_KEY);
-if(saved) login(saved); else $('v-login').classList.remove('hidden');
+// 관리자 비밀번호 없음 — 바로 관제실 표시
+pw = '';
+$('v-dash').classList.remove('hidden');
+startLive(); loadAll();
 </script>
 </body>
 </html>

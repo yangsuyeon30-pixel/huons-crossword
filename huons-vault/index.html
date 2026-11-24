@@ -20,43 +20,38 @@
     <button id="btnMute" class="mute" aria-label="소리 켜기/끄기">🔊</button>
   </header>
 
-  <!-- 1. 팀 등록 -->
+  <!-- 1. 조 / 캐릭터 선택 -->
   <section id="v-join" class="card hidden">
-    <div class="vault-door small"><div class="dial"><span></span></div></div>
-    <p class="lead center">자물쇠 <b>4개</b>를 풀고<br>휴온스 금고를 가장 먼저 열어라!</p>
-    <ul class="rules">
-      <li>팀당 휴대폰 1대로 참여해요</li>
-      <li>자물쇠를 풀 때마다 <b>열쇠 조각</b>을 얻어요</li>
-      <li>힌트는 팀당 총 <b>3회</b>, 제한 시간은 <b>30분</b></li>
-    </ul>
-    <label class="lbl" for="teamName">팀 이름</label>
-    <input id="teamName" class="inp" type="text" maxlength="20" placeholder="예: A팀" autocomplete="off">
-    <button id="btnJoin" class="btn btn-gold">요원 등록</button>
+    <p class="lead center" style="margin-top:0">휴온스 금고를 노리다 <b>붙잡혔다!</b><br>감옥에 갇힐 조와 캐릭터를 고르세요.</p>
+    <h3 class="pick-title"><span>1</span> 우리 조 선택</h3>
+    <div class="team-pick" id="teamPick"></div>
+    <h3 class="pick-title"><span>2</span> 캐릭터 선택</h3>
+    <div class="char-pick" id="charPick"></div>
+    <button id="btnJoin" class="btn btn-gold" disabled>🔒 감옥 입소</button>
     <p id="joinMsg" class="msg"></p>
   </section>
 
-  <!-- 2. 대기 / 미션 브리핑 -->
+  <!-- 2. 대기 / 수감 -->
   <section id="v-wait" class="card hidden">
     <div class="brief-head">
-      <span class="rec">● CLASSIFIED</span>
-      <span class="agent">요원 <b class="tn"></b></span>
+      <span class="rec">● 수감 중</span>
+      <span class="agent">수감번호 <b class="tn"></b></span>
     </div>
-    <h2 class="brief-title">미션 브리핑</h2>
+    <div class="cell big" id="waitCell"></div>
     <div class="brief" id="briefText"></div>
     <div class="brief-wait">
       <div class="dots"><i></i><i></i><i></i></div>
-      <p>진행자가 작전을 개시하면<br>첫 번째 자물쇠가 나타납니다.</p>
+      <p>진행자가 신호를 주면<br>첫 번째 자물쇠에 도전할 수 있어요.</p>
     </div>
   </section>
 
   <!-- 3. 게임 -->
   <section id="v-play" class="hidden">
     <div class="topbar">
-      <div class="tb-team"><span class="tn"></span></div>
+      <div class="tb-team"><span class="tn"></span> <small id="charName"></small></div>
       <div class="tb-timer" id="timer">30:00</div>
     </div>
-
-    <div class="keys" id="keysRow"></div>
+    <div class="cell" id="playCell"></div>
 
     <div class="card lockcard" id="playCard">
       <div class="stage-badge"><span id="lockName">다이얼 자물쇠</span> · <b id="stageNo">1</b>/4</div>
@@ -75,34 +70,29 @@
       <p id="feedback" class="feedback"></p>
       <button id="btnSubmit" class="btn btn-gold">🔑 자물쇠 열기</button>
       <button id="btnHint" class="btn btn-ghost">💡 힌트 보기 <span id="hintLeft">(3/3 남음)</span></button>
+    </div>
 
-      <!-- 해제 성공 오버레이 -->
-      <div id="unlocked" class="unlocked hidden">
-        <div class="u-lock">🔓</div>
-        <div class="u-title">자물쇠 해제!</div>
-        <div class="u-key"><span>🗝️ 열쇠 조각 획득</span><b id="uKey"></b></div>
-        <button id="btnNext" class="btn btn-gold">다음 자물쇠로 →</button>
-      </div>
+    <!-- 해제 성공 오버레이 -->
+    <div id="unlocked" class="unlocked hidden">
+      <div class="u-lock">🔓</div>
+      <div class="u-title" id="uTitle">자물쇠 해제!</div>
+      <div class="u-key"><span>🗝️ 열쇠 조각 획득</span><b id="uKey"></b></div>
+      <div class="keys final" id="uKeys"></div>
+      <button id="btnNext" class="btn btn-gold">다음 자물쇠로 →</button>
     </div>
   </section>
 
-  <!-- 4. 금고 오픈 -->
+  <!-- 4. 탈출 성공 -->
   <section id="v-done" class="card hidden center">
     <div class="confetti" id="confetti"></div>
-    <div class="vault-stage">
-      <div class="vault-inside">💰<span>✨</span></div>
-      <div class="vault-door big" id="bigDoor">
-        <div class="bolts"><i></i><i></i><i></i><i></i></div>
-        <div class="wheel"><i></i><i></i><i></i></div>
-      </div>
-    </div>
-    <h2 class="done-title">금고 오픈! 🎉</h2>
+    <div class="cell big escape-scene" id="doneCell"></div>
+    <h2 class="done-title">탈옥 성공! 🎉</h2>
     <p class="team-title"><span class="tn"></span></p>
     <div class="keys final" id="finalKeys"></div>
     <div class="stat-big" id="doneTime">00:00</div>
-    <p class="muted">걸린 시간</p>
+    <p class="muted">탈출까지 걸린 시간</p>
     <div class="stats">
-      <div><b id="doneRank">-</b><span>순위</span></div>
+      <div><b id="doneRank">-</b><span>탈출 순위</span></div>
       <div><b id="doneWrong">0</b><span>오답</span></div>
       <div><b id="doneHints">0</b><span>힌트 사용</span></div>
     </div>
@@ -110,10 +100,10 @@
 
   <!-- 5. 시간 종료 -->
   <section id="v-over" class="card hidden center">
-    <div class="vault-open">🚨</div>
-    <h2 class="done-title">작전 종료!</h2>
+    <div class="cell big" id="overCell"></div>
+    <h2 class="done-title">탈옥 실패…</h2>
     <p class="team-title"><span class="tn"></span></p>
-    <p class="lead">자물쇠 <b id="overStage">0</b>/4 개를 풀었어요.<br>수고하셨습니다!</p>
+    <p class="lead">시간이 다 됐어요.<br>자물쇠 <b id="overStage">0</b>/4 개를 풀었어요. 수고하셨습니다!</p>
     <div class="keys final" id="overKeys"></div>
   </section>
 
@@ -122,15 +112,17 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="config.js"></script>
+<script src="chars.js"></script>
 <script>
 const sb = supabase.createClient(VAULT_CFG.url, VAULT_CFG.key);
 const LS_KEY = 'huons_vault_team';
 const $ = id => document.getElementById(id);
 const views = ['v-join','v-wait','v-play','v-done','v-over'];
+const CH = VAULT_CHARS;
 
 let me = null, state = null, clockOffset = 0, busy = false, pendingNext = null;
-let lockInput = null;   // {get():string, reset()}
-let lastQKey = null;
+let lockInput = null, lastQKey = null;
+let pick = { no: null, ch: null }, lobby = { count: 8, round: 1, teams: [] };
 
 /* ---------- 사운드 ---------- */
 let actx = null, muted = false;
@@ -148,9 +140,10 @@ function tone(freq, dur, type='square', vol=.08, when=0, slide=0){
 const sfx = {
   tick(){ tone(1800, .03, 'square', .04); },
   tap(){ tone(900, .05, 'triangle', .07); },
+  clang(){ tone(220, .4, 'square', .1, 0, 90); tone(330, .3, 'triangle', .08, .05); },
   wrong(){ tone(160, .18, 'sawtooth', .12); tone(140, .25, 'sawtooth', .12, .2); },
   open(){ tone(420, .06, 'square', .1); tone(300, .08, 'square', .1, .07); [660, 880, 1320].forEach((f,i) => tone(f, .25, 'triangle', .1, .2 + i*.11)); },
-  vault(){ tone(60, 1.2, 'sawtooth', .12, 0, 40); [523, 659, 784, 1047].forEach((f,i) => tone(f, .5, 'triangle', .1, 1.1 + i*.15)); },
+  escape(){ tone(80, 1, 'sawtooth', .1, 0, 300); [523, 659, 784, 1047, 1319].forEach((f,i) => tone(f, .4, 'triangle', .1, 1 + i*.13)); },
 };
 $('btnMute').onclick = () => { muted = !muted; $('btnMute').textContent = muted ? '🔇' : '🔊'; try{ localStorage.setItem('vault_muted', muted ? '1' : '0'); }catch(e){} if(!muted) sfx.tap(); };
 function buzz(p){ if(navigator.vibrate) try{ navigator.vibrate(p); }catch(e){} }
@@ -159,7 +152,7 @@ function buzz(p){ if(navigator.vibrate) try{ navigator.vibrate(p); }catch(e){} }
 function loadMe(){ try{ me = JSON.parse(localStorage.getItem(LS_KEY)); }catch(e){ me = null; } }
 function saveMe(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(me)); }catch(e){} }
 function clearMe(){ me = null; state = null; lastQKey = null; try{ localStorage.removeItem(LS_KEY); }catch(e){} }
-function show(v){ views.forEach(x => $(x).classList.toggle('hidden', x !== v)); }
+function show(v){ views.forEach(x => $(x).classList.toggle('hidden', x !== v)); if(v === 'v-join') loadLobby(); }
 function fmt(sec){ sec = Math.max(0, Math.floor(sec)); return String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0'); }
 function errCode(e){ const m = (e && (e.message || e.details)) || ''; return (m.match(/[A-Z_]{4,}/)||[''])[0]; }
 function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -169,12 +162,52 @@ function remainingSec(){
   return (new Date(g.started_at).getTime() + g.duration_sec*1000 - (Date.now() + clockOffset))/1000;
 }
 
+/* ---------- 감옥 장면 ---------- */
+function cellHTML(ch, stage){
+  let locks = '';
+  for(let i = 0; i < 4; i++) locks += `<span class="plock ${i < stage ? 'off' : ''}">${i < stage ? '🔓' : '🔒'}</span>`;
+  return `<div class="wall"></div><div class="exit">EXIT ➜</div>
+    <div class="inmate"><div class="bob">${CH.avatar(ch ?? 0)}</div></div>
+    <div class="bars">${'<i></i>'.repeat(7)}<div class="crossbar">${locks}</div></div>`;
+}
+function renderCell(el, ch, stage){ el.innerHTML = cellHTML(ch, stage); }
+
 $('briefText').innerHTML = [
-  '1965년부터 이어진 <b>휴온스그룹 60년의 비밀</b>이 본사 금고 깊숙이 잠들어 있다.',
-  '금고는 <b>자물쇠 4개</b>로 봉인되어 있으며, 각 자물쇠는 휴온스에 대한 질문에 답해야만 열린다.',
-  '자물쇠를 풀 때마다 <b>열쇠 조각</b>을 획득한다. 4개의 조각을 모두 모으면 금고가 열린다.',
-  '제한 시간은 <b>30분</b>. 오답은 모두 기록되니 신중하게! 행운을 빈다, 요원.'
+  '휴온스 금고를 노리던 여러분은 경비에게 붙잡혀 <b>휴온스 감옥</b>에 갇히고 말았다!',
+  '감옥 문은 <b>자물쇠 4개</b>로 잠겨 있다. 각 자물쇠는 휴온스에 대한 문제를 맞혀야만 열린다.',
+  '자물쇠를 풀 때마다 <b>열쇠 조각</b>을 얻는다. 4개를 모두 풀면 감옥 문이 열린다.',
+  '제한 시간은 <b>30분</b>. 오답은 모두 기록되니 신중하게! 가장 먼저 탈출하는 조는 누구?'
 ].map(p => `<p>${p}</p>`).join('');
+
+/* ---------- 입소 (조/캐릭터 선택) ---------- */
+async function loadLobby(){
+  try{
+    const { data: g } = await sb.from('vault_game').select('round,team_count').eq('id', 1).single();
+    if(g){ lobby.count = g.team_count; lobby.round = g.round; }
+    const { data: t } = await sb.from('vault_teams').select('team_no,character').eq('round', lobby.round);
+    lobby.teams = t || [];
+  }catch(e){}
+  renderLobby();
+}
+function renderLobby(){
+  const takenNo = new Set(lobby.teams.map(t => t.team_no)), takenCh = new Set(lobby.teams.map(t => t.character));
+  if(pick.no && (takenNo.has(pick.no) || pick.no > lobby.count)) pick.no = null;
+  if(pick.ch !== null && takenCh.has(pick.ch)) pick.ch = null;
+  let h = '';
+  for(let i = 1; i <= lobby.count; i++){
+    const tk = takenNo.has(i);
+    h += `<button class="tp ${tk ? 'taken' : ''} ${pick.no === i ? 'sel' : ''}" data-no="${i}" ${tk ? 'disabled' : ''}>${i}조${tk ? '<small>입소 완료</small>' : ''}</button>`;
+  }
+  $('teamPick').innerHTML = h;
+  $('teamPick').querySelectorAll('.tp').forEach(b => b.onclick = () => { pick.no = +b.dataset.no; sfx.tap(); renderLobby(); });
+  $('charPick').innerHTML = CH.list.map((c, i) => {
+    const tk = takenCh.has(i);
+    return `<button class="cp ${tk ? 'taken' : ''} ${pick.ch === i ? 'sel' : ''}" data-ch="${i}" ${tk ? 'disabled' : ''}>${CH.avatar(i)}<span>${c.name}</span>${tk ? '<small>선택됨</small>' : ''}</button>`;
+  }).join('');
+  $('charPick').querySelectorAll('.cp').forEach(b => b.onclick = () => { pick.ch = +b.dataset.ch; sfx.tap(); renderLobby(); });
+  $('btnJoin').disabled = !(pick.no && pick.ch !== null);
+  $('btnJoin').textContent = pick.no && pick.ch !== null ? `🔒 ${pick.no}조 · ${CH.name(pick.ch)} 감옥 입소` : '🔒 조와 캐릭터를 골라주세요';
+}
 
 /* ---------- 상태 ---------- */
 async function refresh(){
@@ -190,19 +223,25 @@ async function refresh(){
 }
 
 function applyState(s){
+  const prevStatus = state && state.game.status;
   state = s;
   clockOffset = new Date(s.game.server_now).getTime() - Date.now();
   if(me.round !== s.game.round){ me.round = s.game.round; saveMe(); }
   document.querySelectorAll('.tn').forEach(el => el.textContent = s.team.name);
-  if(pendingNext) return;                      // 해제 연출 중에는 화면 유지
+  $('charName').textContent = CH.name(s.team.character);
+  if(pendingNext) return;
   const t = s.team, g = s.game;
   if(t.stage >= 4) return showDone();
-  if(g.status === 'waiting') return show('v-wait');
+  if(g.status === 'waiting'){
+    if($('v-wait').classList.contains('hidden') || !$('waitCell').innerHTML) renderCell($('waitCell'), t.character, 0);
+    return show('v-wait');
+  }
   if(g.status === 'ended' || remainingSec() <= 0) return showOver();
+  if(prevStatus === 'waiting') { sfx.clang(); buzz([100, 50, 100]); }
   renderPlay();
 }
 
-function renderKeys(el, keys, stage, cur){
+function renderKeys(el, keys, cur){
   let h = '';
   for(let i = 0; i < 4; i++){
     const k = keys[i];
@@ -213,9 +252,10 @@ function renderKeys(el, keys, stage, cur){
 }
 
 function renderPlay(){
+  const wasHidden = $('v-play').classList.contains('hidden');
   show('v-play');
   const t = state.team, q = state.question;
-  renderKeys($('keysRow'), state.keys || [], t.stage, t.stage);
+  if(wasHidden || $('playCell').dataset.stage !== String(t.stage)){ renderCell($('playCell'), t.character, t.stage); $('playCell').dataset.stage = t.stage; }
   $('stageNo').textContent = t.stage + 1;
   $('question').textContent = q ? q.text : '';
   if(q && q.hint){ $('hintText').textContent = q.hint; $('hintBox').classList.remove('hidden'); $('btnHint').classList.add('hidden'); }
@@ -237,7 +277,7 @@ function renderPlay(){
 function buildLock(lock){
   const w = $('lockWidget');
   if(lock.kind === 'digits'){
-    $('lockName').textContent = '다이얼 자물쇠';
+    $('lockName').textContent = '번호 자물쇠';
     const vals = Array(lock.len).fill(0);
     w.className = 'dials';
     w.innerHTML = vals.map((_, i) => `
@@ -274,7 +314,7 @@ function buildLock(lock){
     lockInput = { get: () => vals.join(''), reset(){} };
   }else{
     $('lockName').textContent = '글자 자물쇠';
-    const slots = Array(lock.len).fill(null);   // tile index
+    const slots = Array(lock.len).fill(null);
     w.className = 'letters';
     w.innerHTML = `<div class="slots">${slots.map((_, i) => `<button class="slot" data-i="${i}"></button>`).join('')}</div>
       <div class="tiles">${(lock.tiles||[]).map((c, i) => `<button class="tile" data-i="${i}">${esc(c)}</button>`).join('')}</div>
@@ -296,19 +336,21 @@ function buildLock(lock){
   }
 }
 
-/* ---------- 완료 / 종료 ---------- */
+/* ---------- 탈출 / 종료 ---------- */
 async function showDone(){
   const first = $('v-done').classList.contains('hidden');
   show('v-done');
   const t = state.team;
-  renderKeys($('finalKeys'), state.keys || [], 4, -1);
+  renderKeys($('finalKeys'), state.keys || [], -1);
   $('doneTime').textContent = fmt(t.elapsed_sec || 0);
   $('doneWrong').textContent = t.wrong_total;
   $('doneHints').textContent = t.hints_used;
   if(first){
-    $('bigDoor').classList.remove('swing'); void $('bigDoor').offsetWidth; $('bigDoor').classList.add('swing');
-    sfx.vault(); buzz([60, 80, 60, 80, 300]);
-    if(!$('confetti').dataset.done){ $('confetti').dataset.done = 1; setTimeout(burst, 1400); }
+    const c = $('doneCell');
+    renderCell(c, t.character, 4);
+    c.classList.remove('go'); void c.offsetWidth; c.classList.add('go');
+    sfx.escape(); buzz([60, 80, 60, 80, 300]);
+    if(!$('confetti').dataset.done){ $('confetti').dataset.done = 1; setTimeout(burst, 2200); }
   }
   try{
     const { data } = await sb.from('vault_teams').select('id,finished_at').eq('round', state.game.round).not('finished_at','is',null).order('finished_at');
@@ -318,7 +360,8 @@ async function showDone(){
 }
 function showOver(){
   $('overStage').textContent = state.team.stage;
-  renderKeys($('overKeys'), state.keys || [], state.team.stage, -1);
+  renderCell($('overCell'), state.team.character, state.team.stage);
+  renderKeys($('overKeys'), state.keys || [], -1);
   show('v-over');
 }
 function burst(){
@@ -345,18 +388,21 @@ setInterval(tick, 500);
 /* ---------- 이벤트 ---------- */
 $('btnJoin').onclick = async () => {
   ac();
-  const name = $('teamName').value.trim(), msg = $('joinMsg');
-  if(!name){ msg.textContent = '팀 이름을 입력해 주세요.'; return; }
-  if(busy) return; busy = true; $('btnJoin').disabled = true; msg.textContent = '';
+  const msg = $('joinMsg');
+  if(!(pick.no && pick.ch !== null) || busy) return;
+  busy = true; $('btnJoin').disabled = true; msg.textContent = '';
   try{
-    const r = await rpc('vault_join', { p_name: name });
+    const r = await rpc('vault_enter', { p_no: pick.no, p_char: pick.ch });
     me = { team_id: r.team_id, token: r.token, round: r.round }; saveMe();
-    sfx.tap(); await refresh();
+    sfx.clang(); await refresh();
   }catch(e){
-    msg.textContent = errCode(e) === 'TEAM_EXISTS' ? '이미 등록된 팀 이름이에요. 다른 이름을 써 주세요.' : '등록에 실패했어요. 다시 시도해 주세요.';
-  }finally{ busy = false; $('btnJoin').disabled = false; }
+    const c = errCode(e);
+    msg.textContent = c === 'TEAM_EXISTS' ? '이미 입소한 조예요. 다른 조를 골라 주세요.'
+      : c === 'CHAR_TAKEN' ? '다른 조가 먼저 고른 캐릭터예요. 다른 캐릭터를 골라 주세요.'
+      : c === 'BAD_TEAM' ? '조 번호가 바뀌었어요. 다시 골라 주세요.' : '입소에 실패했어요. 다시 시도해 주세요.';
+    await loadLobby();
+  }finally{ busy = false; if(!me) renderLobby(); }
 };
-$('teamName').addEventListener('keydown', e => { if(e.key === 'Enter') $('btnJoin').click(); });
 
 function wrongFx(text){
   $('feedback').textContent = text; $('feedback').className = 'feedback bad';
@@ -376,10 +422,15 @@ $('btnSubmit').onclick = async () => {
       pendingNext = r.state;
       $('feedback').textContent = ''; $('feedback').className = 'feedback';
       $('padlock').classList.add('open'); sfx.open(); buzz([40, 40, 120]);
-      const keys = r.state.keys || [];
+      const keys = r.state.keys || [], done = r.state.team.stage >= 4;
       $('uKey').textContent = keys[keys.length - 1] || '';
-      $('btnNext').textContent = r.state.team.stage >= 4 ? '💰 금고 열기 →' : '다음 자물쇠로 →';
-      setTimeout(() => { $('unlocked').classList.remove('hidden'); renderKeys($('keysRow'), keys, r.state.team.stage, -1); }, 700);
+      $('uTitle').textContent = done ? '마지막 자물쇠 해제!' : `감옥 자물쇠 ${keys.length}/4 해제!`;
+      renderKeys($('uKeys'), keys, -1);
+      $('btnNext').textContent = done ? '🏃 감옥 탈출하기 →' : '다음 자물쇠로 →';
+      setTimeout(() => {
+        $('unlocked').classList.remove('hidden');
+        renderCell($('playCell'), r.state.team.character, r.state.team.stage); $('playCell').dataset.stage = r.state.team.stage;
+      }, 700);
     }else{
       wrongFx('다시 시도!');
       if(lockInput.reset && lockInput.full) setTimeout(() => lockInput.reset(), 600);
@@ -412,18 +463,19 @@ $('btnHint').onclick = async () => {
 };
 
 /* ---------- 실시간 ---------- */
-sb.channel('vault-game')
+sb.channel('vault-live')
   .on('postgres_changes', { event: '*', schema: 'public', table: 'vault_game' }, payload => {
     const g = payload.new || {};
-    if(me && g.round && me.round && g.round !== me.round){ pendingNext = null; clearMe(); show('v-join'); return; }
-    if(g.status === 'running' && state && state.game.status === 'waiting'){ sfx.open(); buzz([100, 50, 100]); }
+    if(!me){ loadLobby(); return; }
+    if(g.round && me.round && g.round !== me.round){ pendingNext = null; $('unlocked').classList.add('hidden'); clearMe(); show('v-join'); return; }
     pendingNext = null; $('unlocked').classList.add('hidden');
     refresh();
   })
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'vault_teams' }, () => { if(!me) loadLobby(); })
   .subscribe();
 
 document.addEventListener('visibilitychange', () => { if(!document.hidden && !pendingNext) refresh(); });
-setInterval(() => { if(me && !busy && !pendingNext) refresh(); }, 15000);
+setInterval(() => { if(me && !busy && !pendingNext) refresh(); else if(!me) loadLobby(); }, 15000);
 
 loadMe();
 if(me) refresh(); else show('v-join');

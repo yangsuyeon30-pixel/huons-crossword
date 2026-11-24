@@ -212,3 +212,61 @@ body{
 .vault-door.big.swing{animation:doorswing 1s .9s cubic-bezier(.5,0,.3,1) forwards}
 @keyframes wheelspin{to{transform:rotate(540deg)}}
 @keyframes doorswing{60%{opacity:1}to{transform:rotateY(-110deg);opacity:0}}
+
+/* ===== 감옥 테마 ===== */
+.pick-title{display:flex;align-items:center;gap:8px;font-size:15px;margin:18px 0 10px;color:var(--gold2)}
+.pick-title span{width:22px;height:22px;border-radius:50%;background:var(--gold);color:#1a1405;display:grid;place-items:center;font-size:13px}
+.team-pick{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tp{height:54px;border-radius:12px;border:1.5px solid var(--line);background:#0a1430;color:var(--ink);font-weight:900;font-size:17px;
+  font-family:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1}
+.tp small,.cp small{font-size:10px;font-weight:700;color:var(--muted)}
+.tp.sel{background:linear-gradient(180deg,var(--gold2),var(--gold));color:#1a1405;border-color:var(--gold)}
+.tp.taken,.cp.taken{opacity:.35;cursor:default}
+.char-pick{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.cp{border-radius:12px;border:1.5px solid var(--line);background:#0a1430;color:var(--ink);padding:4px 0 6px;font-family:inherit;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;min-width:0}
+.cp svg{width:100%;max-width:64px;height:auto;display:block}
+.cp span{font-size:11px;font-weight:700;white-space:nowrap}
+.cp.sel{border-color:var(--gold);background:rgba(212,175,55,.18);box-shadow:0 0 0 3px rgba(212,175,55,.25)}
+.cp.sel span{color:var(--gold2)}
+.tb-team small{font-size:12px;color:var(--muted);font-weight:700;margin-left:4px}
+
+.cell{position:relative;height:150px;border-radius:18px;overflow:hidden;margin-bottom:14px;border:2px solid #2b3346;
+  background:#141a26;box-shadow:inset 0 0 40px rgba(0,0,0,.8)}
+.cell.big{height:230px;margin:12px 0 16px}
+.cell .wall{position:absolute;inset:0;opacity:.55;
+  background:
+    linear-gradient(#0000 0 0),
+    repeating-linear-gradient(0deg,#3a4152 0 2px,transparent 2px 30px),
+    repeating-linear-gradient(90deg,#3a4152 0 2px,transparent 2px 60px),
+    radial-gradient(ellipse at 50% 0%,rgba(255,240,180,.25),transparent 60%),
+    linear-gradient(180deg,#2a3142,#161b26)}
+.cell .exit{position:absolute;right:8px;top:10px;font-size:11px;font-weight:900;color:#4ade80;background:#0b2a17;border:1px solid #166534;
+  padding:3px 7px;border-radius:6px;letter-spacing:1px;opacity:.9;z-index:4}
+.cell .inmate{position:absolute;left:50%;bottom:-6px;width:110px;margin-left:-55px;z-index:1}
+.cell.big .inmate{width:140px;margin-left:-70px}
+.cell .inmate svg{width:100%;height:auto;display:block}
+.cell .bob{animation:sway 3s ease-in-out infinite;transform-origin:50% 100%}
+@keyframes sway{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+.cell .bars{position:absolute;inset:0;z-index:2;display:flex;justify-content:space-evenly;transition:transform 1s cubic-bezier(.6,0,.4,1)}
+.cell .bars i{width:9px;height:100%;background:linear-gradient(90deg,#4b5563,#cbd5e1 40%,#6b7280);box-shadow:2px 0 4px rgba(0,0,0,.6)}
+.cell .crossbar{position:absolute;left:0;right:0;top:70%;height:14px;background:linear-gradient(180deg,#cbd5e1,#4b5563);
+  display:flex;justify-content:space-evenly;align-items:center;box-shadow:0 3px 6px rgba(0,0,0,.6)}
+.cell .plock{font-size:22px;line-height:1;transform:translateY(6px);filter:drop-shadow(0 2px 2px rgba(0,0,0,.6))}
+.cell.big .plock{font-size:30px}
+.cell .plock.off{animation:lockdrop .8s ease forwards}
+@keyframes lockdrop{0%{transform:translateY(6px) rotate(0)}40%{transform:translateY(0) rotate(-20deg)}100%{transform:translateY(6px) rotate(-12deg);opacity:.55}}
+
+/* 탈출 장면 */
+.cell.go .bars{animation:barsup 1.1s .3s cubic-bezier(.6,0,.4,1) forwards}
+@keyframes barsup{to{transform:translateY(-105%)}}
+.cell.go .inmate{animation:runout 1.4s 1.3s ease-in forwards;transform-origin:50% 100%}
+.cell.go .bob{animation:runbob .2s 1.3s ease-in-out 6 alternate,cheer .7s 2.7s ease-in-out infinite}
+@keyframes cheer{0%,100%{transform:translateY(0) scale(1)}40%{transform:translateY(-22px) scale(1.04)}}
+@keyframes runbob{from{transform:translateY(0) rotate(-6deg)}to{transform:translateY(-12px) rotate(6deg)}}
+@keyframes runout{0%{transform:translateX(0)}15%{transform:translateX(-10px)}100%{transform:translateX(min(22vw,90px)) scale(.82)}}
+.cell.go::after{content:'';position:absolute;inset:0;z-index:3;pointer-events:none;
+  background:radial-gradient(circle at 100% 40%,rgba(255,240,170,.75),transparent 55%);opacity:0;animation:light 1.2s 1.6s forwards}
+@keyframes light{to{opacity:1}}
+.cell.go .exit{animation:pop .6s 1.4s both}
+.escape-scene .free{display:none}

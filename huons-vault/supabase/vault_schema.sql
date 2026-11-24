@@ -253,3 +253,60 @@ begin
     'question', v_q,
     'keys', v_keys);
 end $$;
+
+-- ===== 감옥 탈출 테마: 조 개수 / 캐릭터 선택 / 관리자 비밀번호 해제 =====
+alter table public.vault_game add column if not exists team_count int not null default 8;
+alter table public.vault_teams add column if not exists team_no int;
+alter table public.vault_teams add column if not exists character int;
+
+-- 관리자 비밀번호 해제 (요청에 따라 누구나 관리자 화면 사용)
+create or replace function public.vault_is_admin(p_pw text) returns boolean
+language sql stable set search_path = public as $$ select true $$;
+
+create or replace function public.vault_enter(p_no int, p_char int) returns json
+language plpgsql security definer set search_path = public as $$
+declare g vault_game; v_id uuid; v_tok uuid;
+begin
+  select * into g from vault_game where id = 1 for update;
+  if p_no is null or p_no < 1 or p_no > g.team_count then raise exception 'BAD_TEAM'; end if;
+  if p_char is null or p_char < 0 or p_char > 9 then raise exception 'BAD_CHAR'; end if;
+  if exists(select 1 from vault_teams where round = g.round and team_no = p_no) then raise exception 'TEAM_EXISTS'; end if;
+  if exists(select 1 from vault_teams where round = g.round and character = p_char) then raise exception 'CHAR_TAKEN'; end if;
+  insert into vault_teams(round, name, team_no, character) values (g.round, p_no || '조', p_no, p_char) returning id into v_id;
+  insert into vault_team_tokens(team_id) values (v_id) returning token into v_tok;
+  return json_build_object('team_id', v_id, 'token', v_tok, 'round', g.round);
+end $$;
+
+create or replace function public.vault_admin_set_teams(p_pw text, p_count int) returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if p_count is null or p_count < 1 or p_count > 30 then raise exception 'BAD_COUNT'; end if;
+  update vault_game set team_count = p_count, updated_at = now() where id = 1;
+end $$;
+
+create or replace function public.vault_state(p_team uuid, p_token uuid) returns json
+language plpgsql security definer set search_path = public as $$
+declare t vault_teams; g vault_game; q vault_questions; v_q json := null; v_keys json;
+begin
+  if not vault_auth(p_team, p_token) then raise exception 'NO_TEAM'; end if;
+  select * into t from vault_teams where id = p_team;
+  select * into g from vault_game where id = 1;
+  if g.status <> 'waiting' and t.stage < 4 then
+    select * into q from vault_questions where id = t.stage + 1;
+    v_q := json_build_object('no', q.id, 'text', q.question,
+      'hint', case when (t.stage + 1) = any(t.hint_stages) then q.hint else null end,
+      'lock', vault_lock_info(p_team, q.answer));
+  end if;
+  select coalesce(json_agg(regexp_replace(answer, '\s', '', 'g') order by id), '[]'::json) into v_keys
+    from vault_questions where id <= t.stage;
+  return json_build_object(
+    'team', json_build_object('id', t.id, 'name', t.name, 'team_no', t.team_no, 'character', t.character,
+       'stage', t.stage, 'wrong_total', t.wrong_total,
+       'hints_used', t.hints_used, 'finished_at', t.finished_at, 'elapsed_sec', t.elapsed_sec),
+    'game', json_build_object('status', g.status, 'started_at', g.started_at, 'duration_sec', g.duration_sec,
+       'round', g.round, 'team_count', g.team_count, 'server_now', now()),
+    'question', v_q,
+    'keys', v_keys);
+end $$;
+
+grant execute on function public.vault_enter(int, int), public.vault_admin_set_teams(text, int) to anon, authenticated;
