@@ -3,19 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-<meta name="theme-color" content="#0a1224">
-<title>휴온스 금고를 열어라</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap">
+<meta name="theme-color" content="#050505">
+<title>휴온스 방탈출 게임</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;700;900&display=swap">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="wrap">
 
   <header class="brand">
-    <div class="brand-icon">🔐</div>
+    <div class="brand-icon"><span>H</span></div>
     <div style="flex:1">
       <div class="brand-sub">HUONS GROUP 입문교육</div>
-      <h1>휴온스 금고를 열어라</h1>
+      <h1>휴온스 방탈출 게임</h1>
     </div>
     <button id="btnMute" class="mute" aria-label="소리 켜기/끄기">🔊</button>
   </header>
@@ -519,7 +519,7 @@ function showOver(){
   show('v-over');
 }
 function burst(){
-  const box = $('confetti'), colors = ['#d4af37','#f5d77a','#ffffff','#7fa7ff'];
+  const box = $('confetti'), colors = ['#e3132c','#ff5566','#ffffff','#ffffff'];
   for(let i = 0; i < 70; i++){
     const p = document.createElement('i');
     p.style.left = Math.random()*100 + '%';
