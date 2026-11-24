@@ -310,3 +310,62 @@ begin
 end $$;
 
 grant execute on function public.vault_enter(int, int), public.vault_admin_set_teams(text, int) to anon, authenticated;
+
+-- ===== 방탈출 퍼즐 재료: 미끼 숫자 / 자모 조각 / 섞인 정답 글자 (vault_state에 'puzzle'로 포함) =====
+create or replace function public.vault_puzzle(p_team uuid, p_answer text) returns json
+language plpgsql stable security definer set search_path = public as $$
+declare v_clean text := upper(regexp_replace(coalesce(p_answer,''), '\s', '', 'g'));
+        v_seed text := md5(p_team::text || v_clean || 'pz');
+        cho text[] := string_to_array('ㄱ,ㄲ,ㄴ,ㄷ,ㄸ,ㄹ,ㅁ,ㅂ,ㅃ,ㅅ,ㅆ,ㅇ,ㅈ,ㅉ,ㅊ,ㅋ,ㅌ,ㅍ,ㅎ', ',');
+        jung text[] := string_to_array('ㅏ,ㅐ,ㅑ,ㅒ,ㅓ,ㅔ,ㅕ,ㅖ,ㅗ,ㅘ,ㅙ,ㅚ,ㅛ,ㅜ,ㅝ,ㅞ,ㅟ,ㅠ,ㅡ,ㅢ,ㅣ', ',');
+        jong text[] := string_to_array(',ㄱ,ㄲ,ㄳ,ㄴ,ㄵ,ㄶ,ㄷ,ㄹ,ㄺ,ㄻ,ㄼ,ㄽ,ㄾ,ㄿ,ㅀ,ㅁ,ㅂ,ㅄ,ㅅ,ㅆ,ㅇ,ㅈ,ㅊ,ㅋ,ㅌ,ㅍ,ㅎ', ',');
+        c text; code int; parts text[] := '{}'; ok boolean := true; v_jamo json := null; v_decoy_d json; v_scr json;
+begin
+  select json_agg(d) into v_decoy_d from (
+    select d from regexp_split_to_table('0123456789', '') d where position(d in v_clean) = 0
+    order by md5(v_seed || d) limit 3) x;
+  select json_agg(ch order by md5(v_seed || 's' || ord || ch)) into v_scr
+    from regexp_split_to_table(v_clean, '') with ordinality as x(ch, ord);
+  foreach c in array regexp_split_to_array(v_clean, '') loop
+    code := ascii(c) - 44032;
+    if code < 0 or code > 11171 then ok := false; exit; end if;
+    parts := parts || cho[code / 588 + 1] || jung[(code % 588) / 28 + 1];
+    if code % 28 > 0 then parts := parts || jong[code % 28 + 1]; end if;
+  end loop;
+  if ok and array_length(parts, 1) > 0 then
+    with a as (select p, ord from unnest(parts) with ordinality as x(p, ord)),
+    dc as (select p from regexp_split_to_table('ㅁ,ㅅ,ㄴ,ㅂ,ㅎ,ㅇ,ㄱ', ',') p
+          where not (p = any(parts)) order by md5(v_seed || 'c' || p) limit 2),
+    dv as (select p from regexp_split_to_table('ㅗ,ㅏ,ㅓ,ㅜ,ㅐ,ㅣ,ㅡ', ',') p
+          where not (p = any(parts)) order by md5(v_seed || 'v' || p) limit 2),
+    allp as (select p, 'a' || ord || p k from a union all select p, 'd' || p from dc union all select p, 'e' || p from dv)
+    select json_agg(p order by md5(v_seed || 'o' || k)) into v_jamo from allp;
+  end if;
+  return json_build_object('decoy_digits', v_decoy_d, 'jamo', v_jamo, 'scramble', v_scr);
+end $$;
+
+create or replace function public.vault_state(p_team uuid, p_token uuid) returns json
+language plpgsql security definer set search_path = public as $$
+declare t vault_teams; g vault_game; q vault_questions; v_q json := null; v_keys json;
+begin
+  if not vault_auth(p_team, p_token) then raise exception 'NO_TEAM'; end if;
+  select * into t from vault_teams where id = p_team;
+  select * into g from vault_game where id = 1;
+  if g.status <> 'waiting' and t.stage < 4 then
+    select * into q from vault_questions where id = t.stage + 1;
+    v_q := json_build_object('no', q.id, 'text', q.question,
+      'hint', case when (t.stage + 1) = any(t.hint_stages) then q.hint else null end,
+      'lock', vault_lock_info(p_team, q.answer),
+      'puzzle', vault_puzzle(p_team, q.answer));
+  end if;
+  select coalesce(json_agg(regexp_replace(answer, '\s', '', 'g') order by id), '[]'::json) into v_keys
+    from vault_questions where id <= t.stage;
+  return json_build_object(
+    'team', json_build_object('id', t.id, 'name', t.name, 'team_no', t.team_no, 'character', t.character,
+       'stage', t.stage, 'wrong_total', t.wrong_total,
+       'hints_used', t.hints_used, 'finished_at', t.finished_at, 'elapsed_sec', t.elapsed_sec),
+    'game', json_build_object('status', g.status, 'started_at', g.started_at, 'duration_sec', g.duration_sec,
+       'round', g.round, 'team_count', g.team_count, 'server_now', now()),
+    'question', v_q,
+    'keys', v_keys);
+end $$;

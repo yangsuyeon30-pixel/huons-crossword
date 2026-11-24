@@ -57,6 +57,7 @@
       <div class="stage-badge"><span id="lockName">다이얼 자물쇠</span> · <b id="stageNo">1</b>/4</div>
       <p class="question" id="question"></p>
       <div id="hintBox" class="hint hidden"><b>💡 힌트</b><span id="hintText"></span></div>
+      <div id="puzzle" class="puzzle"></div>
 
       <div class="padlock" id="padlock">
         <div class="shackle"></div>
@@ -71,6 +72,9 @@
       <button id="btnSubmit" class="btn btn-gold">🔑 자물쇠 열기</button>
       <button id="btnHint" class="btn btn-ghost">💡 힌트 보기 <span id="hintLeft">(3/3 남음)</span></button>
     </div>
+
+    <!-- 간수 경보 (사다리 함정) -->
+    <div id="lockout" class="lockout hidden"><div class="lo-siren">🚨</div><div class="lo-t">간수에게 들켰다!</div><div class="lo-n" id="loN">5</div><div class="lo-s">잠시 숨어 있어야 해요…</div></div>
 
     <!-- 해제 성공 오버레이 -->
     <div id="unlocked" class="unlocked hidden">
@@ -267,6 +271,7 @@ function renderPlay(){
   if(q && key !== lastQKey){
     lastQKey = key;
     buildLock(q.lock);
+    renderPuzzle(q);
     $('feedback').textContent = ''; $('feedback').className = 'feedback';
     $('padlock').classList.remove('open');
   }
@@ -334,6 +339,145 @@ function buildLock(lock){
     paint();
     lockInput = { get: () => slots.map(x => x === null ? '' : lock.tiles[x]).join(''), full: () => !slots.includes(null), reset(){ slots.fill(null); paint(); } };
   }
+}
+
+/* ---------- 방탈출 퍼즐 ---------- */
+function rng(seedStr){ let h = 2166136261; for(const ch of seedStr){ h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); }
+  return () => { h += 0x6D2B79F5; let t = h; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function shuffleR(arr, r){ const a = arr.slice(); for(let i = a.length - 1; i > 0; i--){ const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function setPadlock(visible){ $('padlock').classList.toggle('hidden', !visible); $('btnSubmit').classList.toggle('hidden', !visible); }
+
+function renderPuzzle(q){
+  const P = $('puzzle'); P.innerHTML = ''; setPadlock(true);
+  const pz = q.puzzle || {}, kind = q.lock.kind;
+  if(q.no === 1 && kind === 'digits') return puzzleHidden(P, q, pz);
+  if(q.no === 2 && kind === 'digits') return puzzleCards(P, q);
+  if(q.no === 3 && kind === 'letters' && pz.jamo) return puzzleJamo(P, q, pz);
+  if(q.no === 4 && kind === 'letters') return puzzleLadder(P, q, pz);
+}
+
+/* 1) 숨은 숫자 찾기 — 정답 숫자 + 미끼 숫자를 벽 곳곳에 숨김 */
+function puzzleHidden(P, q, pz){
+  const ans = (pz.scramble || []);   // 정답 숫자(섞인 순서) — 미끼 숫자와 함께 벽에 숨김
+  const dec = (pz.decoy_digits || []);
+  const r = rng(me.team_id + 'h');
+  const objs = shuffleR(['📅','🕘','⛓️','🪟','🧱','🪣','🛏️','🧻','🔦'], r);
+  const digits = shuffleR(ans.concat(dec), r);
+  const n = digits.length;
+  const spots = digits.map((d, i) => ({ d, e: objs[i % objs.length], x: 10 + i * (80 / Math.max(1, n - 1)), y: i % 2 ? 58 + r()*14 : 10 + r()*14, rot: Math.round(r()*50 - 25) }));
+  P.innerHTML = `<div class="pz-title">🔍 감방 벽 낙서 — 숨은 숫자를 찾아라</div>
+    <div class="scene" id="scene">${spots.map((s, i) => `<button class="spot" data-i="${i}" style="left:${s.x}%;top:${s.y}%"><span class="obj">${s.e}</span><span class="dg" style="transform:rotate(${s.rot}deg)">${s.d}</span></button>`).join('')}</div>
+    <div class="tray"><span>찾은 숫자</span><div id="trayD"></div></div>
+    <p class="pz-note">벽 곳곳에 숫자가 숨어 있다. 터치해서 찾아낸 뒤, <b>휴온스가 태어난 해</b>를 번호 자물쇠에 맞춰라.</p>`;
+  const found = new Set();
+  P.querySelectorAll('.spot').forEach(b => b.onclick = () => {
+    const i = +b.dataset.i; if(found.has(i)) return;
+    found.add(i); b.classList.add('found'); sfx.tap(); buzz(15);
+    $('trayD').innerHTML = [...found].sort((a, b) => a - b).map(k => `<b>${esc(spots[k].d)}</b>`).join('');
+  });
+}
+
+/* 2) 단서 카드 조합 */
+function puzzleCards(P, q){
+  const cards = [
+    { t:'단서 A', b:'휴온스그룹은 <b>1965년</b>에 창립했다.<br>그렇다면 2025년은 창립 <b>○○주년</b>.' },
+    { t:'단서 B', b:'미국 <b>FDA</b> 허가를 받은<br>휴온스 주사제는 <b>○종</b>.' },
+    { t:'조합 규칙', b:'비밀번호 =<br><b>A의 답</b> 뒤에 <b>B의 답</b>을<br>이어 붙여라.' },
+    { t:'간수의 쪽지', b:'"내 생일은 0815…<br>비밀번호일지도?"<br><small>…믿지 마라.</small>' },
+  ];
+  const order = shuffleR([0,1,2,3], rng(me.team_id + 'c'));
+  P.innerHTML = `<div class="pz-title">🃏 단서 카드 — 카드를 뒤집어 조합하라</div>
+    <div class="cards">${order.map(k => `<button class="card3d" data-k="${k}"><div class="inner"><div class="face back"><span>?</span><small>터치해서 뒤집기</small></div>
+      <div class="face front"><em>${cards[k].t}</em><p>${cards[k].b}</p></div></div></button>`).join('')}</div>`;
+  P.querySelectorAll('.card3d').forEach(b => b.onclick = () => { if(!b.classList.contains('flip')){ b.classList.add('flip'); sfx.tap(); buzz(12); } });
+}
+
+/* 3) 자음·모음 조각 맞추기 */
+const CHO = 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ', JUNG = 'ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ', JONG = ' ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ';
+function composeJamo(seq){
+  let out = '', i = 0;
+  while(i < seq.length){
+    const c = CHO.indexOf(seq[i]), v = i + 1 < seq.length ? JUNG.indexOf(seq[i+1]) : -1;
+    if(c >= 0 && v >= 0){
+      let jg = 0, used = 2;
+      if(i + 2 < seq.length){ const jj = JONG.indexOf(seq[i+2]); const nextV = i + 3 < seq.length && JUNG.indexOf(seq[i+3]) >= 0;
+        if(jj > 0 && !nextV){ jg = jj; used = 3; } }
+      out += String.fromCharCode(44032 + c*588 + v*28 + jg); i += used;
+    }else{ out += seq[i]; i++; }
+  }
+  return out;
+}
+function puzzleJamo(P, q, pz){
+  $('lockName').textContent = '조각 자물쇠';
+  P.innerHTML = `<div class="pz-title">🧩 찢어진 쪽지 — 자음·모음 조각을 맞춰라</div>
+    <p class="pz-note">바닥에 떨어진 조각들… 조각을 <b>순서대로</b> 눌러 ○○에 들어갈 두 글자를 완성하세요.</p>`;
+  const w = $('lockWidget'), pieces = pz.jamo, seq = [];
+  w.className = 'jamo';
+  w.innerHTML = `<div class="jm-out" id="jmOut"></div><div class="jm-pieces">${pieces.map((p, i) => `<button class="jm" data-i="${i}">${esc(p)}</button>`).join('')}</div>
+    <div class="jm-ctl"><button class="clear" id="jmBack">⌫ 하나 지우기</button><button class="clear" id="jmClr">↺ 처음부터</button></div>`;
+  const used = [];
+  const paint = () => {
+    const txt = composeJamo(seq);
+    $('jmOut').innerHTML = txt ? [...txt].map(ch => `<span>${esc(ch)}</span>`).join('') : '<em>조각을 눌러 보세요</em>';
+    w.querySelectorAll('.jm').forEach((b, i) => b.classList.toggle('used', used.includes(i)));
+  };
+  w.querySelectorAll('.jm').forEach((b, i) => b.onclick = () => { if(used.includes(i)) return; used.push(i); seq.push(pieces[i]); sfx.tap(); buzz(10); paint(); });
+  $('jmBack').onclick = () => { if(used.length){ used.pop(); seq.pop(); sfx.tick(); paint(); } };
+  $('jmClr').onclick = () => { used.length = 0; seq.length = 0; sfx.tick(); paint(); };
+  paint();
+  lockInput = { get: () => composeJamo(seq), full: () => seq.length > 0, reset(){ used.length = 0; seq.length = 0; paint(); } };
+}
+
+/* 4) 사다리 타기 */
+function puzzleLadder(P, q, pz){
+  const r = rng(me.team_id + 'L' + q.no);
+  const tops = shuffleR(['엘라비에', '리즈톡스', 'FDA 주사제', '창립 1965'], r);
+  const goal = tops.indexOf('엘라비에');
+  const COLS = 4, LV = 9, rungs = [];
+  for(let l = 0; l < LV; l++){ const a = Math.floor(r() * (COLS - 1)); rungs.push(r() < .85 ? a : -1); }
+  const walk = c => { const pts = [[c, -0.5]]; for(let l = 0; l < LV; l++){ pts.push([c, l]); if(rungs[l] === c){ c++; pts.push([c, l]); } else if(rungs[l] === c - 1){ c--; pts.push([c, l]); } } pts.push([c, LV - 0.5]); return { end: c, pts }; };
+  const goalEnd = walk(goal).end;
+  const traps = shuffleR(['🚨 간수실', '🧱 막다른 길', '🔒 독방'], r);
+  const bottoms = []; let ti = 0; for(let c = 0; c < COLS; c++) bottoms.push(c === goalEnd ? 'GOAL' : traps[ti++]);
+  const X = c => 12.5 + c * 25, Y = l => 8 + (l + .5) * (84 / LV);
+  let svg = `<svg viewBox="0 0 100 100" preserveAspectRatio="none" class="ladder-svg">`;
+  for(let c = 0; c < COLS; c++) svg += `<line x1="${X(c)}" y1="2" x2="${X(c)}" y2="98" class="lrail"/>`;
+  rungs.forEach((a, l) => { if(a >= 0) svg += `<line x1="${X(a)}" y1="${Y(l)}" x2="${X(a+1)}" y2="${Y(l)}" class="lrung"/>`; });
+  svg += `<polyline id="lpath" class="lpath" points=""/></svg>`;
+  P.innerHTML = `<div class="pz-title">🪜 탈출 사다리 — 필러 제품에서 출발하라</div>
+    <p class="pz-note">제품을 골라 사다리를 타세요. 잘못 고르면 <b>간수에게 들킵니다!</b></p>
+    <div class="ladder"><div class="l-tops">${tops.map((t, i) => `<button class="l-top" data-i="${i}">${esc(t)}</button>`).join('')}</div>
+      <div class="l-board">${svg}</div>
+      <div class="l-bots">${bottoms.map((b, i) => `<div class="l-bot" data-i="${i}">?</div>`).join('')}</div></div>
+    <div class="l-prize hidden" id="lPrize"><span>🗝️ 비밀 통로에서 발견한 글자 조각</span><b>${(pz.scramble || []).map(esc).join(' · ')}</b><small>올바른 순서로 맞춰 자물쇠를 여세요</small></div>`;
+  setPadlock(false);
+  let running = false;
+  P.querySelectorAll('.l-top').forEach(b => b.onclick = () => {
+    if(running) return; running = true; sfx.tap();
+    const i = +b.dataset.i, w = walk(i);
+    P.querySelectorAll('.l-top').forEach(x => x.classList.toggle('sel', x === b));
+    const pts = w.pts.map(([c, l]) => `${X(c)},${l < 0 ? 2 : l >= LV - .5 ? 98 : Y(l)}`).join(' ');
+    const pl = $('lpath'); pl.setAttribute('points', pts);
+    pl.classList.remove('draw'); void pl.getBoundingClientRect(); pl.classList.add('draw');
+    setTimeout(() => {
+      const bot = P.querySelector(`.l-bot[data-i="${w.end}"]`);
+      if(bottoms[w.end] === 'GOAL'){
+        bot.textContent = '🚪 비밀 통로'; bot.classList.add('win');
+        $('lPrize').classList.remove('hidden'); setPadlock(true); sfx.open(); buzz([40, 40, 120]);
+        $('lPrize').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }else{
+        bot.textContent = bottoms[w.end]; bot.classList.add('trap');
+        guardAlarm(() => { running = false; });
+        return;
+      }
+      running = false;
+    }, 1700);
+  });
+}
+function guardAlarm(done){
+  const L = $('lockout'); let n = 5;
+  L.classList.remove('hidden'); $('loN').textContent = n; sfx.wrong(); buzz([300, 100, 300]);
+  const t = setInterval(() => { n--; $('loN').textContent = n; if(n > 0) sfx.tick(); else { clearInterval(t); L.classList.add('hidden'); done && done(); } }, 1000);
 }
 
 /* ---------- 탈출 / 종료 ---------- */
