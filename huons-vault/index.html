@@ -205,7 +205,7 @@ async function showDone(){
   $('doneWrong').textContent = t.wrong_total;
   $('doneHints').textContent = t.hints_used;
   try{
-    const { data } = await sb.from('vault_teams').select('id,finished_at').not('finished_at','is',null).order('finished_at');
+    const { data } = await sb.from('vault_teams').select('id,finished_at').eq('round', state.game.round).not('finished_at','is',null).order('finished_at');
     const idx = (data||[]).findIndex(r => r.id === t.id);
     $('doneRank').textContent = idx >= 0 ? (idx+1)+'등' : '-';
   }catch(e){}

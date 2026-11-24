@@ -153,7 +153,8 @@ async function loadGame(){
   renderStatus();
 }
 async function loadTeams(){
-  const { data } = await sb.from('vault_teams').select('id,name,stage,wrong_total,hints_used,finished_at,elapsed_sec,created_at');
+  if(!game) return;
+  const { data } = await sb.from('vault_teams').select('id,name,stage,wrong_total,hints_used,finished_at,elapsed_sec,created_at').eq('round', game.round);
   teams = data || []; renderTeams();
 }
 async function syncClock(){
@@ -163,7 +164,7 @@ async function syncClock(){
     clockOffset = new Date(now).getTime() - (t0 + t1)/2;
   }catch(e){}
 }
-function loadAll(){ loadGame(); loadTeams(); syncClock(); }
+async function loadAll(){ syncClock(); await loadGame(); await loadTeams(); }
 
 function remaining(){
   if(!game || !game.started_at) return (game ? game.duration_sec : 1800);
@@ -223,7 +224,7 @@ function renderTeams(){
 function startLive(){
   sb.channel('vault-admin')
     .on('postgres_changes', { event:'*', schema:'public', table:'vault_teams' }, () => loadTeams())
-    .on('postgres_changes', { event:'*', schema:'public', table:'vault_game' }, p => { if(p.new && p.new.id){ game = p.new; renderStatus(); } else loadGame(); })
+    .on('postgres_changes', { event:'*', schema:'public', table:'vault_game' }, p => { if(p.new && p.new.id){ const rc = !game || game.round !== p.new.round; game = p.new; renderStatus(); if(rc) loadTeams(); } else loadAll(); })
     .subscribe();
   setInterval(loadAll, 20000);
 }

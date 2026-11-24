@@ -15,7 +15,8 @@ create table if not exists public.vault_questions (
 );
 create table if not exists public.vault_teams (
   id uuid primary key default gen_random_uuid(),
-  name text not null unique,
+  round int not null,
+  name text not null,
   stage int not null default 0,
   wrong_total int not null default 0,
   wrong_by_stage int[] not null default '{0,0,0,0}',
@@ -23,7 +24,8 @@ create table if not exists public.vault_teams (
   hint_stages int[] not null default '{}',
   finished_at timestamptz,
   elapsed_sec int,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  unique (round, name)
 );
 create table if not exists public.vault_team_tokens (
   team_id uuid primary key references public.vault_teams(id) on delete cascade,
@@ -68,7 +70,9 @@ $$;
 
 create or replace function public.vault_auth(p_team uuid, p_token uuid) returns boolean
 language sql stable security definer set search_path = public as $$
-  select exists(select 1 from vault_team_tokens where team_id = p_team and token = p_token)
+  select exists(select 1 from vault_team_tokens k join vault_teams t on t.id = k.team_id
+                join vault_game g on g.id = 1 and g.round = t.round
+                where k.team_id = p_team and k.token = p_token)
 $$;
 
 create or replace function public.vault_is_admin(p_pw text) returns boolean
@@ -81,13 +85,14 @@ language sql stable set search_path = public as $$ select now() $$;
 
 create or replace function public.vault_join(p_name text) returns json
 language plpgsql security definer set search_path = public as $$
-declare v_name text := btrim(coalesce(p_name,'')); v_id uuid; v_tok uuid;
+declare v_name text := btrim(coalesce(p_name,'')); v_id uuid; v_tok uuid; v_round int;
 begin
   if length(v_name) < 1 or length(v_name) > 20 then raise exception 'BAD_NAME'; end if;
-  if exists(select 1 from vault_teams where lower(name) = lower(v_name)) then raise exception 'TEAM_EXISTS'; end if;
-  insert into vault_teams(name) values (v_name) returning id into v_id;
+  select round into v_round from vault_game where id = 1;
+  if exists(select 1 from vault_teams where round = v_round and lower(name) = lower(v_name)) then raise exception 'TEAM_EXISTS'; end if;
+  insert into vault_teams(round, name) values (v_round, v_name) returning id into v_id;
   insert into vault_team_tokens(team_id) values (v_id) returning token into v_tok;
-  return json_build_object('team_id', v_id, 'token', v_tok, 'round', (select round from vault_game where id=1));
+  return json_build_object('team_id', v_id, 'token', v_tok, 'round', v_round);
 end $$;
 
 create or replace function public.vault_state(p_team uuid, p_token uuid) returns json
@@ -179,7 +184,8 @@ language plpgsql security definer set search_path = public as $$
 begin
   if not vault_is_admin(p_pw) then raise exception 'BAD_PASSWORD'; end if;
   update vault_teams set stage = 0, wrong_total = 0, wrong_by_stage = '{0,0,0,0}', hints_used = 0,
-    hint_stages = '{}', finished_at = null, elapsed_sec = null where true;
+    hint_stages = '{}', finished_at = null, elapsed_sec = null
+  where round = (select round from vault_game where id = 1);
   update vault_game set status = 'running', started_at = now(),
     duration_sec = greatest(1, coalesce(p_duration_min, 30)) * 60, updated_at = now() where id = 1;
 end $$;
@@ -191,16 +197,14 @@ begin
   update vault_game set status = 'ended', updated_at = now() where id = 1;
 end $$;
 
+-- 초기화: 회차(round)를 올려 이전 팀을 게임/화면에서 제외 (행 삭제 없음)
 create or replace function public.vault_admin_reset(p_pw text) returns void
 language plpgsql security definer set search_path = public as $$
 begin
   if not vault_is_admin(p_pw) then raise exception 'BAD_PASSWORD'; end if;
-  delete from vault_teams where true;
   update vault_game set status = 'waiting', started_at = null, round = round + 1, updated_at = now() where id = 1;
 end $$;
 
-revoke execute on function public.vault_auth(uuid, uuid) from public, anon, authenticated;
-revoke execute on function public.vault_is_admin(text) from public, anon, authenticated;
 grant execute on function public.vault_now(), public.vault_join(text), public.vault_state(uuid, uuid),
   public.vault_submit(uuid, uuid, text), public.vault_hint(uuid, uuid), public.vault_admin_login(text),
   public.vault_admin_questions(text), public.vault_admin_save_questions(text, jsonb),
