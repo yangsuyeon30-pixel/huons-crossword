@@ -7,16 +7,16 @@ const HEADERS = { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY, 'Content-Ty
 // 슬라이드 그림을 따라 그린 좌표 (viewBox 0~960 x 0~1040)
 const S = 2.5; // 글자 크기 배율
 const REGIONS = [
-  { key: 'k1', name: '보라', fill: '#DDD3E8', ink: '#5B3F78', tx: [395, 275], w: 290, h: 190,
+  { key: 'k1', name: '보라', fill: '#DDD3E8', ink: '#5B3F78', tx: [395, 275], w: 270, h: 190,
     pts: [[215, 200], [300, 150], [390, 140], [440, 180], [480, 235], [530, 258], [585, 272], [598, 330], [560, 385],
       [490, 398], [420, 392], [360, 372], [290, 368], [225, 378], [200, 320], [202, 255]] },
   { key: 'k2', name: '하늘', fill: '#C6E4F3', ink: '#1F5E80', tx: [610, 190], w: 220, h: 130,
     pts: [[430, 118], [520, 92], [630, 98], [720, 130], [775, 185], [772, 245], [725, 292], [660, 312], [610, 298],
       [585, 255], [525, 242], [478, 215], [440, 165]] },
-  { key: 'k3', name: '연두', fill: '#D9E2BC', ink: '#55662A', tx: [778, 372], w: 70, vertical: true,
+  { key: 'k3', name: '연두', fill: '#D9E2BC', ink: '#55662A', tx: [776, 365], w: 66, h: 130,
     pts: [[700, 305], [748, 285], [785, 240], [815, 270], [835, 340], [838, 410], [822, 468], [780, 448],
       [742, 430], [722, 385], [702, 345]] },
-  { key: 'k4', name: '노랑', fill: '#F2E0A6', ink: '#7A5A12', tx: [272, 458], w: 120, h: 70,
+  { key: 'k4', name: '노랑', fill: '#F2E0A6', ink: '#7A5A12', tx: [274, 458], w: 122, h: 72,
     pts: [[200, 420], [262, 404], [330, 408], [348, 445], [332, 505], [282, 512], [232, 486], [202, 448]] },
   { key: 'k5', name: '분홍', fill: '#F5C0C3', ink: '#8A2E38', tx: [520, 495], w: 300, h: 140,
     pts: [[368, 450], [410, 425], [470, 422], [525, 405], [590, 385], [625, 350], [680, 348], [722, 372], [736, 420],
@@ -47,36 +47,60 @@ function esc(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-// 구역 안에 들어갈 글자 (여러 줄, 크기 자동)
-function regionText(r, lines, maxSize) {
-  lines = lines.filter(Boolean);
-  if (!lines.length) return '';
-  const [x, y] = r.tx;
-  if (r.vertical) {
-    // 좁은 뒤통수 구역: 세로쓰기
-    // 여러 키워드면 세로 줄을 나란히
-    const cols = lines.slice(0, 1);
-    const longest = Math.max(...cols.map(s => [...s].length));
-    const size = Math.min(maxSize * 0.8, 190 / Math.max(1, longest), 20 * S);
-    let out = '';
-    cols.forEach((s, ci) => {
-      const chars = [...s];
-      const cx = x + (ci - (cols.length - 1) / 2) * size * 1.05;
-      chars.forEach((c, i) => {
-        const yy = y + (i - (chars.length - 1) / 2) * size * 1.02;
-        out += `<text x="${cx.toFixed(1)}" y="${yy.toFixed(1)}" fill="${r.ink}" font-size="${size.toFixed(1)}" font-weight="800" text-anchor="middle" dominant-baseline="central">${esc(c)}</text>`;
-      });
-    });
-    return out;
+// 글자 폭 (한글 1, 영문·숫자 0.6)
+const textW = s => [...s].reduce((a, c) => a + (c.charCodeAt(0) > 255 ? 1 : c === ' ' ? 0.35 : 0.6), 0);
+
+// 한 줄 최대 폭(limit)에 맞춰 줄바꿈: 띄어쓰기 우선, 너무 긴 단어는 글자 단위로 자름
+function wrap(s, limit) {
+  const lines = [];
+  let cur = '';
+  const push = () => { if (cur.trim()) lines.push(cur.trim()); cur = ''; };
+  s.split(/\s+/).filter(Boolean).forEach(word => {
+    const cand = cur ? cur + ' ' + word : word;
+    if (textW(cand) <= limit) { cur = cand; return; }
+    push();
+    if (textW(word) <= limit) { cur = word; return; }
+    for (const ch of word) {
+      if (textW(cur + ch) > limit) push();
+      cur += ch;
+    }
+  });
+  push();
+  return lines;
+}
+
+// 구역 상자(w×h)에 다 들어가도록 줄 수와 글자 크기를 자동으로 고름
+function fitText(s, w, h, maxSize) {
+  let best = { lines: [s], size: 0 };
+  const total = Math.ceil(textW(s));
+  for (let limit = Math.max(1, total); limit >= 1; limit--) {
+    const lines = wrap(s, limit);
+    const widest = Math.max(...lines.map(textW));
+    const size = Math.min(maxSize, w / widest, h / (lines.length * 1.12));
+    // 줄을 늘리는 건 글씨가 충분히(15%↑) 커질 때만 → '다이어/트' 같은 어색한 줄바꿈 방지
+    if (size > best.size * 1.15) best = { lines, size };
   }
-  const h = r.h;
-  const per = Math.min(maxSize, h / lines.length);
+  return best;
+}
+
+// 구역 안에 들어갈 글자 (길면 자동 줄바꿈 + 작은 글씨)
+function regionText(r, items, maxSize) {
+  items = items.map(t => String(t).trim()).filter(Boolean);
+  if (!items.length) return '';
+  const [x, y] = r.tx;
+  // 키워드 여러 개(관리자 모아보기)는 높이를 나눠 각각 맞춤
+  const slot = r.h / items.length;
+  const blocks = items.map(t => fitText(t, r.w, slot, maxSize));
+  const lines = [];
+  blocks.forEach(b => b.lines.forEach(l => lines.push({ t: l, size: b.size })));
+  const lh = l => l.size * 1.12;
+  const totalH = lines.reduce((a, l) => a + lh(l), 0);
+  let yy = y - totalH / 2;
   let out = '';
-  lines.forEach((s, i) => {
-    const len = [...s].reduce((a, c) => a + (c.charCodeAt(0) > 255 ? 1 : 0.6), 0);
-    const size = Math.max(7 * S, Math.min(per * 0.95, r.w / Math.max(1, len)));
-    const yy = y + (i - (lines.length - 1) / 2) * per;
-    out += `<text x="${x}" y="${yy.toFixed(1)}" fill="${r.ink}" font-size="${size.toFixed(1)}" font-weight="800" text-anchor="middle" dominant-baseline="central">${esc(s)}</text>`;
+  lines.forEach(l => {
+    yy += lh(l) / 2;
+    out += `<text x="${x}" y="${yy.toFixed(1)}" fill="${r.ink}" font-size="${l.size.toFixed(1)}" font-weight="800" text-anchor="middle" dominant-baseline="central">${esc(l.t)}</text>`;
+    yy += lh(l) / 2;
   });
   return out;
 }

@@ -43,7 +43,7 @@
     <div class="card">
       <div class="brain-box" id="preview"></div>
       <div id="inputs"></div>
-      <p class="hint">키워드는 짧을수록 그림에 크게 보여요 (최대 12자).</p>
+      <p class="hint">길게 적으면 글씨가 자동으로 작아져서 구역 안에 다 들어가요 (최대 40자).</p>
     </div>
 
     <button class="main" id="submit">내 머릿속 제출하기</button>
@@ -73,7 +73,7 @@
 
   $('inputs').innerHTML = REGIONS.map(r =>
     `<div class="row"><span class="dot" style="background:${r.fill}" id="dot-${r.key}"></span>
-     <input id="in-${r.key}" maxlength="12" placeholder="${r.name} 구역 키워드" autocomplete="off"></div>`).join('');
+     <input id="in-${r.key}" maxlength="40" placeholder="${r.name} 구역 키워드" autocomplete="off"></div>`).join('');
 
   function values() {
     const o = {};
