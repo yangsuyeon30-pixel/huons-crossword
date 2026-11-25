@@ -154,11 +154,22 @@
       <div id="flash" class="flash"></div>
       <p id="feedback" class="feedback"></p>
       <button id="btnSubmit" class="btn btn-gold"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="7.5" cy="15.5" r="4.5"/><path d="M10.7 12.3 21 2M16 7l3 3M18.5 4.5l2 2"/></svg>자물쇠 열기</button>
-      <button id="btnHint" class="btn btn-ghost"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/></svg>힌트 보기 <span id="hintLeft">(3/3 남음)</span></button>
+      <button id="btnHint" class="btn btn-ghost"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/></svg>힌트 받기 <span id="hintLeft">(미니퀴즈)</span></button>
     </div>
 
     <!-- 간수 경보 (사다리 함정) -->
     <div id="lockout" class="lockout hidden"><div class="lo-siren">🚨</div><div class="lo-t">간수에게 들켰다!</div><div class="lo-n" id="loN">5</div><div class="lo-s">잠시 숨어 있어야 해요…</div></div>
+
+    <!-- 미니퀴즈 (맞히면 힌트) -->
+    <div id="mini" class="mini-quiz hidden">
+      <div class="mq-card">
+        <div class="mq-tag">HINT 미니퀴즈</div>
+        <p class="mq-q" id="mqQ"></p>
+        <div class="mq-opts" id="mqOpts"></div>
+        <p class="mq-msg" id="mqMsg"></p>
+        <button id="mqClose" class="btn btn-ghost">닫기</button>
+      </div>
+    </div>
 
     <!-- 해제 성공 오버레이 -->
     <div id="unlocked" class="unlocked hidden">
@@ -421,10 +432,10 @@ function renderPlay(){
   if(wasHidden || $('playCell').dataset.stage !== String(t.stage)){ renderCell($('playCell'), t.character, t.stage); $('playCell').dataset.stage = t.stage; }
   $('stageNo').textContent = t.stage + 1;
   $('question').textContent = q ? q.text : '';
-  $('hintBox').classList.add('hidden'); $('btnHint').classList.add('hidden');   // 힌트 없음
-  const left = 3 - t.hints_used;
-  $('hintLeft').textContent = `(${left}/3 남음)`;
-  $('btnHint').disabled = left <= 0;
+  if(q && q.hint){ $('hintText').textContent = q.hint; $('hintBox').classList.remove('hidden'); $('btnHint').classList.add('hidden'); }
+  else { $('hintBox').classList.add('hidden'); $('btnHint').classList.toggle('hidden', !(q && q.mini)); }
+  $('btnHint').disabled = false;
+  if(t.cooldown > 0 && !freezing) freeze(t.cooldown, '오답! 잠깐 멈춤');
   const key = q ? (state.game.round + ':' + q.no + ':' + JSON.stringify(q.lock)) : null;
   if(q && key !== lastQKey){
     lastQKey = key;
@@ -460,6 +471,17 @@ function buildLock(lock){
     bindErase(w, null, () => { sel.clear(); paint(); });
     paint();
     lockInput = { get: () => [...sel].map(i => lock.cards[i]).join(','), full: () => sel.size === lock.pick, need: `카드 ${lock.pick}개를 모두 골라 주세요.` };
+    return;
+  }
+  if(lock.kind === 'text'){
+    $('lockName').textContent = '정답 자물쇠';
+    w.className = 'textlock';
+    const n = lock.count || 1;
+    w.innerHTML = Array.from({length: n}, (_, i) => `<input class="ans-inp" id="ans${i}" type="text" autocomplete="off" autocapitalize="${lock.eng ? 'characters' : 'off'}" enterkeyhint="${i < n - 1 ? 'next' : 'done'}" placeholder="${n > 1 ? (i + 1) + '번째 답' : '정답을 입력하세요'}">`).join('') + eraseRow(false, null, '↺ 전부 지우기');
+    const ins = [...w.querySelectorAll('.ans-inp')];
+    ins.forEach((el, i) => el.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); if(i < n - 1) ins[i + 1].focus(); else $('btnSubmit').click(); } }));
+    bindErase(w, null, () => { ins.forEach(el => el.value = ''); ins[0].focus(); });
+    lockInput = { get: () => ins.map(el => el.value.trim()).join(','), full: () => ins.every(el => el.value.trim()), need: n > 1 ? `${n}칸을 모두 채워 주세요.` : '정답을 입력해 주세요.' };
     return;
   }
   if(lock.kind === 'choice'){
@@ -557,9 +579,12 @@ function renderPuzzle(q){
   if(cfg.puzzle === 'jamo' && pz.jamo) return puzzleJamo(P, q, pz);
   if(cfg.puzzle === 'ladder') return puzzleLadder(P, q, pz);
   const steps = {
-    digits: ['아래 숫자 칸의 <b>▲ ▼</b>를 눌러 숫자를 맞추세요. (칸을 위아래로 밀어도 돼요)', '숫자를 다 맞췄으면 <b>자물쇠 열기</b>를 누르세요.'],
+    digits: ['아래 숫자 칸의 <b>▲ ▼</b>를 눌러 숫자를 맞추세요. (칸을 위아래로 밀어도 돼요)', '숫자를 다 맞췄으면 <b>자물쇠 열기</b>! 틀리면 <b>5초 동안 멈춰요.</b>'],
     multi:  [`정답 카드 <b>${q.lock.pick}개</b>를 골라 누르세요. 고른 카드는 밝은색으로 바뀌어요.`, '잘못 골랐으면 그 카드를 <b>한 번 더 누르면</b> 취소돼요. 순서는 상관없어요.', `${q.lock.pick}개를 다 골랐으면 <b>자물쇠 열기</b>를 누르세요.`],
     choice: ['보기 중에서 정답 <b>하나</b>를 골라 누르세요.', '골랐으면 <b>자물쇠 열기</b>를 누르세요.'],
+    text:   q.lock.count > 1
+              ? [`빈칸 <b>${q.lock.count}개</b>에 정답을 하나씩 직접 적으세요. <b>순서는 상관없어요.</b>`, '띄어쓰기는 신경 쓰지 않아도 돼요.', '다 적었으면 <b>자물쇠 열기</b>! 틀리면 <b>5초 동안 멈춰요.</b>']
+              : ['빈칸에 정답을 <b>직접 적으세요.</b>' + (q.lock.eng ? ' (대소문자 상관없어요)' : ' (띄어쓰기 상관없어요)'), '다 적었으면 <b>자물쇠 열기</b>! 틀리면 <b>5초 동안 멈춰요.</b>'],
     letters:['아래 글자 타일을 <b>순서대로</b> 눌러 빈칸을 채우세요.', '잘못 넣으면 <b>⌫ 한 글자</b>를 누르세요.', '다 채웠으면 <b>자물쇠 열기</b>를 누르세요.'],
   }[kind] || [];
   P.innerHTML = (cfg.title ? `<div class="pz-title">${esc(cfg.title)}</div>` : '') + (steps.length ? howto(steps) : '');
@@ -698,6 +723,14 @@ function puzzleLadder(P, q, pz){
     }, 1700);
   });
 }
+let freezing = false;
+function freeze(sec, title, done){
+  const L = $('lockout'); let n = Math.max(1, Math.round(sec)); freezing = true;
+  L.querySelector('.lo-t').textContent = title || '오답! 잠깐 멈춤';
+  L.querySelector('.lo-s').textContent = '잠시 후 다시 도전할 수 있어요…';
+  L.classList.remove('hidden'); $('loN').textContent = n;
+  const t = setInterval(() => { n--; $('loN').textContent = n; if(n > 0) sfx.tick(); else { clearInterval(t); L.classList.add('hidden'); freezing = false; done && done(); } }, 1000);
+}
 function guardAlarm(done){
   const L = $('lockout'); let n = 5;
   L.classList.remove('hidden'); $('loN').textContent = n; sfx.wrong(); buzz([300, 100, 300]);
@@ -805,12 +838,14 @@ $('btnSubmit').onclick = async () => {
         renderCell($('playCell'), r.state.team.character, r.state.team.stage); $('playCell').dataset.stage = r.state.team.stage;
       }, 700);
     }else{
-      wrongFx('다시 시도!');
+      wrongFx('땡! 다시 생각해 보세요');
       state = r.state;
+      setTimeout(() => freeze(5, '땡! 5초 동안 멈춤'), 450);
     }
   }catch(e){
     const c = errCode(e);
-    if(c === 'TIME_UP' || c === 'NOT_RUNNING') await refresh();
+    if(c === 'COOLDOWN'){ if(!freezing) freeze(5, '잠깐! 아직 멈춤 중'); }
+    else if(c === 'TIME_UP' || c === 'NOT_RUNNING') await refresh();
     else if(c === 'NO_TEAM'){ clearMe(); show('v-join'); }
     else { $('feedback').textContent = '전송에 실패했어요. 다시 눌러 주세요.'; $('feedback').className = 'feedback bad'; }
   }finally{ busy = false; $('btnSubmit').disabled = false; }
@@ -823,16 +858,29 @@ $('btnNext').onclick = () => {
   if(s) applyState(s); else refresh();
 };
 
-$('btnHint').onclick = async () => {
-  if(!state || busy) return;
-  const left = 3 - state.team.hints_used;
-  if(left <= 0) return;
-  if(!confirm(`힌트를 사용할까요?\n팀 전체 남은 힌트: ${left}회 → ${left-1}회`)) return;
-  busy = true;
-  try{ applyState(await rpc('vault_hint', { p_team: me.team_id, p_token: me.token })); sfx.tap(); }
-  catch(e){ if(errCode(e) === 'NO_HINTS') alert('힌트를 모두 사용했어요!'); else await refresh(); }
-  finally{ busy = false; }
+$('btnHint').onclick = () => {
+  const q = state && state.question; if(!q || !q.mini || busy) return;
+  $('mqQ').textContent = q.mini.q; $('mqMsg').textContent = ''; $('mqMsg').className = 'mq-msg';
+  $('mqOpts').innerHTML = q.mini.options.map((o, i) => `<button class="mq-o" data-i="${i}"><span>${'ABCD'[i]}</span>${esc(o)}</button>`).join('');
+  $('mqOpts').querySelectorAll('.mq-o').forEach((b, i) => b.onclick = () => answerMini(q.mini.options[i], b));
+  $('mini').classList.remove('hidden'); sfx.tap();
 };
+async function answerMini(pick, btn){
+  if(busy) return; busy = true;
+  try{
+    const s = await rpc('vault_mini', { p_team: me.team_id, p_token: me.token, p_pick: pick });
+    btn.classList.add('ok'); $('mqMsg').textContent = '딩동댕! 힌트가 열렸어요 💡'; $('mqMsg').className = 'mq-msg ok';
+    sfx.open(); buzz([40, 40, 120]);
+    setTimeout(() => { $('mini').classList.add('hidden'); applyState(s); }, 1100);
+  }catch(e){
+    if(errCode(e) === 'MINI_WRONG'){
+      btn.classList.add('no'); $('mqMsg').textContent = '땡! 5초 뒤에 다시 도전하세요'; $('mqMsg').className = 'mq-msg bad';
+      sfx.wrong(); buzz([200, 80, 200]);
+      setTimeout(() => { $('mini').classList.add('hidden'); freeze(5, '미니퀴즈 땡! 5초 멈춤'); }, 700);
+    }else await refresh();
+  }finally{ busy = false; }
+}
+$('mqClose').onclick = () => $('mini').classList.add('hidden');
 
 /* ---------- 실시간 ---------- */
 sb.channel('vault-live')

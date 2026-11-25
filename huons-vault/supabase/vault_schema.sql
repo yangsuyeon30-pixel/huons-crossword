@@ -405,3 +405,7 @@ insert into public.vault_config(key, value) values ('entry_code', lpad((floor(ra
 -- vault_quiz(id, question, answer, hint, cfg): 문제 내용은 DB에만 보관 (저장소에 넣지 않음)
 -- vault_total(), vault_check(answer, input, cfg), vault_lock2(team, answer, cfg)
 -- vault_state / vault_submit / vault_admin_questions / vault_admin_save_questions 가 vault_quiz 사용
+
+-- ===== 주관식 입력(cfg.input='text'), 오답 5초 멈춤(last_wrong_at, COOLDOWN), 미니퀴즈 힌트(vault_mini) =====
+-- 미니퀴즈 정답(cfg.mini.a)은 서버만 보관하고 참가자에게 내려보내지 않음
+alter table public.vault_teams add column if not exists last_wrong_at timestamptz;

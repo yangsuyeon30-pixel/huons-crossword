@@ -708,3 +708,23 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 /* 지우기 버튼: 좁은 폰에서도 한 줄 */
 .erase{white-space:nowrap;font-size:clamp(12px,3.6vw,14.5px);padding:0 6px;letter-spacing:-.3px;overflow:hidden;text-overflow:ellipsis}
 .erase-row{gap:6px}
+
+/* 주관식 입력 */
+.textlock{display:grid;gap:8px}
+.ans-inp{width:100%;min-width:0;padding:13px 14px;font-size:18px;font-weight:900;text-align:center;border-radius:12px;border:2px solid rgba(59,45,6,.45);
+  background:#fffbea;color:#1a1405;font-family:inherit;outline:none}
+.ans-inp:focus{border-color:#1a1405;box-shadow:0 0 0 3px rgba(26,20,5,.2)}
+.ans-inp::placeholder{color:#a99a6d;font-weight:700;font-size:15px}
+/* 미니퀴즈 팝업 */
+.mini-quiz{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(3,8,22,.82);animation:fadein .25s}
+.mq-card{width:100%;max-width:380px;background:linear-gradient(180deg,#16244a,#0c1530);border:1.5px solid var(--gold);border-radius:20px;padding:20px 16px 14px;text-align:center;animation:pop .35s}
+.mq-tag{display:inline-block;font-size:12px;font-weight:900;letter-spacing:2px;color:#1a1405;background:var(--gold2);padding:3px 10px;border-radius:999px}
+.mq-q{font-size:19px;font-weight:900;line-height:1.5;margin:12px 0 14px;color:#fff;word-break:keep-all}
+.mq-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mq-o{display:flex;align-items:center;gap:8px;min-height:52px;border:0;border-radius:12px;background:#22325c;color:#fff;font-size:16px;font-weight:900;font-family:inherit;cursor:pointer;padding:6px 10px;text-align:left;word-break:keep-all}
+.mq-o span{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.15);font-size:12px;flex:none}
+.mq-o.ok{background:#16a34a}
+.mq-o.no{background:#b91c1c;animation:shake .4s}
+.mq-msg{min-height:22px;margin:10px 0 4px;font-weight:900}
+.mq-msg.ok{color:#4ade80}.mq-msg.bad{color:#f87171}
+.mq-card .btn{margin-top:4px;padding:10px}
