@@ -53,6 +53,13 @@
 .qcard textarea,.qcard input{width:100%;background:#060d20;border:1px solid var(--line);border-radius:10px;color:var(--ink);
   padding:10px;font-size:14px;font-family:inherit;resize:vertical}
 .login{max-width:380px;margin:12vh auto 0}
+.ad-splash{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;
+  background:radial-gradient(800px 480px at 50% 35%,rgba(30,107,255,.35),transparent 70%),#040816;transition:opacity .5s}
+.ad-splash.gone{opacity:0;pointer-events:none}
+.ad-splash .huons-logo{width:min(90vw,640px)}
+.ad-splash .huons-logo .lg-title{font-size:clamp(56px,8vw,96px)}
+.ad-splash .btn{width:auto;padding:20px 44px;font-size:24px}
+.ad-splash p{color:#9fb4dc;margin:0}
 .entry-code{margin-top:14px;display:flex;flex-direction:column;align-items:center;gap:2px}
 .entry-code span{font-size:14px;color:var(--muted);font-weight:700;letter-spacing:2px}
 .entry-code b{font-size:64px;letter-spacing:14px;color:var(--gold2);font-variant-numeric:tabular-nums;line-height:1.1;padding-left:14px}
@@ -77,6 +84,11 @@
 </style>
 </head>
 <body>
+<div id="adSplash" class="ad-splash">
+  <div class="huons-logo admin-splash" role="img" aria-label="휴온스 플랜 탈출룸"></div>
+  <button id="adStart" class="btn btn-gold">▶ 관제실 시작 (음악 켜기)</button>
+  <p>브라우저 규칙상 한 번 눌러야 소리가 나요</p>
+</div>
 <div class="wrap">
 
 
@@ -208,7 +220,7 @@ setInterval(tick, 500);
 let bgmOn = true, gestured = false;
 try{ bgmOn = localStorage.getItem('vault_admin_bgm') !== '0'; }catch(e){}
 // 브라우저는 클릭 전에는 소리를 막으므로, 화면을 처음 클릭하는 순간 음악 시작
-document.addEventListener('pointerdown', e => { if(!gestured && !e.target.closest('#btnBgm')){ gestured = true; bgmSync(); } }, true);
+document.addEventListener('pointerdown', e => { if(!gestured && !e.target.closest('#btnBgm') && !e.target.closest('#adStart')){ gestured = true; bgmSync(); } }, true);
 function bgmSync(){
   $('btnBgm').textContent = !bgmOn ? '🎵 배경음악 켜기' : gestured ? '🎵 배경음악 끄기' : '🎵 화면을 클릭하면 음악 시작';
   $('btnBgm').classList.toggle('btn-gold', bgmOn); $('btnBgm').classList.toggle('btn-ghost', !bgmOn);
@@ -218,6 +230,7 @@ function bgmSync(){
   VaultBGM.setVolume(.7);
   VaultBGM.start();
 }
+$('adStart').onclick = () => { gestured = true; bgmOn = true; try{ localStorage.setItem('vault_admin_bgm', '1'); }catch(e){} bgmSync(); $('adSplash').classList.add('gone'); setTimeout(() => $('adSplash').remove(), 500); };
 $('btnBgm').onclick = () => { if(gestured) bgmOn = !bgmOn; else bgmOn = true; gestured = true; try{ localStorage.setItem('vault_admin_bgm', bgmOn ? '1' : '0'); }catch(e){} bgmSync(); };
 setInterval(() => { if(bgmOn && gestured) bgmSync(); }, 1000);
 bgmSync();

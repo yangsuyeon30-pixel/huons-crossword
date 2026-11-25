@@ -146,7 +146,7 @@ window.VaultBGM = (function(){
     if(mode === 'win'){ fanfareAt(ctx.currentTime + .05); next = ctx.currentTime + 1.9; }
     master.gain.cancelScheduledValues(ctx.currentTime);
     master.gain.setValueAtTime(master.gain.value, ctx.currentTime);
-    master.gain.linearRampToValueAtTime(vol, ctx.currentTime + 1.5);
+    master.gain.linearRampToValueAtTime(vol, ctx.currentTime + .3);
     timer = setInterval(scheduler, 25);
   }
   function stop(fade = 1.5){
