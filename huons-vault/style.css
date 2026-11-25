@@ -704,3 +704,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .ch span{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.15);font-size:15px;flex:none}
 .ch.on{background:#fffbea;color:#1a1405;box-shadow:0 0 0 2px #1a1405,0 0 12px rgba(255,255,255,.4)}
 .ch.on span{background:#1a1405;color:#fffbea}
+
+/* 지우기 버튼: 좁은 폰에서도 한 줄 */
+.erase{white-space:nowrap;font-size:clamp(12px,3.6vw,14.5px);padding:0 6px;letter-spacing:-.3px;overflow:hidden;text-overflow:ellipsis}
+.erase-row{gap:6px}
