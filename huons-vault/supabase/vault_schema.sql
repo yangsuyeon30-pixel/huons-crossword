@@ -400,3 +400,8 @@ insert into public.vault_config(key, value) values ('entry_code', lpad((floor(ra
 -- vault_enter(p_no, p_char, p_code): 입장 코드 확인 후 입소 / 예전 vault_enter(int,int)·vault_join(text)는 CODE_REQUIRED로 막음
 -- vault_admin_get_code / vault_admin_set_code: 관리자 화면에서 입장 코드 확인·변경
 -- vault_state: question.cfg(카드 문구·사다리 출발점 등) 포함
+
+-- ===== 문제 N개(vault_quiz) + 쉬운 자물쇠(multi 카드 고르기 / choice 보기 고르기 / digits / letters), 힌트 없음 =====
+-- vault_quiz(id, question, answer, hint, cfg): 문제 내용은 DB에만 보관 (저장소에 넣지 않음)
+-- vault_total(), vault_check(answer, input, cfg), vault_lock2(team, answer, cfg)
+-- vault_state / vault_submit / vault_admin_questions / vault_admin_save_questions 가 vault_quiz 사용

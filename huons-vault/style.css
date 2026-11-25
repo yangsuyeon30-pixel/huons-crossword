@@ -689,3 +689,18 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   .drum{height:80px}
   .drum .cv{font-size:30px}
 }
+
+/* 카드 고르기 자물쇠 */
+.mc-count{text-align:center;font-weight:900;color:#3b2d06;margin-bottom:10px;font-size:15px}
+.mc-count b{font-size:20px}
+.mc-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.mc{min-height:48px;border:0;border-radius:10px;background:#1a2747;color:#fff;font-size:15px;font-weight:900;font-family:inherit;cursor:pointer;
+  box-shadow:inset 0 -3px 0 rgba(0,0,0,.35);padding:6px 2px;word-break:keep-all}
+.mc.on{background:#fffbea;color:#1a1405;box-shadow:0 0 0 2px #1a1405,0 0 12px rgba(255,255,255,.4);animation:pop .25s}
+/* 보기 고르기 자물쇠 */
+.ch-opts{display:grid;gap:8px}
+.ch{display:flex;align-items:center;gap:12px;min-height:52px;border:0;border-radius:12px;background:#1a2747;color:#fff;font-size:19px;font-weight:900;
+  font-family:inherit;cursor:pointer;padding:6px 14px;text-align:left;box-shadow:inset 0 -3px 0 rgba(0,0,0,.35)}
+.ch span{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.15);font-size:15px;flex:none}
+.ch.on{background:#fffbea;color:#1a1405;box-shadow:0 0 0 2px #1a1405,0 0 12px rgba(255,255,255,.4)}
+.ch.on span{background:#1a1405;color:#fffbea}

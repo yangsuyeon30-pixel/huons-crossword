@@ -102,8 +102,8 @@
     </div>
 
     <section id="editPanel" class="card hidden" style="margin-bottom:20px">
-      <h3 class="sec-title">문제 / 정답 / 힌트 편집</h3>
-      <p class="muted" style="margin-bottom:12px">정답은 공백·대소문자를 무시하고 비교합니다. 저장 즉시 참가자 화면에 반영됩니다.</p>
+      <h3 class="sec-title">문제 / 정답 편집</h3>
+      <p class="muted" style="margin-bottom:12px">정답은 공백·대소문자를 무시하고 비교합니다. 여러 개를 고르는 문제는 정답을 쉼표(,)로 구분하세요. 저장 즉시 참가자 화면에 반영됩니다.</p>
       <div class="qedit" id="qedit"></div>
       <div style="display:flex;gap:10px;margin-top:14px">
         <button id="btnSaveQ" class="btn btn-gold" style="width:auto;margin:0;padding:12px 24px">저장</button>
@@ -177,8 +177,10 @@ async function syncClock(){
     clockOffset = new Date(now).getTime() - (t0 + t1)/2;
   }catch(e){}
 }
+let TOTAL = 5;
+async function loadTotal(){ try{ TOTAL = await rpc('vault_total', {}) || 5; }catch(e){} }
 async function loadCode(){ try{ $('entryCode').textContent = await rpc('vault_admin_get_code', { p_pw: '' }); }catch(e){} }
-async function loadAll(){ syncClock(); loadCode(); await loadGame(); await loadTeams(); }
+async function loadAll(){ syncClock(); loadCode(); await loadTotal(); await loadGame(); await loadTeams(); }
 
 function remaining(){
   if(!game || !game.started_at) return (game ? game.duration_sec : 1800);
@@ -238,8 +240,8 @@ function renderTeams(){
     <div class="trow ${t.finished_at ? 'fin' : ''}">
       ${avHTML(t)}
       <div class="nm">${esc(t.name)} <small class="muted" style="font-size:14px">${esc(VAULT_CHARS.name(t.character))}</small></div>
-      <div class="lk">${[0,1,2,3].map(i => i < t.stage ? '<span class="o">🔓</span>' : '<span class="c">🔒</span>').join('')}</div>
-      <div class="meta">${t.finished_at ? `<b>🏃 ${fmt(t.elapsed_sec)}</b><br>` : `<b>${t.stage}/4</b><br>`}오답 ${t.wrong_total} · 힌트 ${t.hints_used}/3</div>
+      <div class="lk">${Array.from({length: TOTAL}, (_, i) => i < t.stage ? '<span class="o">🔓</span>' : '<span class="c">🔒</span>').join('')}</div>
+      <div class="meta">${t.finished_at ? `<b>🏃 ${fmt(t.elapsed_sec)}</b><br>` : `<b>${t.stage}/${TOTAL}</b><br>`}오답 ${t.wrong_total}</div>
     </div>` : `
     <div class="trow wait">${avHTML(null)}<div class="nm">${n}조</div><div class="lk"></div><div class="meta">미입장</div></div>`;
   }
@@ -306,7 +308,6 @@ $('btnEdit').onclick = async () => {
         <h4>🔒 자물쇠 ${q.id}</h4>
         <label>문제</label><textarea rows="3" data-f="question">${esc(q.question)}</textarea>
         <label>정답</label><input data-f="answer" value="${esc(q.answer)}">
-        <label>힌트</label><textarea rows="2" data-f="hint">${esc(q.hint)}</textarea>
       </div>`).join('');
     $('editPanel').classList.remove('hidden');
     $('editPanel').scrollIntoView({ behavior:'smooth' });

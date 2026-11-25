@@ -143,7 +143,7 @@
     <div class="cell" id="playCell"></div>
 
     <div class="card lockcard" id="playCard">
-      <div class="stage-badge"><span id="lockName">다이얼 자물쇠</span> · <b id="stageNo">1</b>/4</div>
+      <div class="stage-badge"><span id="lockName">다이얼 자물쇠</span> · <b id="stageNo">1</b>/<span id="stageTot">5</span></div>
       <p class="question" id="question"></p>
       <div id="hintBox" class="hint hidden"><b>💡 힌트</b><span id="hintText"></span></div>
       <div id="puzzle" class="puzzle"></div>
@@ -197,7 +197,7 @@
     <div class="cell big" id="overCell"></div>
     <h2 class="done-title">탈옥 실패…</h2>
     <p class="team-title"><span class="tn"></span></p>
-    <p class="lead">제한 시간 안에 탈출하지 못했어요.<br>자물쇠 <b id="overStage">0</b>/4 개를 풀었어요. 수고하셨습니다!</p>
+    <p class="lead">제한 시간 안에 탈출하지 못했어요.<br>자물쇠 <b id="overStage">0</b>/<span class="totN">5</span> 개를 풀었어요. 수고하셨습니다!</p>
     <div class="gm-hero gm-done" id="gmOver"></div>
     <div class="keys final" id="overKeys"></div>
   </section>
@@ -287,6 +287,7 @@ function fmt(sec){ sec = Math.max(0, Math.floor(sec)); return String(Math.floor(
 function errCode(e){ const m = (e && (e.message || e.details)) || ''; return (m.match(/[A-Z_]{4,}/)||[''])[0]; }
 function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 async function rpc(fn, args){ const { data, error } = await sb.rpc(fn, args); if(error) throw error; return data; }
+function TOTAL(){ return (state && state.game && state.game.total) || 5; }
 function remainingSec(){
   const g = state && state.game; if(!g || !g.started_at) return g ? g.duration_sec : 1800;
   return (new Date(g.started_at).getTime() + g.duration_sec*1000 - (Date.now() + clockOffset))/1000;
@@ -295,7 +296,7 @@ function remainingSec(){
 /* ---------- 감옥 장면 ---------- */
 function cellHTML(ch, stage){
   let locks = '';
-  for(let i = 0; i < 4; i++) locks += `<span class="plock ${i < stage ? 'off' : ''}">${i < stage ? '🔓' : '🔒'}</span>`;
+  for(let i = 0; i < TOTAL(); i++) locks += `<span class="plock ${i < stage ? 'off' : ''}">${i < stage ? '🔓' : '🔒'}</span>`;
   return `<div class="wall"></div><div class="exit">EXIT ➜</div>
     <div class="inmate"><div class="bob">${CH.avatar(ch ?? 0)}</div></div>
     <div class="bars">${'<i></i>'.repeat(7)}<div class="crossbar">${locks}</div></div>`;
@@ -398,7 +399,8 @@ function applyState(s){
   $('charName').textContent = CH.name(s.team.character);
   if(pendingNext) return;
   const t = s.team, g = s.game;
-  if(t.stage >= 4) return showDone();
+  document.querySelectorAll('.totN').forEach(e => e.textContent = TOTAL()); $('stageTot').textContent = TOTAL();
+  if(t.stage >= TOTAL()) return showDone();
   if(g.status === 'waiting'){
     if($('v-wait').classList.contains('hidden') || !$('waitCell').innerHTML) renderCell($('waitCell'), t.character, 0);
     return show('v-wait');
@@ -409,8 +411,8 @@ function applyState(s){
 }
 
 function renderKeys(el, keys, cur){
-  let h = '';
-  for(let i = 0; i < 4; i++){
+  let h = ''; el.style.gridTemplateColumns = `repeat(${TOTAL()},1fr)`;
+  for(let i = 0; i < TOTAL(); i++){
     const k = keys[i];
     h += k ? `<div class="key got"><span>🗝️</span><b>${esc(k)}</b></div>`
            : `<div class="key ${i === cur ? 'cur' : ''}"><span>🔒</span><b>${i+1}</b></div>`;
@@ -425,8 +427,7 @@ function renderPlay(){
   if(wasHidden || $('playCell').dataset.stage !== String(t.stage)){ renderCell($('playCell'), t.character, t.stage); $('playCell').dataset.stage = t.stage; }
   $('stageNo').textContent = t.stage + 1;
   $('question').textContent = q ? q.text : '';
-  if(q && q.hint){ $('hintText').textContent = q.hint; $('hintBox').classList.remove('hidden'); $('btnHint').classList.add('hidden'); }
-  else { $('hintBox').classList.add('hidden'); $('btnHint').classList.remove('hidden'); }
+  $('hintBox').classList.add('hidden'); $('btnHint').classList.add('hidden');   // 힌트 없음
   const left = 3 - t.hints_used;
   $('hintLeft').textContent = `(${left}/3 남음)`;
   $('btnHint').disabled = left <= 0;
@@ -452,6 +453,30 @@ function bindErase(w, onBack, onClear){
 }
 function buildLock(lock){
   const w = $('lockWidget');
+  if(lock.kind === 'multi'){
+    $('lockName').textContent = '카드 자물쇠';
+    const sel = new Set();
+    w.className = 'multi';
+    w.innerHTML = `<div class="mc-count" id="mcCount"></div><div class="mc-cards">${lock.cards.map((c, i) => `<button class="mc" data-i="${i}">${esc(c)}</button>`).join('')}</div>` + eraseRow(false, null, '↺ 전부 지우기');
+    const paint = () => { w.querySelectorAll('.mc').forEach((b, i) => b.classList.toggle('on', sel.has(i))); $('mcCount').innerHTML = `고른 카드 <b>${sel.size}</b> / ${lock.pick}`; };
+    w.querySelectorAll('.mc').forEach((b, i) => b.onclick = () => {
+      if(sel.has(i)) sel.delete(i); else { if(sel.size >= lock.pick) { wrongFx(`${lock.pick}개까지만 고를 수 있어요.`); return; } sel.add(i); }
+      sfx.tap(); buzz(10); paint();
+    });
+    bindErase(w, null, () => { sel.clear(); paint(); });
+    paint();
+    lockInput = { get: () => [...sel].map(i => lock.cards[i]).join(','), full: () => sel.size === lock.pick, need: `카드 ${lock.pick}개를 모두 골라 주세요.` };
+    return;
+  }
+  if(lock.kind === 'choice'){
+    $('lockName').textContent = '보기 자물쇠';
+    let pick = null;
+    w.className = 'choice';
+    w.innerHTML = `<div class="ch-opts">${lock.options.map((o, i) => `<button class="ch" data-i="${i}"><span>${'ABCD'[i] || i + 1}</span>${esc(o)}</button>`).join('')}</div>`;
+    w.querySelectorAll('.ch').forEach((b, i) => b.onclick = () => { pick = i; sfx.tap(); buzz(10); w.querySelectorAll('.ch').forEach((x, k) => x.classList.toggle('on', k === i)); });
+    lockInput = { get: () => pick === null ? '' : lock.options[pick], full: () => pick !== null, need: '보기를 하나 골라 주세요.' };
+    return;
+  }
   if(lock.kind === 'digits'){
     $('lockName').textContent = '번호 자물쇠';
     const vals = Array(lock.len).fill(0);
@@ -532,11 +557,18 @@ function inputStep(q){
 }
 function renderPuzzle(q){
   const P = $('puzzle'); P.innerHTML = ''; setPadlock(true);
-  const pz = q.puzzle || {}, kind = q.lock.kind;
-  if(q.no === 1 && kind === 'digits') return puzzleHidden(P, q, pz);
-  if(q.no === 2) return puzzleCards(P, q);
-  if(q.no === 3 && kind === 'letters' && pz.jamo) return puzzleJamo(P, q, pz);
-  if(q.no === 4 && kind === 'letters') return puzzleLadder(P, q, pz);
+  const pz = q.puzzle || {}, kind = q.lock.kind, cfg = q.cfg || {};
+  if(cfg.puzzle === 'hidden') return puzzleHidden(P, q, pz);
+  if(cfg.puzzle === 'cards') return puzzleCards(P, q);
+  if(cfg.puzzle === 'jamo' && pz.jamo) return puzzleJamo(P, q, pz);
+  if(cfg.puzzle === 'ladder') return puzzleLadder(P, q, pz);
+  const steps = {
+    digits: ['아래 숫자 칸의 <b>▲ ▼</b>를 눌러 숫자를 맞추세요. (칸을 위아래로 밀어도 돼요)', '숫자를 다 맞췄으면 <b>자물쇠 열기</b>를 누르세요.'],
+    multi:  [`정답 카드 <b>${q.lock.pick}개</b>를 골라 누르세요. 고른 카드는 밝은색으로 바뀌어요.`, '잘못 골랐으면 그 카드를 <b>한 번 더 누르면</b> 취소돼요. 순서는 상관없어요.', `${q.lock.pick}개를 다 골랐으면 <b>자물쇠 열기</b>를 누르세요.`],
+    choice: ['보기 중에서 정답 <b>하나</b>를 골라 누르세요.', '골랐으면 <b>자물쇠 열기</b>를 누르세요.'],
+    letters:['아래 글자 타일을 <b>순서대로</b> 눌러 빈칸을 채우세요.', '잘못 넣으면 <b>⌫ 한 글자 지우기</b>를 누르세요.', '다 채웠으면 <b>자물쇠 열기</b>를 누르세요.'],
+  }[kind] || [];
+  P.innerHTML = (cfg.title ? `<div class="pz-title">${esc(cfg.title)}</div>` : '') + (steps.length ? howto(steps) : '');
 }
 
 /* 1) 숨은 숫자 찾기 — 정답 숫자 + 미끼 숫자를 벽 곳곳에 숨김 */
@@ -690,7 +722,7 @@ async function showDone(){
   if(first){
     showGmDone(t.name);
     const c = $('doneCell');
-    renderCell(c, t.character, 4);
+    renderCell(c, t.character, TOTAL());
     c.classList.remove('go'); void c.offsetWidth; c.classList.add('go');
     sfx.escape(); buzz([60, 80, 60, 80, 300]);
     if(!$('confetti').dataset.done){ $('confetti').dataset.done = 1; setTimeout(burst, 2200); }
@@ -727,7 +759,7 @@ function tick(){
   $('timer').textContent = fmt(r);
   $('timer').classList.toggle('warn', r <= 300);
   if(r <= 300 && r > 299) bgmSync();
-  if(r <= 0 && state.team.stage < 4 && !$('v-play').classList.contains('hidden') && !pendingNext) showOver();
+  if(r <= 0 && state.team.stage < TOTAL() && !$('v-play').classList.contains('hidden') && !pendingNext) showOver();
 }
 setInterval(tick, 500);
 
@@ -761,7 +793,7 @@ function wrongFx(text){
 $('btnSubmit').onclick = async () => {
   ac();
   if(!lockInput || busy || pendingNext) return;
-  if(lockInput.full && !lockInput.full()){ wrongFx('글자 칸을 모두 채워 주세요.'); return; }
+  if(lockInput.full && !lockInput.full()){ wrongFx(lockInput.need || '글자 칸을 모두 채워 주세요.'); return; }
   busy = true; $('btnSubmit').disabled = true;
   try{
     const r = await rpc('vault_submit', { p_team: me.team_id, p_token: me.token, p_answer: lockInput.get() });
@@ -769,9 +801,9 @@ $('btnSubmit').onclick = async () => {
       pendingNext = r.state;
       $('feedback').textContent = ''; $('feedback').className = 'feedback';
       $('padlock').classList.add('open'); sfx.open(); buzz([40, 40, 120]);
-      const keys = r.state.keys || [], done = r.state.team.stage >= 4;
+      const keys = r.state.keys || [], done = r.state.team.stage >= TOTAL();
       $('uKey').textContent = keys[keys.length - 1] || '';
-      $('uTitle').textContent = done ? '마지막 자물쇠 해제!' : `감옥 자물쇠 ${keys.length}/4 해제!`;
+      $('uTitle').textContent = done ? '마지막 자물쇠 해제!' : `감옥 자물쇠 ${keys.length}/${TOTAL()} 해제!`;
       renderKeys($('uKeys'), keys, -1);
       $('btnNext').textContent = done ? '🏃 감옥 탈출하기 →' : '다음 자물쇠로 →';
       setTimeout(() => {
