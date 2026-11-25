@@ -58,4 +58,12 @@ function fitCard(root){
   });
 }
 if(document.fonts) document.fonts.ready.then(()=>fitCard(document));
-let _fitT; addEventListener('resize',()=>{ clearTimeout(_fitT); _fitT=setTimeout(()=>fitCard(document),150); });
+// 명함이 새로 그려지거나 보이게 될 때·창 크기가 바뀔 때 자동으로 맞춤
+let _fitQ=false;
+function fitSoon(){ if(_fitQ) return; _fitQ=true; requestAnimationFrame(()=>{ _fitQ=false; fitCard(document); }); }
+addEventListener('resize',fitSoon);
+addEventListener('DOMContentLoaded',()=>{
+  new MutationObserver(ms=>{ if(ms.some(m=>!(m.target.closest&&m.target.closest('.card')))) fitSoon(); })
+    .observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['style']});
+  fitSoon();
+});

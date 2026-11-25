@@ -82,7 +82,6 @@ function open(i){
   cur=i; $('stage').innerHTML = cardHTML(rows[i]);
   $('count').textContent = (i+1)+' / '+rows.length;
   $('show').style.display='flex';
-  fitCard($('stage'));
 }
 function close(){ $('show').style.display='none'; if(document.fullscreenElement) document.exitFullscreen(); $('q').focus(); $('q').select(); }
 

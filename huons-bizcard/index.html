@@ -101,7 +101,7 @@ function buildRow(){
     biorhythm:$('bio').value + '점' + (why ? ' – ' + why : ''),
     treasure1:$('t1').value.trim(), treasure2:$('t2').value.trim(), expect:$('expect').value.trim() };
 }
-function preview(){ $('preview').innerHTML = cardHTML(buildRow()); fitCard($('preview')); }
+function preview(){ $('preview').innerHTML = cardHTML(buildRow()); }
 preview();
 FIELDS.forEach(f=>$(f).addEventListener('input',preview));
 FIELDS.forEach(f=>$(f).addEventListener('input',()=>{
@@ -117,13 +117,13 @@ $('submit').onclick = async () => {
     const r = await fetch(SB_URL + '/rest/v1/bc_cards', {method:'POST', headers:{...SB_HEADERS, Prefer:'return=minimal'}, body: JSON.stringify(row)});
     if(!r.ok) throw new Error(await r.text());
     $('myCard').innerHTML = cardHTML(row);
-    $('formView').style.display='none'; $('done').style.display='block'; fitCard($('myCard'));
+    $('formView').style.display='none'; $('done').style.display='block';
     window.scrollTo(0,0);
   }catch(e){
     $('err').textContent = '제출에 실패했어요. 잠시 후 다시 눌러 주세요.';
   }finally{ $('submit').disabled = false; }
 };
-$('again').onclick = () => { $('done').style.display='none'; $('formView').style.display='block'; fitCard($('preview')); window.scrollTo(0,0); };
+$('again').onclick = () => { $('done').style.display='none'; $('formView').style.display='block'; window.scrollTo(0,0); };
 </script>
 </body>
 </html>
