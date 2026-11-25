@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>명함 만들기 · 관리자</title>
+<link rel="stylesheet" href="common.css">
+<style>
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+h1{font-family:'Jua';color:var(--blue);font-weight:400;margin:0 0 16px;font-size:32px}
+input{font-size:18px;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;outline:none;font-family:inherit;width:100%}
+input:focus{border-color:var(--blue)}
+.b{padding:12px 18px;font-size:17px;border:0;border-radius:10px;background:var(--blue);color:#fff;font-family:'Jua';white-space:nowrap}
+.b.gray{background:#8a97a8}
+.bar{display:flex;gap:10px;margin-bottom:12px}
+.meta{color:#667;font-size:14px;margin-bottom:10px}
+.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.item{background:#fff;border-radius:10px;padding:14px;cursor:pointer;border:2px solid transparent;position:relative}
+.item:hover{border-color:var(--blue)}
+.item .n{font-family:'Jua';font-size:22px}
+.item .t{font-size:12px;color:#99a}
+.item .dup{font-size:11px;color:var(--orange);margin-left:6px}
+.item .del{position:absolute;top:8px;right:8px;border:0;background:none;color:#ccc;font-size:16px}
+.item .del:hover{color:#d33}
+#show{position:fixed;inset:0;background:#1d2733;display:none;align-items:center;justify-content:center;padding:3vw;z-index:9}
+#show .stage{width:min(92vw,145vh)}
+#show .nav{position:fixed;bottom:18px;left:0;right:0;display:flex;justify-content:center;gap:10px}
+#show .nav button{background:rgba(255,255,255,.15);color:#fff;border:0;border-radius:8px;padding:10px 16px;font-size:15px}
+#show .count{color:#aab;align-self:center;font-size:14px}
+</style>
+</head>
+<body>
+<div id="main" class="wrap">
+  <h1>명함 찾기</h1>
+  <div class="bar">
+    <input id="q" placeholder="이름 검색 (비우면 전체)" autocomplete="off">
+    <button class="b" id="searchBtn">검색</button>
+    <button class="b gray" id="allBtn">전체</button>
+  </div>
+  <div class="meta" id="meta"></div>
+  <div class="list" id="list"></div>
+</div>
+
+<div id="show">
+  <div class="stage" id="stage"></div>
+  <div class="nav">
+    <button id="prev">◀ 이전</button><span class="count" id="count"></span><button id="next">다음 ▶</button>
+    <button id="full">전체화면</button><button id="close">닫기 (ESC)</button>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const PW = '';
+let rows = [], cur = -1;
+
+async function rpc(fn, body){
+  const r = await fetch(SB_URL + '/rest/v1/rpc/' + fn, {method:'POST', headers:SB_HEADERS, body:JSON.stringify(body)});
+  if(!r.ok) throw new Error(await r.text());
+  return r.status === 204 ? null : r.json();
+}
+
+async function search(q){
+  rows = await rpc('bc_search', {p_pw:PW, p_q:q||''});
+  const cnt = {};
+  rows.forEach(r=>cnt[r.name]=(cnt[r.name]||0)+1);
+  const seen = {};
+  $('meta').textContent = (q ? `"${q}" 검색 결과 ` : '전체 ') + rows.length + '건 · 같은 이름이 여러 번 제출되면 최신 것이 위에 있어요';
+  $('list').innerHTML = rows.map((r,i)=>{
+    seen[r.name]=(seen[r.name]||0)+1;
+    const tag = cnt[r.name]>1 ? `<span class="dup">${seen[r.name]===1?'최신':'이전 제출'}</span>` : '';
+    const time = new Date(r.created_at).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+    return `<div class="item" data-i="${i}"><button class="del" data-id="${r.id}" title="삭제">✕</button><div class="n">${esc(r.name)}${tag}</div><div class="t">${time} 제출</div></div>`;
+  }).join('') || '<p style="color:#99a">결과가 없어요.</p>';
+  // 검색 결과가 딱 1명이면 바로 띄우기
+  if(q && rows.length && new Set(rows.map(r=>r.name)).size===1) open(0);
+}
+
+function open(i){
+  if(i<0||i>=rows.length) return;
+  cur=i; $('stage').innerHTML = cardHTML(rows[i]);
+  $('count').textContent = (i+1)+' / '+rows.length;
+  $('show').style.display='flex';
+}
+function close(){ $('show').style.display='none'; if(document.fullscreenElement) document.exitFullscreen(); $('q').focus(); $('q').select(); }
+
+$('list').onclick = async e=>{
+  const d = e.target.closest('.del');
+  if(d){ e.stopPropagation();
+    if(!confirm('이 명함을 삭제할까요?')) return;
+    await rpc('bc_delete',{p_pw:PW,p_id:+d.dataset.id}); search($('q').value.trim()); return; }
+  const it = e.target.closest('.item'); if(it) open(+it.dataset.i);
+};
+$('searchBtn').onclick = ()=>search($('q').value.trim());
+$('allBtn').onclick = ()=>{ $('q').value=''; search(''); };
+$('q').onkeydown = e=>{ if(e.key==='Enter') search($('q').value.trim()); };
+$('prev').onclick = ()=>open(cur-1);
+$('next').onclick = ()=>open(cur+1);
+$('close').onclick = close;
+$('full').onclick = ()=> document.fullscreenElement ? document.exitFullscreen() : $('show').requestFullscreen();
+document.addEventListener('keydown', e=>{
+  if($('show').style.display!=='flex') return;
+  if(e.key==='Escape') close();
+  if(e.key==='ArrowRight') open(cur+1);
+  if(e.key==='ArrowLeft') open(cur-1);
+});
+
+search('').catch(()=>{ $('meta').textContent='불러오기에 실패했어요. 새로고침해 주세요.'; });
+$('q').focus();
+</script>
+</body>
+</html>

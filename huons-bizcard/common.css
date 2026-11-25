@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+:root{--blue:#1f5fae;--navy:#173a66;--orange:#f0a12e;--ink:#1e2a38;--line:#c9d6e8;--bg:#eef2f7}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--ink)}
+button{font-family:inherit;cursor:pointer}
+
+/* ===== 명함 카드 ===== */
+.card-wrap{container-type:inline-size;width:100%}
+.card{position:relative;width:100%;aspect-ratio:9/5;border-radius:3.2cqw;overflow:hidden;
+  background:
+    radial-gradient(120% 90% at 100% 0%, #fdf6ea 0%, rgba(253,246,234,0) 55%),
+    linear-gradient(135deg,#ffffff 0%,#f7f9fc 100%);
+  box-shadow:0 .4cqw 1cqw rgba(23,58,102,.10),0 2.4cqw 5cqw rgba(23,58,102,.18);
+  display:grid;grid-template-columns:42% 58%;grid-template-rows:minmax(0,1fr);font-family:'Noto Sans KR',sans-serif;color:var(--ink)}
+
+/* 왼쪽: 이름 영역 */
+.card .left{position:relative;background:linear-gradient(160deg,var(--blue) 0%,var(--navy) 100%);
+  color:#fff;padding:6cqw 4.5cqw 5cqw;display:flex;flex-direction:column;overflow:hidden}
+.card .left::before{content:'';position:absolute;right:-14cqw;bottom:-14cqw;width:34cqw;height:34cqw;border-radius:50%;
+  border:2.4cqw solid rgba(255,255,255,.07)}
+.card .left::after{content:'';position:absolute;left:-6cqw;top:-8cqw;width:18cqw;height:18cqw;border-radius:50%;
+  background:rgba(240,161,46,.18)}
+.card .tag{position:relative;font-size:1.9cqw;letter-spacing:.35cqw;font-weight:700;color:rgba(255,255,255,.75)}
+.card .tag b{color:var(--orange)}
+.card .namebox{position:relative;margin-top:auto;margin-bottom:auto;padding:1.5cqw 0;display:flex;align-items:center;gap:1.2cqw}
+.card .paren{font-family:'Noto Sans KR';font-weight:400;color:var(--orange);font-size:9cqw;line-height:1;transform:scaleY(1.35);margin-top:-.8cqw}
+.card .nm{font-family:'Jua','Noto Sans KR',sans-serif;font-size:7.4cqw;line-height:1.1;letter-spacing:.2cqw;word-break:keep-all;overflow-wrap:anywhere}
+.card .nm.l4{font-size:5.6cqw}.card .nm.l5{font-size:4.6cqw}.card .nm.l6{font-size:3.6cqw;white-space:normal}
+.card .nm{white-space:nowrap}
+.card .work{position:relative;font-size:calc(2.15cqw*var(--k,1));line-height:1.45;color:rgba(255,255,255,.92);
+  border-top:.25cqw solid rgba(255,255,255,.25);padding-top:2cqw;word-break:keep-all;overflow-wrap:anywhere;white-space:pre-line}
+.card .work .k{display:block;font-size:1.6cqw;letter-spacing:.25cqw;color:var(--orange);font-weight:700;margin-bottom:.6cqw}
+
+/* 오른쪽: 정보 영역 */
+.card .right{padding:5.5cqw 5cqw 4.5cqw;display:flex;flex-direction:column;gap:3cqw;justify-content:safe center;min-width:0;overflow:hidden}
+.card .row{display:flex;gap:2.2cqw;align-items:flex-start;min-width:0}
+.card .ic{flex:none;width:5.6cqw;height:5.6cqw;border-radius:1.6cqw;background:#eaf1fb;display:flex;align-items:center;justify-content:center;font-size:3cqw}
+.card .body{flex:1;min-width:0}
+.card .k2{font-size:1.65cqw;font-weight:700;letter-spacing:.2cqw;color:#8a97a8;margin-bottom:.6cqw}
+.card .v{font-family:'Jua','Noto Sans KR',sans-serif;font-size:3cqw;line-height:1.3;color:var(--navy);word-break:keep-all;overflow-wrap:anywhere;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card .gauge{display:flex;align-items:center;gap:1.6cqw}
+.card .bar{flex:1;height:1.5cqw;border-radius:1cqw;background:#e6ebf2;overflow:hidden}
+.card .bar i{display:block;height:100%;border-radius:1cqw;background:linear-gradient(90deg,#ffc76b,var(--orange))}
+.card .score{font-family:'Jua';font-size:3.6cqw;color:var(--orange);white-space:nowrap}
+.card .memo{font-size:calc(1.9cqw*var(--k,1));color:#66758a;margin-top:.5cqw;word-break:keep-all;overflow-wrap:anywhere}
+.card .chips{display:flex;gap:1.2cqw;flex-wrap:wrap}
+.card .chip{font-family:'Jua','Noto Sans KR';font-size:calc(2.6cqw*var(--k,1));color:var(--navy);background:#fff4e0;border:.25cqw solid #f6d7a3;
+  padding:.5cqw 1.8cqw;border-radius:5cqw;max-width:100%;word-break:keep-all;overflow-wrap:anywhere}
+.card .quote{font-family:'Jua','Noto Sans KR';font-size:calc(2.8cqw*var(--k,1));line-height:1.35;color:var(--navy);word-break:keep-all;overflow-wrap:anywhere;white-space:pre-line}
+.card .quote.has::before{content:'“';color:var(--orange);margin-right:.4cqw}
+.card .quote.has::after{content:'”';color:var(--orange);margin-left:.4cqw}
+.card .empty{color:#b8c2cf}
