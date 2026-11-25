@@ -205,18 +205,22 @@ function tick(){
 setInterval(tick, 500);
 
 /* 배경음악 (큰 스크린 스피커용) */
-let bgmOn = false;
+let bgmOn = true, gestured = false;
+try{ bgmOn = localStorage.getItem('vault_admin_bgm') !== '0'; }catch(e){}
+// 브라우저는 클릭 전에는 소리를 막으므로, 화면을 처음 클릭하는 순간 음악 시작
+document.addEventListener('pointerdown', e => { if(!gestured && !e.target.closest('#btnBgm')){ gestured = true; bgmSync(); } }, true);
 function bgmSync(){
-  $('btnBgm').textContent = bgmOn ? '🎵 배경음악 끄기' : '🎵 배경음악 켜기';
+  $('btnBgm').textContent = !bgmOn ? '🎵 배경음악 켜기' : gestured ? '🎵 배경음악 끄기' : '🎵 화면을 클릭하면 음악 시작';
   $('btnBgm').classList.toggle('btn-gold', bgmOn); $('btnBgm').classList.toggle('btn-ghost', !bgmOn);
   const st = effStatus();
-  if(!bgmOn || st === 'ended'){ VaultBGM.stop(1.5); return; }
-  VaultBGM.setLevel(st === 'waiting' ? 0 : remaining() <= 300 ? 2 : 1);
+  if(!bgmOn || !gestured){ VaultBGM.stop(1.5); return; }
+  VaultBGM.setLevel(st === 'running' ? (remaining() <= 300 ? 2 : 1) : 1);
   VaultBGM.setVolume(.7);
   VaultBGM.start();
 }
-$('btnBgm').onclick = () => { bgmOn = !bgmOn; bgmSync(); };
-setInterval(() => { if(bgmOn) bgmSync(); }, 1000);
+$('btnBgm').onclick = () => { if(gestured) bgmOn = !bgmOn; else bgmOn = true; gestured = true; try{ localStorage.setItem('vault_admin_bgm', bgmOn ? '1' : '0'); }catch(e){} bgmSync(); };
+setInterval(() => { if(bgmOn && gestured) bgmSync(); }, 1000);
+bgmSync();
 
 function avHTML(t){
   if(!t) return '<div class="av none">?</div>';

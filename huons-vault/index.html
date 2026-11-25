@@ -154,7 +154,7 @@
       <div id="flash" class="flash"></div>
       <p id="feedback" class="feedback"></p>
       <button id="btnSubmit" class="btn btn-gold"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="7.5" cy="15.5" r="4.5"/><path d="M10.7 12.3 21 2M16 7l3 3M18.5 4.5l2 2"/></svg>자물쇠 열기</button>
-      <button id="btnHint" class="btn btn-ghost"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/></svg>힌트 받기 <span id="hintLeft">(미니퀴즈)</span></button>
+      <button id="btnHint" class="btn btn-ghost"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/></svg><span id="hintLbl">힌트 받기</span> <span id="hintLeft">(미니퀴즈)</span></button>
     </div>
 
     <!-- 간수 경보 (사다리 함정) -->
@@ -168,6 +168,15 @@
         <div class="mq-opts" id="mqOpts"></div>
         <p class="mq-msg" id="mqMsg"></p>
         <button id="mqClose" class="btn btn-ghost">닫기</button>
+      </div>
+    </div>
+
+    <!-- 힌트 팝업 -->
+    <div id="hintPop" class="mini-quiz hidden">
+      <div class="mq-card hint-card">
+        <div class="mq-tag">💡 HINT</div>
+        <p class="hp-text" id="hpText"></p>
+        <button id="hpClose" class="btn btn-gold">확인</button>
       </div>
     </div>
 
@@ -432,8 +441,9 @@ function renderPlay(){
   if(wasHidden || $('playCell').dataset.stage !== String(t.stage)){ renderCell($('playCell'), t.character, t.stage); $('playCell').dataset.stage = t.stage; }
   $('stageNo').textContent = t.stage + 1;
   $('question').textContent = q ? q.text : '';
-  if(q && q.hint){ $('hintText').textContent = q.hint; $('hintBox').classList.remove('hidden'); $('btnHint').classList.add('hidden'); }
-  else { $('hintBox').classList.add('hidden'); $('btnHint').classList.toggle('hidden', !(q && q.mini)); }
+  $('hintBox').classList.add('hidden');
+  if(q && q.hint){ $('hintText').textContent = q.hint; $('btnHint').classList.remove('hidden'); $('btnHint').dataset.mode = 'show'; $('hintLbl').textContent = '힌트 다시 보기'; $('hintLeft').textContent = ''; }
+  else { $('btnHint').classList.toggle('hidden', !(q && q.mini)); $('btnHint').dataset.mode = 'quiz'; $('hintLbl').textContent = '힌트 받기'; $('hintLeft').textContent = '(미니퀴즈)'; }
   $('btnHint').disabled = false;
   if(t.cooldown > 0 && !freezing) freeze(t.cooldown, '오답! 잠깐 멈춤');
   const key = q ? (state.game.round + ':' + q.no + ':' + JSON.stringify(q.lock)) : null;
@@ -858,8 +868,12 @@ $('btnNext').onclick = () => {
   if(s) applyState(s); else refresh();
 };
 
+function showHint(text){ $('hpText').textContent = text; $('hintPop').classList.remove('hidden'); }
+$('hpClose').onclick = () => { $('hintPop').classList.add('hidden'); sfx.tap(); };
 $('btnHint').onclick = () => {
-  const q = state && state.question; if(!q || !q.mini || busy) return;
+  const q = state && state.question;
+  if(q && q.hint){ showHint(q.hint); sfx.tap(); return; }
+  if(!q || !q.mini || busy) return;
   $('mqQ').textContent = q.mini.q; $('mqMsg').textContent = ''; $('mqMsg').className = 'mq-msg';
   $('mqOpts').innerHTML = q.mini.options.map((o, i) => `<button class="mq-o" data-i="${i}"><span>${'ABCD'[i]}</span>${esc(o)}</button>`).join('');
   $('mqOpts').querySelectorAll('.mq-o').forEach((b, i) => b.onclick = () => answerMini(q.mini.options[i], b));
@@ -871,7 +885,7 @@ async function answerMini(pick, btn){
     const s = await rpc('vault_mini', { p_team: me.team_id, p_token: me.token, p_pick: pick });
     btn.classList.add('ok'); $('mqMsg').textContent = '딩동댕! 힌트가 열렸어요 💡'; $('mqMsg').className = 'mq-msg ok';
     sfx.open(); buzz([40, 40, 120]);
-    setTimeout(() => { $('mini').classList.add('hidden'); applyState(s); }, 1100);
+    setTimeout(() => { $('mini').classList.add('hidden'); applyState(s); if(s.question && s.question.hint) showHint(s.question.hint); }, 1100);
   }catch(e){
     if(errCode(e) === 'MINI_WRONG'){
       btn.classList.add('no'); $('mqMsg').textContent = '땡! 5초 뒤에 다시 도전하세요'; $('mqMsg').className = 'mq-msg bad';

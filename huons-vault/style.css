@@ -728,3 +728,6 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .mq-msg{min-height:22px;margin:10px 0 4px;font-weight:900}
 .mq-msg.ok{color:#4ade80}.mq-msg.bad{color:#f87171}
 .mq-card .btn{margin-top:4px;padding:10px}
+/* 힌트 팝업 */
+.hint-card{border-color:var(--gold2);box-shadow:0 0 40px rgba(245,215,122,.25)}
+.hp-text{font-size:22px;font-weight:900;line-height:1.6;color:#fff;margin:16px 0 18px;word-break:keep-all}
