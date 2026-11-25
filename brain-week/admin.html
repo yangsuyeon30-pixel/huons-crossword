@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>관리자 · 지난 일주일, 내 머릿속은?</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Pretendard, -apple-system, sans-serif; background: #f4f7fb; color: #1d2433; }
+  header { position: sticky; top: 0; z-index: 5; background: #fff; border-bottom: 3px solid #1f5fc8; padding: 14px 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  header h1 { font-size: 24px; color: #1f5fc8; font-weight: 800; flex: 1; min-width: 280px; }
+  .count { font-size: 15px; color: #4a5468; font-weight: 700; }
+  .count b { color: #1f5fc8; font-size: 20px; }
+  .tabs { display: flex; gap: 6px; }
+  .tabs button, .ghost { font: inherit; font-size: 15px; font-weight: 700; padding: 9px 14px; border-radius: 10px; border: 1.5px solid #dde3ec; background: #fff; color: #4a5468; cursor: pointer; }
+  .tabs button.on { background: #1f5fc8; border-color: #1f5fc8; color: #fff; }
+  .search { font: inherit; font-size: 15px; padding: 9px 14px; border: 1.5px solid #dde3ec; border-radius: 10px; outline: none; width: 180px; }
+  .search:focus { border-color: #1f5fc8; }
+  .ghost.danger { color: #c53a3a; border-color: #f0c9c9; }
+  main { padding: 22px 24px 60px; }
+  .agg { display: grid; grid-template-columns: minmax(320px, 1.1fr) 1fr; gap: 24px; align-items: start; }
+  @media (max-width: 860px) { .agg { grid-template-columns: 1fr; } main { padding: 16px; } header { padding: 12px 16px; } }
+  .panel { background: #fff; border-radius: 20px; padding: 18px; box-shadow: 0 2px 12px rgba(20,40,80,.06); }
+  .big svg { width: 100%; height: auto; max-height: 78vh; display: block; margin: 0 auto; }
+  .reg { margin-bottom: 14px; }
+  .reg h3 { font-size: 15px; font-weight: 800; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .reg h3 i { width: 18px; height: 18px; border-radius: 50%; display: inline-block; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { padding: 6px 11px; border-radius: 999px; font-weight: 700; font-size: 15px; }
+  .chip small { opacity: .7; margin-left: 3px; font-size: 12px; }
+  .empty { color: #a0a8b5; font-size: 14px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+  .person { background: #fff; border-radius: 16px; padding: 12px; box-shadow: 0 2px 10px rgba(20,40,80,.06); position: relative; }
+  .person .nm { font-weight: 800; font-size: 16px; text-align: center; margin-bottom: 4px; }
+  .person svg { width: 100%; height: auto; display: block; }
+  .person .del { position: absolute; top: 8px; right: 8px; border: 0; background: #f4f7fb; color: #8a93a3; border-radius: 8px; width: 26px; height: 26px; cursor: pointer; font-size: 14px; }
+  .person .del:hover { color: #c53a3a; }
+  .person { cursor: zoom-in; transition: transform .12s, box-shadow .12s; }
+  .person:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(20,40,80,.12); }
+  #zoom .box { max-width: min(720px, 96vw); padding: 20px 22px; position: relative; }
+  #zoom .zname { font-weight: 800; font-size: 24px; color: #1f5fc8; margin-bottom: 6px; }
+  #zoom .zbrain svg { width: 100%; height: auto; max-height: 68vh; display: block; margin: 0 auto; }
+  #zoom .zlist { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 10px 0 12px; }
+  #zoom .x { position: absolute; top: 12px; right: 12px; border: 0; background: #f4f7fb; color: #4a5468; width: 36px; height: 36px; border-radius: 10px; font-size: 18px; cursor: pointer; }
+  .hidden, .modal.hidden { display: none !important; }
+  .modal { position: fixed; inset: 0; background: rgba(15,25,45,.55); display: flex; align-items: center; justify-content: center; z-index: 20; padding: 16px; }
+  .modal .box { background: #fff; border-radius: 22px; padding: 26px; text-align: center; max-width: 440px; width: 100%; }
+  .modal .box p { font-weight: 800; font-size: 20px; margin-bottom: 14px; color: #1f5fc8; }
+  #qr { display: flex; justify-content: center; margin: 0 auto 14px; }
+  #qr img, #qr canvas { width: 280px !important; height: 280px !important; max-width: 100%; }
+  .link { font-size: 15px; word-break: break-all; color: #4a5468; margin-bottom: 14px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>지난 일주일 동안 어떤 생각을 하면서 지냈나요?</h1>
+  <span class="count">참여 <b id="cnt">0</b>명</span>
+  <div class="tabs">
+    <button id="t-agg" class="on">모아보기</button>
+    <button id="t-ppl">개인별</button>
+  </div>
+  <input class="search" id="q" type="search" placeholder="🔍 이름 검색" autocomplete="off">
+  <button class="ghost" id="btn-qr">참여 QR</button>
+  <button class="ghost danger" id="btn-reset">전체 초기화</button>
+</header>
+
+<main>
+  <section id="v-agg" class="agg">
+    <div class="panel big" id="big"></div>
+    <div class="panel" id="lists"></div>
+  </section>
+  <section id="v-ppl" class="hidden">
+    <div class="grid" id="grid"></div>
+  </section>
+</main>
+
+<div class="modal hidden" id="modal">
+  <div class="box">
+    <p>QR을 찍고 참여해 주세요</p>
+    <div id="qr"></div>
+    <div class="link" id="plink"></div>
+    <button class="ghost" id="close">닫기</button>
+  </div>
+</div>
+
+<div class="modal hidden" id="zoom">
+  <div class="box">
+    <button class="x" id="zclose" title="닫기">✕</button>
+    <div class="zname" id="zname"></div>
+    <div class="zbrain" id="zbrain"></div>
+    <div class="zlist" id="zlist"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="brain.js"></script>
+<script>
+  const $ = id => document.getElementById(id);
+  let rows = [], tab = 'agg', lastSig = '';
+
+  function tally(key) {
+    const m = new Map();
+    rows.forEach(r => {
+      const v = (r[key] || '').trim();
+      if (!v) return;
+      const k = v.replace(/\s+/g, '').toLowerCase();
+      if (!m.has(k)) m.set(k, { word: v, n: 0 });
+      m.get(k).n++;
+    });
+    return [...m.values()].sort((a, b) => b.n - a.n || a.word.localeCompare(b.word, 'ko'));
+  }
+
+  function render() {
+    $('cnt').textContent = rows.length;
+    // 모아보기: 큰 뇌에는 구역별 상위 키워드, 옆에는 전체 목록
+    const top = {};
+    let lists = '';
+    REGIONS.forEach(r => {
+      const t = tally(r.key);
+      const limit = r.key === 'k4' ? 1 : r.key === 'k3' ? 1 : 3;
+      top[r.key] = t.slice(0, limit).map(x => x.word);
+      lists += `<div class="reg"><h3><i style="background:${r.fill}"></i>${r.name} 구역 <span class="empty">(${t.reduce((a, x) => a + x.n, 0)})</span></h3><div class="chips">`
+        + (t.length ? t.map(x => `<span class="chip" style="background:${r.fill};color:${r.ink}">${esc(x.word)}${x.n > 1 ? `<small>×${x.n}</small>` : ''}</span>`).join('') : '<span class="empty">아직 없어요</span>')
+        + '</div></div>';
+    });
+    $('big').innerHTML = brainSVG(top, { maxSize: 26 });
+    $('lists').innerHTML = lists;
+
+    const q = $('q').value.trim().replace(/\s+/g, '').toLowerCase();
+    const shown = q ? rows.filter(r => (r.name || '').replace(/\s+/g, '').toLowerCase().includes(q)) : rows;
+    $('grid').innerHTML = shown.length ? shown.map(r =>
+      `<div class="person" data-id="${r.id}" title="클릭하면 크게 보기"><button class="del" data-id="${r.id}" title="삭제">✕</button>
+       <div class="nm">${esc(r.name)}</div>${brainSVG(r)}</div>`).join('')
+      : `<p class="empty">${q ? '검색 결과가 없어요.' : '아직 참여한 사람이 없어요.'}</p>`;
+  }
+
+  async function poll() {
+    try {
+      const data = await sbFetch('?select=*&order=updated_at.asc');
+      const sig = JSON.stringify(data);
+      if (sig !== lastSig) { lastSig = sig; rows = data; render(); }
+    } catch (e) {}
+  }
+
+  function setTab(t) {
+    tab = t;
+    $('t-agg').classList.toggle('on', t === 'agg');
+    $('t-ppl').classList.toggle('on', t === 'ppl');
+    $('v-agg').classList.toggle('hidden', t !== 'agg');
+    $('v-ppl').classList.toggle('hidden', t !== 'ppl');
+  }
+  $('t-agg').onclick = () => setTab('agg');
+  $('t-ppl').onclick = () => setTab('ppl');
+  // 이름 검색: 입력하면 개인별 화면으로 바꿔 해당 사람만 보여줌
+  $('q').addEventListener('input', () => { if ($('q').value.trim()) setTab('ppl'); render(); });
+
+  // 개인별 뇌 그림 클릭 → 크게 보기
+  function openZoom(id) {
+    const r = rows.find(x => String(x.id) === String(id));
+    if (!r) return;
+    $('zname').textContent = r.name + '님의 지난 일주일';
+    $('zbrain').innerHTML = brainSVG(r, { maxSize: 30 });
+    $('zlist').innerHTML = REGIONS.filter(g => (r[g.key] || '').trim()).map(g =>
+      `<span class="chip" style="background:${g.fill};color:${g.ink}">${esc(r[g.key])}</span>`).join('');
+    $('zoom').classList.remove('hidden');
+  }
+  const closeZoom = () => $('zoom').classList.add('hidden');
+  $('zclose').onclick = closeZoom;
+  $('zoom').onclick = e => { if (e.target.id === 'zoom') closeZoom(); };
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeZoom(); $('modal').classList.add('hidden'); } });
+
+  $('grid').addEventListener('click', async e => {
+    const b = e.target.closest('.del');
+    if (!b) { const p = e.target.closest('.person'); if (p) openZoom(p.dataset.id); return; }
+    if (!confirm('이 참여자의 답변을 삭제할까요?')) return;
+    await sbFetch('?id=eq.' + b.dataset.id, { method: 'DELETE' });
+    poll();
+  });
+  $('btn-reset').onclick = async () => {
+    if (!confirm('모든 참여 답변을 삭제할까요? 되돌릴 수 없어요.')) return;
+    await sbFetch('?id=not.is.null', { method: 'DELETE' });
+    poll();
+  };
+
+  const participantUrl = location.origin + '/';
+  let qrMade = false;
+  $('btn-qr').onclick = () => {
+    $('modal').classList.remove('hidden');
+    $('plink').textContent = participantUrl;
+    if (!qrMade && window.QRCode) { new QRCode($('qr'), { text: participantUrl, width: 560, height: 560 }); qrMade = true; }
+  };
+  $('close').onclick = () => $('modal').classList.add('hidden');
+  $('modal').onclick = e => { if (e.target.id === 'modal') $('modal').classList.add('hidden'); };
+
+  render();
+  poll();
+  setInterval(poll, 3000);
+</script>
+</body>
+</html>

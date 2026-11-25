@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>지난 일주일, 내 머릿속은?</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Pretendard, -apple-system, sans-serif; background: #f4f7fb; color: #1d2433; min-height: 100vh; }
+  .wrap { max-width: 480px; margin: 0 auto; padding: 22px 16px 40px; }
+  h1 { font-size: 22px; color: #1f5fc8; line-height: 1.35; font-weight: 800; }
+  .sub { font-size: 14px; color: #5b6576; margin: 6px 0 16px; line-height: 1.5; }
+  .card { background: #fff; border-radius: 18px; padding: 16px; box-shadow: 0 2px 10px rgba(20,40,80,.06); margin-bottom: 14px; }
+  label.t { display: block; font-size: 13px; font-weight: 700; color: #4a5468; margin-bottom: 6px; }
+  input { width: 100%; font: inherit; font-size: 16px; padding: 12px 14px; border: 1.5px solid #dde3ec; border-radius: 12px; outline: none; background: #fff; }
+  input:focus { border-color: #1f5fc8; }
+  .brain-box svg { width: 100%; height: auto; display: block; max-height: 50vh; margin: 0 auto; }
+  .row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+  .dot { width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0; border: 2px solid transparent; }
+  .row input { padding: 10px 12px; }
+  .hint { font-size: 12.5px; color: #8a93a3; margin-top: 10px; line-height: 1.5; }
+  button.main { width: 100%; font: inherit; font-size: 17px; font-weight: 800; padding: 15px; border: 0; border-radius: 14px; background: #1f5fc8; color: #fff; cursor: pointer; }
+  button.main:disabled { opacity: .5; }
+  button.sub2 { width: 100%; font: inherit; font-size: 15px; font-weight: 700; padding: 12px; border: 1.5px solid #dde3ec; border-radius: 14px; background: #fff; color: #4a5468; margin-top: 10px; cursor: pointer; }
+  .done-title { text-align: center; font-size: 20px; font-weight: 800; color: #1f5fc8; margin-bottom: 4px; }
+  .done-sub { text-align: center; font-size: 14px; color: #5b6576; margin-bottom: 10px; }
+  .hidden, .modal.hidden { display: none !important; }
+  .err { color: #c53a3a; font-size: 13px; margin-top: 8px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="v-form">
+    <h1>지난 일주일 동안<br>어떤 생각을 하면서 지냈나요?</h1>
+    <p class="sub">뇌의 색칠된 구역마다 떠오르는 <b>키워드</b>를 하나씩 적어 주세요.<br>구역을 눌러도 입력칸으로 이동해요. (최소 1개)</p>
+
+    <div class="card">
+      <label class="t" for="name">이름</label>
+      <input id="name" maxlength="20" placeholder="예) 홍길동" autocomplete="off">
+    </div>
+
+    <div class="card">
+      <div class="brain-box" id="preview"></div>
+      <div id="inputs"></div>
+      <p class="hint">길게 적으면 글씨가 자동으로 작아져서 구역 안에 다 들어가요 (최대 40자).</p>
+    </div>
+
+    <button class="main" id="submit">내 머릿속 제출하기</button>
+    <p class="err" id="err"></p>
+  </div>
+
+  <div id="v-done" class="hidden">
+    <div class="card">
+      <p class="done-title">제출 완료! 🧠</p>
+      <p class="done-sub" id="done-name"></p>
+      <div class="brain-box" id="done-brain"></div>
+    </div>
+    <button class="sub2" id="edit">수정하기</button>
+  </div>
+</div>
+
+<script src="brain.js"></script>
+<script>
+  const $ = id => document.getElementById(id);
+  let cid = null;
+  try { cid = localStorage.getItem('brain_cid'); } catch (e) {}
+  if (!cid) {
+    cid = (crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(36).slice(2));
+    try { localStorage.setItem('brain_cid', cid); } catch (e) {}
+  }
+  let active = null;
+
+  $('inputs').innerHTML = REGIONS.map(r =>
+    `<div class="row"><span class="dot" style="background:${r.fill}" id="dot-${r.key}"></span>
+     <input id="in-${r.key}" maxlength="40" placeholder="${r.name} 구역 키워드" autocomplete="off"></div>`).join('');
+
+  function values() {
+    const o = {};
+    REGIONS.forEach(r => o[r.key] = $('in-' + r.key).value.trim());
+    return o;
+  }
+  function draw() {
+    $('preview').innerHTML = brainSVG(values(), { clickable: true, active });
+    REGIONS.forEach(r => $('dot-' + r.key).style.borderColor = active === r.key ? r.ink : 'transparent');
+  }
+  REGIONS.forEach(r => {
+    const el = $('in-' + r.key);
+    el.addEventListener('input', draw);
+    el.addEventListener('focus', () => { active = r.key; draw(); });
+  });
+  $('preview').addEventListener('click', e => {
+    const g = e.target.closest('.region');
+    if (g) $('in-' + g.dataset.key).focus();
+  });
+
+  async function load() {
+    try {
+      const rows = await sbFetch('?client_id=eq.' + encodeURIComponent(cid) + '&select=*');
+      if (rows && rows[0]) {
+        const r0 = rows[0];
+        $('name').value = r0.name || '';
+        REGIONS.forEach(r => $('in-' + r.key).value = r0[r.key] || '');
+        showDone(r0);
+        return;
+      }
+    } catch (e) {}
+    try { $('name').value = localStorage.getItem('brain_name') || ''; } catch (e) {}
+    draw();
+  }
+
+  function showDone(row) {
+    $('v-form').classList.add('hidden');
+    $('v-done').classList.remove('hidden');
+    $('done-name').textContent = row.name + '님의 지난 일주일';
+    $('done-brain').innerHTML = brainSVG(row);
+    window.scrollTo(0, 0);
+  }
+
+  $('submit').onclick = async () => {
+    const name = $('name').value.trim();
+    const v = values();
+    $('err').textContent = '';
+    if (!name) { $('err').textContent = '이름을 입력해 주세요.'; $('name').focus(); return; }
+    if (!Object.values(v).some(Boolean)) { $('err').textContent = '키워드를 최소 1개 적어 주세요.'; return; }
+    try { localStorage.setItem('brain_name', name); } catch (e) {}
+    const body = { client_id: cid, name, ...v, updated_at: new Date().toISOString() };
+    $('submit').disabled = true;
+    try {
+      await sbFetch('?on_conflict=client_id', {
+        method: 'POST',
+        headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify(body),
+      });
+      showDone(body);
+    } catch (e) {
+      $('err').textContent = '제출에 실패했어요. 잠시 후 다시 눌러 주세요.';
+    }
+    $('submit').disabled = false;
+  };
+  $('edit').onclick = () => {
+    $('v-done').classList.add('hidden');
+    $('v-form').classList.remove('hidden');
+    draw();
+  };
+  load();
+</script>
+</body>
+</html>
