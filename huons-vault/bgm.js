@@ -168,7 +168,7 @@ window.VaultBGM = (function(){
     fanfare(){ if(!ensure()) return; if(ctx.state === 'suspended') ctx.resume();
       const was = master.gain.value; if(!playing){ master.gain.setValueAtTime(vol, ctx.currentTime); setTimeout(() => { if(!playing) master.gain.setValueAtTime(0, ctx.currentTime); }, 2200); }
       fanfareAt(ctx.currentTime + .05); },
-    setLevel(l){ level = 1; },   // 참가자·관리자 모두 같은 템포 (빨라지지 않음)
+    setLevel(l){ level = 0; },   // 어디서나 입장(대기) 화면과 같은 느린 음악
     setVolume(v){ vol = v; if(ctx && playing) master.gain.setTargetAtTime(v, ctx.currentTime, .3); },
     get playing(){ return playing; },
   };
