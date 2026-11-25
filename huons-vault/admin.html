@@ -125,11 +125,6 @@
           <h3 class="sec-title">참가자 접속</h3>
           <img src="qr.png" alt="참가자 접속 QR 코드">
           <div class="url" id="joinUrl"></div>
-          <div class="entry-code"><span>입장 코드</span><b id="entryCode">----</b></div>
-          <div class="code-ctl">
-            <input id="codeInp" type="text" inputmode="numeric" maxlength="4" placeholder="직접 입력">
-            <button id="btnCode" class="btn btn-ghost">코드 바꾸기</button>
-          </div>
         </section>
       </div>
     </div>
@@ -179,8 +174,7 @@ async function syncClock(){
 }
 let TOTAL = 5;
 async function loadTotal(){ try{ TOTAL = await rpc('vault_total', {}) || 5; }catch(e){} }
-async function loadCode(){ try{ $('entryCode').textContent = await rpc('vault_admin_get_code', { p_pw: '' }); }catch(e){} }
-async function loadAll(){ syncClock(); loadCode(); await loadTotal(); await loadGame(); await loadTeams(); }
+async function loadAll(){ syncClock(); await loadTotal(); await loadGame(); await loadTeams(); }
 
 function remaining(){
   if(!game || !game.started_at) return (game ? game.duration_sec : 1800);
@@ -289,14 +283,6 @@ $('btnStop').onclick = async () => {
 $('btnReset').onclick = async () => {
   if(!confirm('전체 초기화할까요?\n등록된 모든 팀과 기록이 삭제되고 참가자 화면은 팀 등록으로 돌아갑니다.')) return;
   try{ await rpc('vault_admin_reset', { p_pw: pw }); toast('초기화 완료'); loadAll(); }catch(e){ alert('실패: ' + e.message); }
-};
-$('codeInp').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4); });
-$('btnCode').onclick = async () => {
-  const v = $('codeInp').value.trim();
-  if(v && !/^\d{4}$/.test(v)){ alert('입장 코드는 숫자 4자리로 입력해 주세요.'); return; }
-  if(!confirm(v ? `입장 코드를 ${v}(으)로 바꿀까요?` : '새 입장 코드를 무작위로 만들까요?')) return;
-  try{ const c = await rpc('vault_admin_set_code', { p_pw: '', p_code: v }); $('entryCode').textContent = c; $('codeInp').value = ''; toast(`입장 코드: ${c}`); }
-  catch(e){ alert('실패: ' + e.message); }
 };
 $('btnQr').onclick = () => $('qrPanel').classList.toggle('hidden');
 

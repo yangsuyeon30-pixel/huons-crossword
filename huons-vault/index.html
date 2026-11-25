@@ -107,11 +107,6 @@
       <div class="gm-say"><b>GAME MASTER</b><span id="gmLine"></span></div>
     </div>
     <p class="lead center" style="margin-top:0">휴온스 금고를 노리다 <b>붙잡혔다!</b><br>감옥에 갇힐 조와 캐릭터를 고르세요.</p>
-    <label class="code-box" for="entryCode">
-      <span>입장 코드</span>
-      <input id="entryCode" class="code-inp" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="0000" autocomplete="off">
-      <small>진행자 화면에 보이는 4자리 숫자</small>
-    </label>
     <h3 class="pick-title"><span>1</span> 우리 조 선택</h3>
     <div class="team-pick" id="teamPick"></div>
     <h3 class="pick-title"><span>2</span> 캐릭터 선택</h3>
@@ -371,11 +366,10 @@ function renderLobby(){
     return `<button class="cp ${tk ? 'taken' : ''} ${pick.ch === i ? 'sel' : ''}" data-ch="${i}" ${tk ? 'disabled' : ''}>${CH.avatar(i)}<span>${c.name}</span>${tk ? `<small>${chOwner[i]}조 선택</small>` : ''}</button>`;
   }).join('');
   $('charPick').querySelectorAll('.cp').forEach(b => b.onclick = () => { pick.ch = +b.dataset.ch; sfx.tap(); renderLobby(); });
-  $('btnJoin').disabled = !(pick.no && pick.ch !== null && /^\d{4}$/.test(($('entryCode') || {}).value || ''));
+  $('btnJoin').disabled = !(pick.no && pick.ch !== null);
   $('btnJoin').innerHTML = ICO_LOCK + (pick.no && pick.ch !== null ? `${pick.no}조 · ${CH.name(pick.ch)} 감옥 입소` : '조와 캐릭터를 골라주세요');
 }
 
-$('entryCode').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4); renderLobby(); });
 
 /* ---------- 상태 ---------- */
 async function refresh(){
@@ -770,7 +764,7 @@ $('btnJoin').onclick = async () => {
   if(!(pick.no && pick.ch !== null) || busy) return;
   busy = true; $('btnJoin').disabled = true; msg.textContent = '';
   try{
-    const r = await rpc('vault_enter', { p_no: pick.no, p_char: pick.ch, p_code: $('entryCode').value.trim() });
+    const r = await rpc('vault_enter', { p_no: pick.no, p_char: pick.ch, p_code: '' });
     me = { team_id: r.team_id, token: r.token, round: r.round }; saveMe();
     sfx.clang(); await refresh();
   }catch(e){
